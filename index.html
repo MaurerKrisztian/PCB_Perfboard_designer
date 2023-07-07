@@ -6,7 +6,6 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -24,7 +23,6 @@
         }
 
         #controls {
-            display: flex;
             justify-content: space-between;
             padding: 1em;
             background-color: #fff;
@@ -52,7 +50,8 @@
 </head>
 <body>
 <div id="canvas-container">
-    <canvas id="myCanvas" width="500" height="500"></canvas>
+<canvas id="myCanvas" width="500" height="500"></canvas>
+</div>
     <div id="controls">
         <button id="addDescriptionBtn">Add Description</button>
         <button id="deleteDescriptionBtn">Delete Description</button>
@@ -74,7 +73,7 @@
         <button id="loadProjectTrigger">Load Project</button>
     </div>
     <p id="dotDescription"></p>
-</div>
+<!--</div>-->
 
 <script>
 
@@ -351,7 +350,7 @@
                 ctx.font = "10px Arial";
                 ctx.textAlign = "center";
                 ctx.fillStyle = dot.color;
-                ctx.fillText(dot.description, dot.x, dot.y + dotRadius + 10);
+                ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + dotRadius + 10);
             }
         }
 
