@@ -13,9 +13,12 @@
         }
 
         #canvas-container {
+            display: flex;
+            justify-content: center;
             border: 1px solid #d3d3d3;
             border-radius: 5px;
             overflow: hidden;
+            padding: 8px;
         }
 
         #myCanvas {
@@ -179,6 +182,8 @@
     var changes = [];
     var changeIndex = -1;
 
+    const canvasBackgroundColor = "#046307"
+
 
 
     function createDotGrid(width, height) {
@@ -189,7 +194,7 @@
         dots = [];
         for(let x = xSpacing / 2; x < c.width; x += xSpacing){
             for(let y = ySpacing / 2; y < c.height; y += ySpacing){
-                dots.push({x: x, y: y, description: null, color: "#000"});
+                dots.push({x: x, y: y, description: null, color: "#a4a0a0"});
             }
         }
     }
@@ -197,16 +202,17 @@
     // Create initial dot grid
     createDotGrid(parseInt(widthInput.value), parseInt(heightInput.value));
 
+    resetCanvas()
 
 
 
     // Draw dots and store their positions
     for(var x = distance / 2; x < c.width; x += distance){
         for(var y = distance / 2; y < c.height; y += distance){
-            dots.push({x: x, y: y, description: null, color: "#000"});
+            dots.push({x: x, y: y, description: null, color: "#8a8a8a"});
             ctx.beginPath();
             ctx.arc(x, y, dotRadius, 0, Math.PI*2);
-            ctx.fillStyle = "#000";
+            ctx.fillStyle = "#8a8a8a";
             ctx.fill();
         }
     }
@@ -285,7 +291,7 @@
             if(dx * dx + dy * dy < dotRadius * dotRadius){
                 if(selectedDot && selectedDot != dot){
                     // Draw a line
-                    var newLine = {start: selectedDot, end: dot, color: "#000"};
+                    var newLine = {start: selectedDot, end: dot, color: "#777676"};
                     lines.push(newLine);
                     // Store change
                     changes.splice(changeIndex + 1);
@@ -330,39 +336,52 @@
         redrawCanvas();
     }
 
+    function resetCanvas(){
+        ctx.fillStyle = canvasBackgroundColor
+        ctx.clearRect(0, 0, c.width, c.height);
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.fill()
+    }
+
+    function drawDot(dot){
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dotRadius, 0, Math.PI*2);
+        ctx.fillStyle = dot.color;
+        ctx.fill();
+        if(dot == selectedDot){
+            ctx.strokeStyle = "#00f";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+        if(dot.description){
+            ctx.font = "10px Arial";
+            ctx.textAlign = "center";
+            ctx.fillStyle = dot.color;
+            ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + dotRadius + 10);
+        }
+    }
+
+    function drawLine(line){
+        ctx.beginPath();
+        ctx.moveTo(line.start.x, line.start.y);
+        ctx.lineTo(line.end.x, line.end.y);
+        ctx.strokeStyle = line.color;
+        ctx.lineWidth = (line == selectedLine) ? 5 : (line == hoverLine) ? 4 : 3;
+        ctx.stroke();
+    }
+
     function redrawCanvas() {
         // Clear canvas
-        ctx.clearRect(0, 0, c.width, c.height);
+        resetCanvas()
 
         // Draw dots
         for(let i = 0; i < dots.length; i++) {
-            var dot = dots[i];
-            ctx.beginPath();
-            ctx.arc(dot.x, dot.y, dotRadius, 0, Math.PI*2);
-            ctx.fillStyle = dot.color;
-            ctx.fill();
-            if(dot == selectedDot){
-                ctx.strokeStyle = "#00f";
-                ctx.lineWidth = 3;
-                ctx.stroke();
-            }
-            if(dot.description){
-                ctx.font = "10px Arial";
-                ctx.textAlign = "center";
-                ctx.fillStyle = dot.color;
-                ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + dotRadius + 10);
-            }
+            drawDot(dots[i])
         }
 
         // Draw lines
         for(let i = 0; i < lines.length; i++) {
-            var line = lines[i];
-            ctx.beginPath();
-            ctx.moveTo(line.start.x, line.start.y);
-            ctx.lineTo(line.end.x, line.end.y);
-            ctx.strokeStyle = line.color;
-            ctx.lineWidth = (line == selectedLine) ? 5 : (line == hoverLine) ? 3 : 1;
-            ctx.stroke();
+            drawLine(lines[i])
         }
     }
     // Add description
