@@ -56,24 +56,32 @@
 <canvas id="myCanvas" width="500" height="500"></canvas>
 </div>
     <div id="controls">
+        <button id="backBtn">undo</button>
+        <button id="forwardBtn">redo</button>
+        <br><br>
+
         <button id="addDescriptionBtn">Add Description</button>
         <button id="deleteDescriptionBtn">Delete Description</button>
+        <br><br>
+
         <input type="color" id="colorPicker" style="display:none">
         <button id="changeLineColorBtn">Change Line Color</button>
-        <button id="deleteLineBtn">Delete Line</button>
         <button id="changeDotColorBtn">Change Dot Color</button>
-        <button id="backBtn">Back</button>
-        <button id="forwardBtn">Forward</button>
-        <button id="downloadBtn">Download</button>
 
+
+        <button id="deleteLineBtn">Delete Line</button>
+
+        <br><br>
+        <button id="downloadBtn">Download image</button>
+        <button id="saveProgressBtn">Save Progress</button>
+        <button id="saveProjectBtn">Save Project</button>
+        <button id="loadProjectTrigger">Load Project</button>
+
+        <br><br>
         <input type="number" id="dotMatrixWidth" min="1" value="10">
         <input type="number" id="dotMatrixHeight" min="1" value="10">
         <button id="resizeGridBtn">Resize Grid</button>
-
-        <button id="saveProgressBtn">Save Progress</button>
-        <button id="saveProjectBtn">Save Project</button>
         <input type="file" id="loadProjectBtn" style="display:none">
-        <button id="loadProjectTrigger">Load Project</button>
     </div>
     <p id="dotDescription"></p>
 <!--</div>-->
