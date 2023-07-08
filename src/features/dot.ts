@@ -3,7 +3,13 @@ import {redrawCanvas} from "./draw-canvas";
 import {Utils} from "../utils/utils";
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('changeDotColorBtn').addEventListener('click', function() {
-  // todo: find the color picker type
+  changeSelectedDotColor()
+});
+
+export function changeSelectedDotColor(){
+  if (!State.selectedDot){
+    return;
+  }
   Utils.getSafeHtmlElement<any>('colorPicker').onchange = function() {
     if(State.selectedDot){
       State.selectedDot.color = this.value;
@@ -11,4 +17,4 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('changeDotColorBtn').addEventListene
     }
   }
   Utils.getSafeHtmlElement('colorPicker').click();
-});
+}
