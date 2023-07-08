@@ -11,6 +11,7 @@ import "./features/undo-redo"
 import "./features/load-from-local-storage"
 import "./features/shortcut-keys"
 import "./features/dot"
+import "./features/reset-project"
 import {resetCanvas} from "./features/reset-canvas";
 import {createDotGrid, heightInput, widthInput} from "./features/resize-grid";
 import {redrawCanvas} from "./features/draw-canvas";

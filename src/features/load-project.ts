@@ -1,6 +1,8 @@
 import {Utils} from "../utils/utils";
 import {State} from "../state/State";
 import {redrawCanvas} from "./draw-canvas";
+import {Canvas} from "../state/Canvas";
+import {IProjectSave} from "../interfaces/project-save.interface";
 
 const loadInput = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectBtn');
 const loadTrigger = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectTrigger');
@@ -18,9 +20,11 @@ loadInput.addEventListener('change', function(e) {
   const reader = new FileReader();
   reader.onload = function(e) {
     const contents = e.target.result;
-    const data = JSON.parse(contents);
+    const data = JSON.parse(contents) as IProjectSave;
 
     // Load the state of the canvas from the uploaded file
+    Canvas.c.width = data.canvas.width
+    Canvas.c.height = data.canvas.height
     State.dots = data.dots;
     State.lines = data.lines;
 
