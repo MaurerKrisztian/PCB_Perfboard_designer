@@ -14,7 +14,7 @@
     "format": "prettier --write \"./**\"",
     "format:check": "prettier --check \"./**\"",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "license": "ISC",
   "dependencies": {

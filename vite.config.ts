@@ -1,7 +1,8 @@
 import type { UserConfig } from "vite";
 
 const config: UserConfig = {
-  base: "/canvas/",
+  base: "",
+  publicDir: 'assets',
   server: {
     port: 3000,
   },
