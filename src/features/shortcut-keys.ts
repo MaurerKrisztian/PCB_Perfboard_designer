@@ -10,7 +10,7 @@ window.addEventListener('keypress', (event) => {
 });
 
 export interface IShortcut {
-  key: string, event: (e: KeyboardEvent)=>void, description?: string
+  key: string, ctrl?: boolean, event: (e: KeyboardEvent)=>void, description?: string
 }
 export class ShortcutRegistry {
   static sohortcuts:  IShortcut[] = [];
@@ -23,6 +23,6 @@ export class ShortcutRegistry {
   }
 
   static show(){
-    Utils.getSafeHtmlElement("shortcuts").innerHTML = "<b>Shortcuts:</b> <br>" + this.sohortcuts.map(s=> `key: <b>${s.key}</b> - ${s.description}`).join("<br>")
+    Utils.getSafeHtmlElement("shortcuts").innerHTML = "<b>Shortcuts:</b> <br>" + this.sohortcuts.map(s=> `key: <b>${s.ctrl ? "ctrl + ":""} ${s.key} </b> - ${s.description}`).join("<br>")
   }
 }
