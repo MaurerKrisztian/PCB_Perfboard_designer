@@ -1,5 +1,5 @@
-import {State} from "../state/State";
-import {Utils} from "../utils/utils";
+import {State} from "../../state/State";
+import {Utils} from "../../utils/utils";
 
 const saveProgressBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProgressBtn');
 saveProgressBtn.addEventListener('click', function() {

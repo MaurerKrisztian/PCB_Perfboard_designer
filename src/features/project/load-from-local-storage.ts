@@ -1,5 +1,5 @@
-import {State} from "../state/State";
-import {redrawCanvas} from "./draw-canvas";
+import {State} from "../../state/State";
+import {redrawCanvas} from "../draw-canvas";
 
 window.addEventListener('DOMContentLoaded', () => {
   if(localStorage.getItem('canvasDots') !== null && localStorage.getItem('canvasLines') !== null) {

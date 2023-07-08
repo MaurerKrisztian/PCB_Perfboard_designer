@@ -1,7 +1,7 @@
-import {State} from "../state/State";
-import {redrawCanvas} from "./draw-canvas";
-import {Utils} from "../utils/utils";
-import {ShortcutRegistry} from "./shortcut-keys";
+import {State} from "../../state/State";
+import {redrawCanvas} from "../draw-canvas";
+import {Utils} from "../../utils/utils";
+import {ShortcutRegistry} from "../shortcut-keys";
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('backBtn').addEventListener('click', function() {
 undo();

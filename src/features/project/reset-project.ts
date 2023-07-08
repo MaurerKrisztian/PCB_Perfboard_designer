@@ -1,8 +1,8 @@
-import {Utils} from "../utils/utils";
-import {State} from "../state/State";
+import {Utils} from "../../utils/utils";
+import {State} from "../../state/State";
 import {createDotGrid, heightInput, widthInput} from "./resize-grid";
-import {resetCanvas} from "./reset-canvas";
-import {redrawCanvas} from "./draw-canvas";
+import {resetCanvas} from "../reset-canvas";
+import {redrawCanvas} from "../draw-canvas";
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('resetBtn').addEventListener('click', function() {
   State.lines = [];

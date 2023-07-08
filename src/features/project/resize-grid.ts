@@ -1,7 +1,7 @@
-import {State} from "../state/State";
-import {redrawCanvas} from "./draw-canvas";
-import {Utils} from "../utils/utils";
-import {Canvas} from "../state/Canvas";
+import {State} from "../../state/State";
+import {redrawCanvas} from "../draw-canvas";
+import {Utils} from "../../utils/utils";
+import {Canvas} from "../../state/Canvas";
 
 export const widthInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixWidth')
 export const heightInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixHeight')

@@ -1,6 +1,6 @@
-import {State} from "../state/State";
-import {Utils} from "../utils/utils";
-import {Canvas} from "../state/Canvas";
+import {State} from "../../state/State";
+import {Utils} from "../../utils/utils";
+import {Canvas} from "../../state/Canvas";
 
 const saveBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProjectBtn');
 saveBtn.addEventListener('click', function() {

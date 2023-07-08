@@ -8,7 +8,12 @@ function drawDot(dot){
   Canvas.ctx.fill();
   if(dot == State.selectedDot){
     Canvas.ctx.strokeStyle = "#00f";
-    Canvas.ctx.lineWidth = 3;
+    Canvas.ctx.lineWidth = 5;
+    Canvas.ctx.stroke();
+  }
+  if(dot == State.hoverDot){
+    Canvas.ctx.strokeStyle = "#8a8a8a";
+    Canvas.ctx.lineWidth = 5;
     Canvas.ctx.stroke();
   }
   if(dot.description){

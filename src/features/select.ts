@@ -14,7 +14,7 @@ function setSelection(canvas, event) {
     const dot = State.dots[i];
     const dx = x - dot.x;
     const dy = y - dot.y;
-    if(dx * dx + dy * dy < State.dotRadius * State.dotRadius){
+    if(dx * dx + dy * dy < State.dotSelectionRadius * State.dotSelectionRadius){
       if(State.selectedDot && State.selectedDot != dot){
         // Draw a line
         const newLine = {start: State.selectedDot, end: dot, color: "#777676"};
@@ -47,7 +47,7 @@ function setSelection(canvas, event) {
     const d1 = Math.sqrt(dx1*dx1 + dy1*dy1); // distance from start dot to point
     const d2 = Math.sqrt(dx2*dx2 + dy2*dy2); // distance from end dot to point
     const d = Math.sqrt(Math.pow(line.end.x-line.start.x, 2) + Math.pow(line.end.y-line.start.y, 2)); // distance from start dot to end dot
-    if (Math.abs(d - (d1 + d2)) < 5) {
+    if (Math.abs(d - (d1 + d2)) < State.lineSelectTolerance) {
       State.selectedLine = line;
       State.selectedDot = undefined;
       redrawCanvas();

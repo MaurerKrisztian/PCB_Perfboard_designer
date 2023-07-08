@@ -17,6 +17,10 @@ export class State {
   static changeIndex = -1;
 
 
+  static extraSelectionRatio = 4;
+  static dotSelectionRadius = State.dotRadius * State.extraSelectionRatio;
+
+  static lineSelectTolerance = 5;
 
   static canvasBackgroundColor = "#046307"
 }

@@ -1,8 +1,8 @@
-import {Utils} from "../utils/utils";
-import {State} from "../state/State";
-import {redrawCanvas} from "./draw-canvas";
-import {Canvas} from "../state/Canvas";
-import {IProjectSave} from "../interfaces/project-save.interface";
+import {Utils} from "../../utils/utils";
+import {State} from "../../state/State";
+import {redrawCanvas} from "../draw-canvas";
+import {Canvas} from "../../state/Canvas";
+import {IProjectSave} from "../../interfaces/project-save.interface";
 
 const loadInput = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectBtn');
 const loadTrigger = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectTrigger');
