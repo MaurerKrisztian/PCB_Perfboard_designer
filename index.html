@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+
+    <title>Canvas</title>
+  <script type="module" crossorigin src="./assets/index.e0532b27.js"></script>
+  <link rel="stylesheet" href="./assets/index.e800dd78.css">
+</head>
+
+<body>
+<div id="canvas-container">
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+</div>
+<div id="controls">
+    <button id="backBtn">undo</button>
+    <button id="forwardBtn">redo</button>
+    <br><br>
+
+    <button id="addDescriptionBtn">Add Description</button>
+    <button id="deleteDescriptionBtn">Delete Description</button>
+    <br><br>
+
+    <input type="color" id="colorPicker" style="display:none">
+    <button id="changeLineColorBtn">Change Line Color</button>
+    <button id="changeDotColorBtn">Change Dot Color</button>
+
+
+    <button id="deleteLineBtn">Delete Line</button>
+
+    <br><br>
+    <button id="downloadBtn">Download image</button>
+    <button id="saveProgressBtn">Save Progress</button>
+    <button id="saveProjectBtn">Save Project</button>
+    <button id="loadProjectTrigger">Load Project</button>
+
+    <br><br>
+    <input type="number" id="dotMatrixWidth" min="1" value="10">
+    <input type="number" id="dotMatrixHeight" min="1" value="10">
+    <button id="resizeGridBtn">Resize Grid</button>
+    <input type="file" id="loadProjectBtn" style="display:none">
+</div>
+<p id="dotDescription"></p>
+<!--</div>-->
+
+</body>
+
+
+</html>
