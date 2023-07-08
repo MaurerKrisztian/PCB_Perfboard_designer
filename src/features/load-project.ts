@@ -10,14 +10,15 @@ loadTrigger.addEventListener('click', function() {
 });
 
 loadInput.addEventListener('change', function(e) {
-  var file = e.target.files[0];
+  // @ts-ignore
+  const file = e.target.files[0];
 
   if (!file) return;
 
-  var reader = new FileReader();
+  const reader = new FileReader();
   reader.onload = function(e) {
-    var contents = e.target.result;
-    var data = JSON.parse(contents);
+    const contents = e.target.result;
+    const data = JSON.parse(contents);
 
     // Load the state of the canvas from the uploaded file
     State.dots = data.dots;

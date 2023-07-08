@@ -7,7 +7,7 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('addDescriptionBtn').addEventListene
   if(State.selectedDot){
     const description = prompt("Enter a description for the dot");
     State.selectedDot.description = description;
-    State.selectedDot = null;
+    State.selectedDot = undefined;
     redrawCanvas();
   } else {
     alert("Please select a dot first by clicking on it");

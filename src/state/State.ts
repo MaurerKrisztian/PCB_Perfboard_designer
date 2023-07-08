@@ -1,18 +1,21 @@
+import {IDot} from "../interfaces/dot.interface";
+import {ILine} from "../interfaces/line.interface";
+import {IChange} from "../interfaces/change.interface";
 
 export class State {
 
   static dotRadius = 5
-  static dots: any = [];
-  static lines: any = [];
+  static dots: IDot[] = [];
+  static selectedDot?: IDot;
+  static hoverDot?: IDot
 
-  static selectedDot: any;
-  static selectedLine: any;
-  static hoverLine: any;
+  static lines: ILine[] = [];
+  static selectedLine?: ILine;
+  static hoverLine?: ILine;
 
-  static changes = []
+  static changes: IChange[] = []
   static changeIndex = -1;
 
-  static hoverDot:any
 
 
   static canvasBackgroundColor = "#046307"

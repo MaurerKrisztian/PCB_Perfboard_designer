@@ -24,7 +24,7 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('deleteLineBtn').addEventListener('c
       State.changeIndex++;
       // Remove line
       State.lines.splice(index, 1);
-      State.selectedLine = null;
+      State.selectedLine = undefined;
       redrawCanvas();
     }
   } else {

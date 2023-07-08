@@ -9,7 +9,7 @@ Canvas.c.addEventListener('mousemove', function(e) {
   const y = e.clientY - rect.top;
 
   // Check if mouse is within a dot
-  State.hoverDot = null;
+  State.hoverDot = undefined;
   for(let i = 0; i < State.dots.length; i++) {
     const dot = State.dots[i];
     const dx = x - dot.x;
@@ -21,7 +21,7 @@ Canvas.c.addEventListener('mousemove', function(e) {
   }
 
   // Check if mouse is within a line
-  State.hoverLine = null;
+  State.hoverLine = undefined;
   for(let i = 0; i < State.lines.length; i++) {
     const line = State.lines[i];
     const dx1 = line.start.x - x;

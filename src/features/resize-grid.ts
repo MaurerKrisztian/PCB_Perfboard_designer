@@ -24,8 +24,8 @@ resizeBtn.addEventListener('click', function() {
 
 export function createDotGrid(width, height) {
   // Calculate the spacing based on the canvas size and the number of dots
-  let xSpacing = Canvas.c.width / width;
-  let ySpacing = Canvas.c.height / height;
+  const xSpacing = Canvas.c.width / width;
+  const ySpacing = Canvas.c.height / height;
 
   State.dots = [];
   for(let x = xSpacing / 2; x < Canvas.c.width; x += xSpacing){
