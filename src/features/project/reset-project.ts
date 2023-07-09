@@ -8,7 +8,7 @@ import {Ic} from "../ic";
 Utils.getSafeHtmlElement<HTMLButtonElement>('resetBtn').addEventListener('click', function() {
   State.lines = [];
   State.dots = [];
-  Ic.IC_CONTAINER = [];
+  Ic.IC_CONTAINER = []; // todo ic menu disappears because of it
   localStorage.setItem('save', undefined);
   createDotGrid(parseInt(widthInput.value || "10"), parseInt(heightInput.value || "10"));
   resetCanvas()

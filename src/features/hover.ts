@@ -3,6 +3,7 @@ import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {Utils} from "../utils/utils";
 import {Ic} from "./ic";
+import {ShortcutRegistry} from "./shortcut-keys";
 
 Canvas.c.addEventListener('mousemove', function(e) {
   const rect = Canvas.c.getBoundingClientRect();
@@ -53,3 +54,21 @@ Canvas.c.addEventListener('mousemove', function(e) {
     Utils.getSafeHtmlElement('dotDescription').innerText = '';
   }
 })
+
+
+ShortcutRegistry.add({key: "m", description: "Move the point. select a point, then move the mouse pointer to another point, then press 'm'", event: ()=>{
+    if (!State.hoverDot || !State.selectedDot){
+      return;
+    }
+
+    State.dots =  State.dots.map((d)=>{
+     if (d.x == State?.hoverDot?.x && d.y == State.hoverDot?.y){
+       return { ...State.selectedDot, x: d.x, y: d.y};
+     }
+      if (d.x == State?.selectedDot?.x && d.y == State.selectedDot?.y){
+        return { description: undefined, color: undefined, x: d.x, y: d.y};
+      }
+     return d
+    });
+    State.selectedDot = undefined
+  }})

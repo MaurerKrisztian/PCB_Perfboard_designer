@@ -19,9 +19,7 @@ export class Ic{
     this.showICs()
   }
   static showICs(){
-    console.log("draw", Ic.IC_CONTAINER)
     Utils.getSafeHtmlElement("ic-items").innerHTML = Ic.IC_CONTAINER.map((item)=>{return `<button onclick='selectIc(${item.id})'> ${item.name}</button>, `}).join(" ")
-  console.log(Utils.getSafeHtmlElement("ic-items").innerHTML)
   }
 
   updatePosition(x:number,y:number){
@@ -131,8 +129,3 @@ export function selectIc(id: string){
 }
 
 window.selectIc = selectIc
-
-
-ShortcutRegistry.add({key: "n", event: ()=>{
-    Ic.showICs();
-  }})
