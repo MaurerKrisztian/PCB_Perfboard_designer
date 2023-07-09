@@ -114,11 +114,11 @@ export class Ic{
 
 // Todo just for the demo.
 
-Ic.add(new Ic(4, 8, {}, "IC-8Pin"));
-Ic.add(new Ic(4, 12, {}, "IC-12Pin"));
-Ic.add(new Ic(4, 14,{}, "IC-14Pin"));
-Ic.add(new Ic(4, 16, {}, "IC-16Pin"));
-Ic.add(new Ic(4, 18,{}, "IC-18Pin"));
+Ic.add(new Ic(4, 4, {}, "IC-8Pin"));
+Ic.add(new Ic(4, 6, {}, "IC-12Pin"));
+Ic.add(new Ic(4, 7,{}, "IC-14Pin"));
+Ic.add(new Ic(4, 8,{}, "IC-16Pin"));
+Ic.add(new Ic(4, 9,{}, "IC-18Pin"));
 export const myIc = new Ic(3,6,{1: "Vcc", 2: "Gnd", 3: "input", 4: "output"}, "Demo" )
 Ic.add(myIc);
 export function selectIc(id: string){
