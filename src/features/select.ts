@@ -1,8 +1,12 @@
 import {State} from "../state/State";
 import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
+import {ShortcutRegistry} from "./shortcut-keys";
 Canvas.c.addEventListener('mousedown', function(e) {
   setSelection(Canvas.c, e);
+  if (State.selectedIc){
+    State.selectedIc = undefined;
+  }
 })
 function setSelection(canvas, event) {
   const rect = canvas.getBoundingClientRect()
@@ -61,3 +65,11 @@ function setSelection(canvas, event) {
   State.selectedLine = undefined;
   redrawCanvas();
 }
+
+
+
+ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event: ()=>{
+  State.selectedDot = undefined;
+  State.selectedLine = undefined;
+  State.selectedIc = undefined;
+}});

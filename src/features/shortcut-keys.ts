@@ -1,9 +1,9 @@
 import {Utils} from "../utils/utils";
 
-window.addEventListener('keypress', (event) => {
+window.addEventListener('keydown', (event) => {
   console.log(event);
   for (const shortcut of ShortcutRegistry.sohortcuts) {
-    if (event.key == shortcut.key){
+    if (event.key == shortcut.key && event.ctrlKey == !!shortcut.ctrl){
       shortcut.event(event);
     }
   }

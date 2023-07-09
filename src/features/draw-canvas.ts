@@ -1,6 +1,7 @@
 import {resetCanvas} from "./reset-canvas";
 import {State} from "../state/State";
 import {Canvas} from "../state/Canvas";
+import {Ic} from "./ic";
 function drawDot(dot){
   Canvas.ctx.beginPath();
   Canvas.ctx.arc(dot.x, dot.y, State.dotRadius, 0, Math.PI*2);
@@ -16,11 +17,27 @@ function drawDot(dot){
     Canvas.ctx.lineWidth = 5;
     Canvas.ctx.stroke();
   }
+
+  for (const ic of Ic.IC_CONTAINER) {
+    if (ic.getPinPositionOnIC(dot)){
+      const pin = ic.getPinPositionOnIC(dot)
+      Canvas.ctx.fillStyle = "#e8b0b0";
+      Canvas.ctx.font = "10px Arial";
+      Canvas.ctx.fillText(((pin?.pin + " " + (pin?.info || "")) || "n").substring(0, 5), dot.x, dot.y + State.dotRadius + 10);
+      // dot.color = "white"
+      Canvas.ctx.fill();
+    }
+  }
+
   if(dot.description){
     Canvas.ctx.font = "10px Arial";
     Canvas.ctx.textAlign = "center";
     Canvas. ctx.fillStyle = dot.color;
-    Canvas.ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + State.dotRadius + 10);
+    if (dot == State.hoverDot){
+      Canvas.ctx.fillText(dot.description, dot.x, dot.y + State.dotRadius + 10);
+    }else {
+      Canvas.ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + State.dotRadius + 10);
+    }
   }
 }
 
@@ -35,7 +52,9 @@ function drawLine(line){
 export function redrawCanvas() {
   // Clear canvas
   resetCanvas()
-
+  for (const ic of Ic.IC_CONTAINER) {
+    ic.draw();
+  }
   // Draw dots
   for(let i = 0; i < State.dots.length; i++) {
     drawDot(State.dots[i])

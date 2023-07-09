@@ -1,9 +1,8 @@
-import {State} from "../../state/State";
 import {Utils} from "../../utils/utils";
+import {getSaveJson} from "./save-project";
 
 const saveProgressBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProgressBtn');
 saveProgressBtn.addEventListener('click', function() {
-  localStorage.setItem('canvasDots', JSON.stringify(State.dots));
-  localStorage.setItem('canvasLines', JSON.stringify(State.lines));
+  localStorage.setItem('save', JSON.stringify(getSaveJson()));
   alert('Project saved to local storage.');
 });

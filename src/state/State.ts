@@ -1,6 +1,7 @@
 import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
 import {IChange} from "../interfaces/change.interface";
+import {Ic} from "../features/ic";
 
 export class State {
 
@@ -15,6 +16,8 @@ export class State {
 
   static changes: IChange[] = []
   static changeIndex = -1;
+
+  static selectedIc?: Ic;
 
 
   static extraSelectionRatio = 4;

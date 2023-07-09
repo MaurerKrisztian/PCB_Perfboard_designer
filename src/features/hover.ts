@@ -2,6 +2,7 @@ import {State} from "../state/State";
 import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {Utils} from "../utils/utils";
+import {Ic} from "./ic";
 
 Canvas.c.addEventListener('mousemove', function(e) {
   const rect = Canvas.c.getBoundingClientRect();
@@ -39,6 +40,13 @@ Canvas.c.addEventListener('mousemove', function(e) {
 
 
   redrawCanvas();
+
+
+  for (const ic of Ic.IC_CONTAINER) {
+    if (ic.id == State.selectedIc?.id){
+      ic.updatePosition(x,y);
+    }
+  }
   if(State.hoverDot && State.hoverDot.description){
     Utils.getSafeHtmlElement('dotDescription').innerText = State.hoverDot.description;
   } else {
