@@ -9,11 +9,6 @@ const resizeBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('resizeGridBtn')
 resizeBtn.addEventListener('click', function() {
   const width = parseInt(widthInput.value);
   const height = parseInt(heightInput.value);
-
-  // Set the width and height of the grid
-  // gridWidth = width;
-  // gridHeight = height;
-
   // Recreate the dot grid
   createDotGrid(width, height);
 
@@ -22,19 +17,13 @@ resizeBtn.addEventListener('click', function() {
   redrawCanvas();
 });
 
-export function createDotGrid(width, height) {
-  // Calculate the spacing based on the canvas size and the number of dots
-
-
-  Canvas.c.width = width * 50;
-  Canvas.c.height = height * 50;
-
-  const xSpacing = Canvas.c.width / width;
-  const ySpacing = Canvas.c.height / height;
+export function createDotGrid(horizontalDotNumbers: number, verticalDotNumbers: number) {
+  Canvas.c.width = horizontalDotNumbers * State.dotSpace;
+  Canvas.c.height = verticalDotNumbers * State.dotSpace;
 
   State.dots = [];
-  for(let x = xSpacing / 2; x < Canvas.c.width; x += xSpacing){
-    for(let y = ySpacing / 2; y < Canvas.c.height; y += ySpacing){
+  for(let x =  State.dotSpace / 2; x < Canvas.c.width; x +=  State.dotSpace){
+    for(let y =  State.dotSpace / 2; y < Canvas.c.height; y +=  State.dotSpace){
       State.dots.push({x: x, y: y, description: null, color: "#a4a0a0"});
     }
   }

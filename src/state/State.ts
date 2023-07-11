@@ -6,6 +6,7 @@ import {Ic} from "../features/ic";
 export class State {
 
   static dotRadius = 5
+  static dotSpace = 50
   static dots: IDot[] = [];
   static selectedDot?: IDot;
   static hoverDot?: IDot

@@ -2,7 +2,10 @@ import {resetCanvas} from "./reset-canvas";
 import {State} from "../state/State";
 import {Canvas} from "../state/Canvas";
 import {Ic} from "./ic";
-function drawDot(dot){
+import {IDot} from "../interfaces/dot.interface";
+import {ILine} from "../interfaces/line.interface";
+
+function drawDot(dot: IDot){
   Canvas.ctx.beginPath();
   Canvas.ctx.arc(dot.x, dot.y, State.dotRadius, 0, Math.PI*2);
   Canvas.ctx.fillStyle = dot.color;
@@ -32,7 +35,7 @@ function drawDot(dot){
   if(dot.description){
     Canvas.ctx.font = "10px Arial";
     Canvas.ctx.textAlign = "center";
-    Canvas. ctx.fillStyle = dot.color;
+    Canvas.ctx.fillStyle = dot.color;
     if (dot == State.hoverDot){
       Canvas.ctx.fillText(dot.description, dot.x, dot.y + State.dotRadius + 10);
     }else {
@@ -41,11 +44,11 @@ function drawDot(dot){
   }
 }
 
-function drawLine(line){
+function drawLine(line: ILine){
   Canvas.ctx.beginPath();
   Canvas.ctx.moveTo(line.start.x, line.start.y);
   Canvas.ctx.lineTo(line.end.x, line.end.y);
-  Canvas.ctx.strokeStyle = line.color;
+  Canvas.ctx.strokeStyle = line?.color || "#777676";
   Canvas.ctx.lineWidth = (line == State.selectedLine) ? 5 : (line == State.hoverLine) ? 4 : 3;
   Canvas.ctx.stroke();
 }
