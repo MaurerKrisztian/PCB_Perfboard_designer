@@ -6,56 +6,333 @@
     <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
 
-    <title>Perfboard Designer</title>
-  <script type="module" crossorigin src="./assets/index.6ff02812.js"></script>
-  <link rel="stylesheet" href="./assets/index.e800dd78.css">
+    <title>Perfboard Designer | Virtual PCB Prototyping</title>
+  <script type="module" crossorigin src="./assets/index.cfb38df6.js"></script>
+  <link rel="stylesheet" href="./assets/index.c9974afb.css">
 </head>
 
 <body>
-<div id="canvas-container">
-    <canvas id="myCanvas" width="500" height="500"></canvas>
-</div>
-<div id="controls">
-    <button id="backBtn">undo</button>
-    <button id="forwardBtn">redo</button>
-    <br><br>
 
-    <button id="addDescriptionBtn">Add Description</button>
-    <button id="deleteDescriptionBtn">Delete Description</button>
-    <br><br>
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="brand-logo">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+          <path d="M8 6h8M6 8v8M18 8v8M8 18h8" />
+        </svg>
+      </div>
+      <div>
+        <span class="brand-title">Perfboard Designer</span>
+        <span class="brand-tag">v1.0</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <button id="toggleFullscreenBtn" class="btn-accent">⛶ Fullscreen</button>
+      <button id="downloadBtn" class="btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Image
+      </button>
+      <button id="saveProgressBtn" class="btn">Save Progress</button>
+      <button id="saveProjectBtn" class="btn-accent">Save Project</button>
+      <button id="loadProjectTrigger" class="btn">Load Project</button>
+      <button id="resetBtn" class="btn-danger">Reset</button>
+      <input type="file" id="loadProjectBtn" style="display:none">
+    </div>
+  </header>
 
-    <input type="color" id="colorPicker" style="display:none">
-    <button id="changeLineColorBtn">Change Line Color</button>
-    <button id="changeDotColorBtn">Change Dot Color</button>
+  <!-- Main App Layout -->
+  <main class="app-layout" id="mainAppLayout">
+    
+    <!-- Left Sidebar: Tools & Controls -->
+    <aside id="controls" class="tool-panel sidebar-scroll">
+      
+      <!-- Tool Mode Selector -->
+      <div class="sidebar-section">
+        <div class="section-title" data-collapse="toolModeSection">
+          <span class="section-icon">🔧</span>
+          <span>Tool Mode</span>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="toolModeSection">
+          <div class="tool-mode-grid" id="toolModeSelector">
+            <button class="tool-mode-btn active-mode" data-mode="select">
+              <span class="tool-icon">🖐</span>
+              <span class="tool-label">Select</span>
+            </button>
+            <button class="tool-mode-btn" data-mode="wire">
+              <span class="tool-icon">✏</span>
+              <span class="tool-label">Wire</span>
+            </button>
+            <button class="tool-mode-btn" data-mode="eraser">
+              <span class="tool-icon">🧹</span>
+              <span class="tool-label">Eraser</span>
+            </button>
+            <button class="tool-mode-btn" data-mode="note">
+              <span class="tool-icon">📝</span>
+              <span class="tool-label">Note</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
+      <div class="sidebar-divider"></div>
 
-    <button id="deleteLineBtn">Delete Line</button>
+      <!-- Wire Gauge Selector -->
+      <div class="sidebar-section">
+        <div class="section-title" data-collapse="wireGaugeSection">
+          <span class="section-icon">〰</span>
+          <span>Wire Thickness</span>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="wireGaugeSection">
+          <div class="gauge-selector" id="wireGaugeSelector">
+            <button class="gauge-btn" data-width="2">
+              <span class="gauge-line gauge-thin"></span>
+              <span>Thin</span>
+            </button>
+            <button class="gauge-btn active-mode" data-width="4">
+              <span class="gauge-line gauge-normal"></span>
+              <span>Normal</span>
+            </button>
+            <button class="gauge-btn" data-width="7">
+              <span class="gauge-line gauge-thick"></span>
+              <span>Thick</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
-    <br><br>
-    <button id="downloadBtn">Download image</button>
-    <button id="saveProgressBtn">Save Progress</button>
-    <button id="saveProjectBtn">Save Project</button>
-    <button id="loadProjectTrigger">Load Project</button>
-    <button id="resetBtn">Reset</button>
+      <div class="sidebar-divider"></div>
 
-    <br><br>
-    <input type="number" id="dotMatrixWidth" min="1" value="10">
-    <input type="number" id="dotMatrixHeight" min="1" value="10">
-    <button id="resizeGridBtn">Resize Grid</button>
-    <input type="file" id="loadProjectBtn" style="display:none">
-</div>
-<p id="dotDescription"></p>
-<div id="shortcuts"></div>
-<!--</div>-->
+      <!-- History -->
+      <div class="sidebar-section">
+        <div class="section-title" data-collapse="historySection">
+          <span class="section-icon">⏱</span>
+          <span>History</span>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="historySection">
+          <div class="btn-group">
+            <button id="backBtn" class="icon-btn">↩ Undo</button>
+            <button id="forwardBtn" class="icon-btn">↪ Redo</button>
+          </div>
+        </div>
+      </div>
 
-<br>
-<br>
-<div id="ic">
-  <b>ICs *(coming soon, implementation is in progress)</b>
-  <div id="ic-items"></div>
-</div>
+      <div class="sidebar-divider"></div>
+
+      <!-- Styling & Color Palette -->
+      <div class="sidebar-section">
+        <div class="section-title" data-collapse="colorSection">
+          <span class="section-icon">🎨</span>
+          <span>Styling & Colors</span>
+          <span style="margin-left:auto; display:flex; align-items:center; gap:4px; font-size:0.7rem; color:var(--text-muted); font-weight:400; text-transform:none; letter-spacing:0;">
+            <span id="activeColorBadge" class="active-color-dot" title="Active Wire Color"></span>
+          </span>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="colorSection">
+          <input type="color" id="colorPicker" style="display:none">
+          <div class="color-actions">
+            <button id="changeLineColorBtn" class="color-action-btn">
+              <span class="color-action-icon" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);"></span>
+              Line Color
+            </button>
+            <button id="changeDotColorBtn" class="color-action-btn">
+              <span class="color-action-icon" style="background:linear-gradient(135deg,#10b981,#06b6d4);"></span>
+              Dot Color
+            </button>
+            <button id="toggleCustomColorPanelBtn" class="color-action-btn color-action-add">
+              <span>＋</span>
+              Custom
+            </button>
+            <button id="deleteLineBtn" class="color-action-btn color-action-delete">
+              <span>✕</span>
+              Delete
+            </button>
+          </div>
+          
+          <!-- Mouse-Interactive 2D Color Spectrum Selector Panel -->
+          <div id="customColorPanel" style="display:none; margin-top:0.6rem; padding:0.75rem; background:#111827; border:1px solid #374151; border-radius:10px; flex-direction:column; gap:0.6rem;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:0.75rem; font-weight:700; color:var(--text-muted);">VISUAL COLOR PICKER</span>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:0.75rem; color:var(--text-muted);">HEX:</span>
+                <input type="text" id="hexColorInput" value="#38bdf8" style="width:75px; padding:0.2rem 0.4rem; font-size:0.75rem; font-family:monospace;">
+                <div id="colorPreviewBox" style="width:24px; height:24px; border-radius:6px; background:#38bdf8; border:2px solid #ffffff; box-shadow:0 0 6px rgba(0,0,0,0.4);"></div>
+              </div>
+            </div>
+            
+            <!-- 2D Color Canvas Spectrum (Mouse Click & Drag) -->
+            <div style="position:relative; width:100%; height:130px; border-radius:6px; overflow:hidden; cursor:crosshair; border:1px solid #374151;" id="spectrumContainer">
+              <canvas id="colorSpectrumCanvas" width="280" height="130" style="display:block; width:100%; height:100%;"></canvas>
+              <div id="spectrumHandle" style="position:absolute; width:12px; height:12px; border-radius:50%; border:2px solid #ffffff; box-shadow:0 0 4px rgba(0,0,0,0.8); pointer-events:none; transform:translate(-50%, -50%); top:20px; left:240px;"></div>
+            </div>
+
+            <!-- Rainbow Hue Slider -->
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">HUE:</span>
+              <input type="range" id="hueBar" min="0" max="360" value="195" style="flex:1; cursor:pointer;" class="rainbow-slider">
+            </div>
+
+            <button id="addCustomColorToPaletteBtn" class="btn-primary" style="padding:0.4rem; font-size:0.8rem; width:100%;">🎨 Add Color to Palette</button>
+          </div>
+
+          <!-- Quick Color Palette Swatches -->
+          <div class="swatch-grid" id="quickSwatches"></div>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Annotations -->
+      <div class="sidebar-section">
+        <div class="section-title" data-collapse="annotationSection">
+          <span class="section-icon">💬</span>
+          <span>Annotations</span>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="annotationSection">
+          <div class="btn-group">
+            <button id="addDescriptionBtn" class="icon-btn">📝 Add Note</button>
+            <button id="deleteDescriptionBtn" class="btn-danger icon-btn">✕ Remove Note</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Grid Configuration -->
+      <div class="sidebar-section">
+        <div class="section-title" data-collapse="gridSection">
+          <span class="section-icon">⊞</span>
+          <span>Grid Configuration</span>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="gridSection">
+          <div class="grid-inputs">
+            <label style="font-size:0.8rem; color:var(--text-muted);">W:</label>
+            <input type="number" id="dotMatrixWidth" min="1" value="10">
+            <span style="color:var(--text-muted);">×</span>
+            <label style="font-size:0.8rem; color:var(--text-muted);">H:</label>
+            <input type="number" id="dotMatrixHeight" min="1" value="10">
+            <button id="resizeGridBtn" class="btn-accent" style="padding:0.35rem 0.65rem;">Resize</button>
+          </div>
+          <!-- Grid Presets -->
+          <div class="grid-presets" id="gridPresets">
+            <button class="preset-btn" data-w="10" data-h="10">10×10</button>
+            <button class="preset-btn" data-w="16" data-h="16">16×16</button>
+            <button class="preset-btn" data-w="24" data-h="16">24×16</button>
+            <button class="preset-btn" data-w="30" data-h="20">30×20</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- IC Components Container -->
+      <div class="sidebar-section" id="ic">
+        <div class="section-title" data-collapse="icSection">
+          <span class="section-icon">🔌</span>
+          <span>Integrated Circuits</span>
+          <button id="createCustomIcTrigger" class="ic-add-btn" onclick="event.stopPropagation()">＋</button>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="icSection">
+          <div id="ic-items"></div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Center Workspace: Canvas Viewport -->
+    <section class="canvas-viewport" id="canvasViewportSection">
+      <div class="status-bar">
+        <div id="activeSelectionStatus" class="status-badge">
+          <span>Pointer: Idle / Select</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button id="toggleSidebarBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">◀ Sidebar</button>
+          <button id="zoomOutBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🔍 -</button>
+          <span id="zoomLevelText" style="font-size:0.75rem; color:var(--text-muted); font-family:monospace; min-width:40px; text-align:center;">100%</span>
+          <button id="zoomInBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🔍 +</button>
+          <button id="zoomFitBtn" class="btn-accent" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🎯 Fit</button>
+          <button id="canvasFullscreenTrigger" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">⛶ Fullscreen</button>
+        </div>
+      </div>
+
+      <div id="canvas-container" style="overflow:auto; flex:1; display:flex; justify-content:center; align-items:center; width:100%; height:100%; min-height:400px; padding:1rem;">
+        <div id="canvasZoomWrapper" style="display:inline-block; transform-origin: center center; transition: transform 0.15s ease-out;">
+          <canvas id="myCanvas" width="500" height="500"></canvas>
+        </div>
+      </div>
+
+      <div id="dotDescription" style="width: 100%;">
+        Hover or click a pad to view description...
+      </div>
+    </section>
+
+    <!-- Right Sidebar: Shortcuts & Legend -->
+    <aside class="right-sidebar tool-panel">
+      <div class="section-title">Keyboard Shortcuts</div>
+      <div id="shortcuts"></div>
+    </aside>
+
+  </main>
+
+  <!-- Right-Click Canvas Context Menu -->
+  <div id="contextMenu" class="context-menu" style="display:none;">
+    <button id="ctxRotateBtn">🔄 Rotate Component</button>
+    <button id="ctxColorBtn">🎨 Change Color</button>
+    <button id="ctxNoteBtn">📝 Add/Edit Note</button>
+    <button id="ctxDeleteBtn" class="ctx-danger">🗑 Delete Item</button>
+  </div>
+
+  <!-- IC Editor Modal -->
+  <div id="icEditorModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">⚙ Create Custom IC / Component</span>
+        <button id="closeIcModalBtn" class="close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Component Name:</label>
+          <input type="text" id="icNameInput" placeholder="e.g. ESP8266-01, LM358, Custom Chip" value="Custom Chip">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Width Pins (cols):</label>
+            <input type="number" id="icWidthInput" min="2" max="10" value="4">
+          </div>
+          <div class="form-group">
+            <label>Height Pins (rows per side):</label>
+            <input type="number" id="icHeightInput" min="2" max="25" value="4">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Pin Labels (Total: <span id="totalPinsCount">8</span> pins):</label>
+          <div id="icPinLabelsContainer" class="pin-grid"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="cancelCustomIcBtn" class="btn">Cancel</button>
+        <button id="saveCustomIcBtn" class="btn-primary">💾 Save Component</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 
 
 </html>
+
