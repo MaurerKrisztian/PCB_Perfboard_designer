@@ -1,8 +1,10 @@
-import {State} from "../state/State";
+import {DotState} from "../state/DotState";
+import {LineState} from "../state/LineState";
+import {GridConfig} from "../state/GridConfig";
+import {IcState} from "../state/IcState";
 import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {Utils} from "../utils/utils";
-import {Ic} from "./ic";
 import {ShortcutRegistry} from "./shortcut-keys";
 
 Canvas.c.addEventListener('mousemove', function(e) {
@@ -12,25 +14,25 @@ Canvas.c.addEventListener('mousemove', function(e) {
   const x = (e.clientX - rect.left) * scaleX;
   const y = (e.clientY - rect.top) * scaleY;
 
-  const previousHoverDot = State.hoverDot;
-  const previousHoverLine = State.hoverLine;
+  const previousHoverDot = DotState.hoverDot;
+  const previousHoverLine = LineState.hoverLine;
 
   // Check if mouse is within a dot
-  State.hoverDot = undefined;
-  for(let i = 0; i < State.dots.length; i++) {
-    const dot = State.dots[i];
+  DotState.hoverDot = undefined;
+  for(let i = 0; i < DotState.dots.length; i++) {
+    const dot = DotState.dots[i];
     const dx = x - dot.x;
     const dy = y - dot.y;
-    if(dx * dx + dy * dy < State.dotSelectionRadius * State.dotSelectionRadius){
-      State.hoverDot = dot;
+    if(dx * dx + dy * dy < GridConfig.dotSelectionRadius * GridConfig.dotSelectionRadius){
+      DotState.hoverDot = dot;
       break;
     }
   }
 
   // Check if mouse is within a line
-  State.hoverLine = undefined;
-  for(let i = 0; i < State.lines.length; i++) {
-    const line = State.lines[i];
+  LineState.hoverLine = undefined;
+  for(let i = 0; i < LineState.lines.length; i++) {
+    const line = LineState.lines[i];
     const dx1 = line.start.x - x;
     const dy1 = line.start.y - y;
     const dx2 = line.end.x - x;
@@ -38,22 +40,22 @@ Canvas.c.addEventListener('mousemove', function(e) {
     const d1 = Math.sqrt(dx1*dx1 + dy1*dy1); // distance from start dot to point
     const d2 = Math.sqrt(dx2*dx2 + dy2*dy2); // distance from end dot to point
     const d = Math.sqrt(Math.pow(line.end.x-line.start.x, 2) + Math.pow(line.end.y-line.start.y, 2)); // distance from start dot to end dot
-    if (Math.abs(d - (d1 + d2)) < State.lineSelectTolerance) { // increased tolerance to 10
-      State.hoverLine = line;
+    if (Math.abs(d - (d1 + d2)) < GridConfig.lineSelectTolerance) { // increased tolerance to 10
+      LineState.hoverLine = line;
       break;
     }
   }
 
 
-  if (State.isDraggingIc && State.selectedPlacedIc) {
-    State.selectedPlacedIc.updatePosition(x, y);
+  if (IcState.isDraggingIc && IcState.selectedPlacedIc) {
+    IcState.selectedPlacedIc.updatePosition(x, y);
     redrawCanvas();
-  } else if (State.hoverDot !== previousHoverDot || State.hoverLine !== previousHoverLine) {
+  } else if (DotState.hoverDot !== previousHoverDot || LineState.hoverLine !== previousHoverLine) {
     redrawCanvas();
   }
 
-  if(State.hoverDot && State.hoverDot.description){
-    Utils.getSafeHtmlElement('dotDescription').innerText = State.hoverDot.description;
+  if(DotState.hoverDot && DotState.hoverDot.description){
+    Utils.getSafeHtmlElement('dotDescription').innerText = DotState.hoverDot.description;
   } else {
     Utils.getSafeHtmlElement('dotDescription').innerText = '';
   }
@@ -61,18 +63,18 @@ Canvas.c.addEventListener('mousemove', function(e) {
 
 
 ShortcutRegistry.add({key: "m", description: "Move the point. select a point, then move the mouse pointer to another point, then press 'm'", event: ()=>{
-    if (!State.hoverDot || !State.selectedDot){
+    if (!DotState.hoverDot || !DotState.selectedDot){
       return;
     }
 
-    State.dots =  State.dots.map((d)=>{
-     if (d.x == State?.hoverDot?.x && d.y == State.hoverDot?.y){
-       return { ...State.selectedDot, x: d.x, y: d.y};
+    DotState.dots =  DotState.dots.map((d)=>{
+     if (d.x == DotState?.hoverDot?.x && d.y == DotState.hoverDot?.y){
+       return { ...DotState.selectedDot, x: d.x, y: d.y};
      }
-      if (d.x == State?.selectedDot?.x && d.y == State.selectedDot?.y){
+      if (d.x == DotState?.selectedDot?.x && d.y == DotState.selectedDot?.y){
         return { description: undefined, color: undefined, x: d.x, y: d.y};
       }
      return d
     });
-    State.selectedDot = undefined
+    DotState.selectedDot = undefined
   }})

@@ -1,4 +1,5 @@
-import {State} from "../state/State";
+import {LineState} from "../state/LineState";
+import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
 import {rotateSelectedIc} from "./ic";
 import {hideContextMenu} from "./select";
@@ -14,24 +15,24 @@ document.getElementById('ctxRotateBtn')?.addEventListener('click', () => {
 
 document.getElementById('ctxColorBtn')?.addEventListener('click', () => {
   hideContextMenu();
-  if (State.selectedLine || State.selectedDot) {
+  if (LineState.selectedLine || DotState.selectedDot) {
     changeSelectedDotColor();
   }
 });
 
 document.getElementById('ctxNoteBtn')?.addEventListener('click', () => {
   hideContextMenu();
-  if (State.selectedDot) {
+  if (DotState.selectedDot) {
     addDescriptionToDot();
   }
 });
 
 document.getElementById('ctxDeleteBtn')?.addEventListener('click', () => {
   hideContextMenu();
-  if (State.selectedLine) {
+  if (LineState.selectedLine) {
     deleteLine();
-  } else if (State.selectedDot && State.selectedDot.description) {
-    State.selectedDot.description = undefined;
+  } else if (DotState.selectedDot && DotState.selectedDot.description) {
+    DotState.selectedDot.description = undefined;
     redrawCanvas();
   }
 });

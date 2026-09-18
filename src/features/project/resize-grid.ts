@@ -1,4 +1,6 @@
-import {State} from "../../state/State";
+import {LineState} from "../../state/LineState";
+import {DotState} from "../../state/DotState";
+import {GridConfig} from "../../state/GridConfig";
 import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
@@ -14,18 +16,18 @@ resizeBtn.addEventListener('click', function() {
   createDotGrid(width, height);
 
   // Clear all lines and redraw the canvas
-  State.lines = [];
+  LineState.lines = [];
   redrawCanvas();
 });
 
 export function createDotGrid(horizontalDotNumbers: number, verticalDotNumbers: number) {
-  Canvas.c.width = horizontalDotNumbers * State.dotSpace;
-  Canvas.c.height = verticalDotNumbers * State.dotSpace;
+  Canvas.c.width = horizontalDotNumbers * GridConfig.dotSpace;
+  Canvas.c.height = verticalDotNumbers * GridConfig.dotSpace;
 
-  State.dots = [];
-  for(let x =  State.dotSpace / 2; x < Canvas.c.width; x +=  State.dotSpace){
-    for(let y =  State.dotSpace / 2; y < Canvas.c.height; y +=  State.dotSpace){
-      State.dots.push({x: x, y: y, description: null, color: "#a4a0a0"});
+  DotState.dots = [];
+  for(let x =  GridConfig.dotSpace / 2; x < Canvas.c.width; x +=  GridConfig.dotSpace){
+    for(let y =  GridConfig.dotSpace / 2; y < Canvas.c.height; y +=  GridConfig.dotSpace){
+      DotState.dots.push({x: x, y: y, description: null, color: "#a4a0a0"});
     }
   }
 }

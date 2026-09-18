@@ -1,4 +1,9 @@
-import {State} from "../state/State";
+import {ToolState} from "../state/ToolState";
+import {IcState} from "../state/IcState";
+import {DotState} from "../state/DotState";
+import {LineState} from "../state/LineState";
+import {HistoryState} from "../state/HistoryState";
+import {GridConfig} from "../state/GridConfig";
 import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {ShortcutRegistry} from "./shortcut-keys";
@@ -35,11 +40,11 @@ Canvas.c.addEventListener('mousedown', function(e) {
     const y = (e.clientY - rect.top) * scaleY;
     
     // Eraser Tool Mode
-    if (State.activeToolMode === 'eraser') {
-      const placedIcIndex = State.placedIcs.findIndex(ic => ic.containsPoint(x, y));
+    if (ToolState.activeToolMode === 'eraser') {
+      const placedIcIndex = IcState.placedIcs.findIndex(ic => ic.containsPoint(x, y));
       if (placedIcIndex > -1) {
-        State.placedIcs.splice(placedIcIndex, 1);
-        State.selectedPlacedIc = undefined;
+        IcState.placedIcs.splice(placedIcIndex, 1);
+        IcState.selectedPlacedIc = undefined;
         redrawCanvas();
         return;
       }
@@ -48,38 +53,38 @@ Canvas.c.addEventListener('mousedown', function(e) {
     }
 
     // Note Tool Mode
-    if (State.activeToolMode === 'note') {
-      if (State.hoverDot) {
-        addDescriptionToDot(State.hoverDot);
+    if (ToolState.activeToolMode === 'note') {
+      if (DotState.hoverDot) {
+        addDescriptionToDot(DotState.hoverDot);
       }
       return;
     }
 
     // Placing a new IC from catalog template
-    if (State.selectedIc && State.hoverDot) {
-      const newInstance = State.selectedIc.clone();
-      newInstance.updatePosition(State.hoverDot.x, State.hoverDot.y);
-      State.placedIcs.push(newInstance);
-      State.selectedPlacedIc = newInstance;
-      State.selectedIc = undefined;
+    if (IcState.selectedIc && DotState.hoverDot) {
+      const newInstance = IcState.selectedIc.clone();
+      newInstance.updatePosition(DotState.hoverDot.x, DotState.hoverDot.y);
+      IcState.placedIcs.push(newInstance);
+      IcState.selectedPlacedIc = newInstance;
+      IcState.selectedIc = undefined;
       redrawCanvas();
       return;
     }
 
     // Check hit on an existing placed IC on canvas (Enable Drag & Drop)
-    const hitPlacedIc = State.placedIcs.find(ic => ic.containsPoint(x, y));
+    const hitPlacedIc = IcState.placedIcs.find(ic => ic.containsPoint(x, y));
     if (hitPlacedIc) {
-      State.selectedPlacedIc = hitPlacedIc;
-      State.isDraggingIc = true;
-      State.selectedDot = undefined;
-      State.selectedLine = undefined;
+      IcState.selectedPlacedIc = hitPlacedIc;
+      IcState.isDraggingIc = true;
+      DotState.selectedDot = undefined;
+      LineState.selectedLine = undefined;
       redrawCanvas();
       return;
     }
 
     // Deselect placed IC if clicking on empty space
-    if (State.selectedPlacedIc) {
-      State.selectedPlacedIc = undefined;
+    if (IcState.selectedPlacedIc) {
+      IcState.selectedPlacedIc = undefined;
       redrawCanvas();
       // Fall through to normal dot/line selection
     }
@@ -105,19 +110,19 @@ window.addEventListener('mouseup', () => {
     isPanningBoard = false;
     Canvas.c.style.cursor = 'crosshair';
   }
-  State.isDraggingIc = false;
+  IcState.isDraggingIc = false;
 });
 
 // Right click context menu handler
 Canvas.c.addEventListener('contextmenu', function(e) {
   e.preventDefault();
   selectLine(e);
-  if (!State.selectedLine && State.hoverDot) {
-    State.selectedDot = State.hoverDot;
+  if (!LineState.selectedLine && DotState.hoverDot) {
+    DotState.selectedDot = DotState.hoverDot;
     redrawCanvas();
   }
 
-  if (State.selectedLine || State.selectedDot) {
+  if (LineState.selectedLine || DotState.selectedDot) {
     showContextMenu(e.clientX, e.clientY);
   } else {
     hideContextMenu();
@@ -127,27 +132,27 @@ Canvas.c.addEventListener('contextmenu', function(e) {
 function handleEraserClick(event: MouseEvent) {
   // If clicking on line or near line, remove line
   selectLine(event);
-  if (State.selectedLine) {
-    const index = State.lines.indexOf(State.selectedLine);
+  if (LineState.selectedLine) {
+    const index = LineState.lines.indexOf(LineState.selectedLine);
     if (index > -1) {
-      State.changes.splice(State.changeIndex + 1);
-      State.changes.push({type: 'remove', line: State.selectedLine});
-      State.changeIndex++;
-      State.lines.splice(index, 1);
-      State.selectedLine = undefined;
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'remove', line: LineState.selectedLine});
+      HistoryState.changeIndex++;
+      LineState.lines.splice(index, 1);
+      LineState.selectedLine = undefined;
       redrawCanvas();
       return;
     }
   }
   // If clicking dot, reset dot color and description
-  if (State.hoverDot) {
+  if (DotState.hoverDot) {
     let changed = false;
-    if (State.hoverDot.color && State.hoverDot.color !== "#a4a0a0") {
-      State.hoverDot.color = "#a4a0a0";
+    if (DotState.hoverDot.color && DotState.hoverDot.color !== "#a4a0a0") {
+      DotState.hoverDot.color = "#a4a0a0";
       changed = true;
     }
-    if (State.hoverDot.description) {
-      State.hoverDot.description = undefined;
+    if (DotState.hoverDot.description) {
+      DotState.hoverDot.description = undefined;
       changed = true;
     }
     if (changed) {
@@ -179,42 +184,42 @@ window.addEventListener('click', (e) => {
 });
 
 function addNewLineIfNeeded(){
-    if (State.activeToolMode !== 'wire') {
+    if (ToolState.activeToolMode !== 'wire') {
       return;
     }
-    if (!State.hoverDot){
+    if (!DotState.hoverDot){
       return;
     }
-    if(State.selectedDot && State.selectedDot != State.hoverDot){
+    if(DotState.selectedDot && DotState.selectedDot != DotState.hoverDot){
       const newLine: ILine = {
-        start: State.selectedDot, 
-        end: State.hoverDot, 
-        color: State.activeWireColor || "#3b82f6",
-        width: State.selectedWireWidth || 4
+        start: DotState.selectedDot, 
+        end: DotState.hoverDot, 
+        color: ToolState.activeWireColor || "#3b82f6",
+        width: ToolState.selectedWireWidth || 4
       };
-      State.lines.push(newLine);
-      State.changes.splice(State.changeIndex + 1);
-      State.changes.push({type: 'add', line: newLine});
-      State.changeIndex++;
+      LineState.lines.push(newLine);
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'add', line: newLine});
+      HistoryState.changeIndex++;
 
       // Reset selection
-      State.selectedDot = undefined;
-      State.selectedLine = newLine;
+      DotState.selectedDot = undefined;
+      LineState.selectedLine = newLine;
       redrawCanvas();
     }
 }
 
 function selectDot(){
-  if (!State.hoverDot){
+  if (!DotState.hoverDot){
     return;
   }
-  State.selectedDot = State.hoverDot;
-  State.selectedLine = undefined;
+  DotState.selectedDot = DotState.hoverDot;
+  LineState.selectedLine = undefined;
   redrawCanvas();
 }
 
 export function selectLine(event: MouseEvent) {
-  if (State.hoverDot) {
+  if (DotState.hoverDot) {
     return;
   }
 
@@ -224,8 +229,8 @@ export function selectLine(event: MouseEvent) {
   const x = (event.clientX - rect.left) * scaleX;
   const y = (event.clientY - rect.top) * scaleY;
 
-  for (let i = 0; i < State.lines.length; i++) {
-    const line = State.lines[i];
+  for (let i = 0; i < LineState.lines.length; i++) {
+    const line = LineState.lines[i];
 
     const dx1 = line.start.x - x;
     const dy1 = line.start.y - y;
@@ -239,16 +244,16 @@ export function selectLine(event: MouseEvent) {
       Math.pow(line.end.x - line.start.x, 2) + Math.pow(line.end.y - line.start.y, 2)
     );
 
-    if (Math.abs(d - (d1 + d2)) < State.lineSelectTolerance) {
-      State.selectedLine = line;
-      State.selectedDot = undefined;
+    if (Math.abs(d - (d1 + d2)) < GridConfig.lineSelectTolerance) {
+      LineState.selectedLine = line;
+      DotState.selectedDot = undefined;
       redrawCanvas();
       return;
     }
   }
 
-  State.selectedDot = undefined;
-  State.selectedLine = undefined;
+  DotState.selectedDot = undefined;
+  LineState.selectedLine = undefined;
   redrawCanvas();
 }
 
@@ -259,11 +264,11 @@ function setSelection(event) {
 }
 
 ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event: ()=>{
-  State.selectedDot = undefined;
-  State.selectedLine = undefined;
-  State.selectedIc = undefined;
-  State.selectedPlacedIc = undefined;
-  State.isDraggingIc = false;
+  DotState.selectedDot = undefined;
+  LineState.selectedLine = undefined;
+  IcState.selectedIc = undefined;
+  IcState.selectedPlacedIc = undefined;
+  IcState.isDraggingIc = false;
   hideContextMenu();
   redrawCanvas();
 }});

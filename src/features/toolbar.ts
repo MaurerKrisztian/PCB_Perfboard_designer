@@ -1,4 +1,5 @@
-import {State} from "../state/State";
+import {ToolState} from "../state/ToolState";
+import {LineState} from "../state/LineState";
 import {redrawCanvas} from "./draw-canvas";
 import {updateSelectionStatus} from "./selection-status";
 
@@ -10,7 +11,7 @@ document.querySelectorAll('#toolModeSelector .tool-mode-btn').forEach((btn) => {
     target.classList.add('active-mode');
     const mode = target.getAttribute('data-mode') as 'wire' | 'eraser' | 'note' | 'ic';
     if (mode) {
-      State.activeToolMode = mode;
+      ToolState.activeToolMode = mode;
       updateSelectionStatus();
     }
   });
@@ -24,9 +25,9 @@ document.querySelectorAll('#wireGaugeSelector .gauge-btn').forEach((btn) => {
     target.classList.add('active-mode');
     const widthStr = target.getAttribute('data-width');
     if (widthStr) {
-      State.selectedWireWidth = parseInt(widthStr);
-      if (State.selectedLine) {
-        State.selectedLine.width = State.selectedWireWidth;
+      ToolState.selectedWireWidth = parseInt(widthStr);
+      if (LineState.selectedLine) {
+        LineState.selectedLine.width = ToolState.selectedWireWidth;
         redrawCanvas();
       }
     }

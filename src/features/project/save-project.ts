@@ -1,4 +1,6 @@
-import {State} from "../../state/State";
+import {DotState} from "../../state/DotState";
+import {LineState} from "../../state/LineState";
+import {IcState} from "../../state/IcState";
 import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
 import {IProjectSave} from "../../interfaces/project-save.interface";
@@ -35,10 +37,10 @@ export function serializePlacedIc(ic: Ic) {
 
 export function getSaveJson(): IProjectSave {
   return {
-    dots: State.dots,
-    lines: State.lines,
+    dots: DotState.dots,
+    lines: LineState.lines,
     canvas: { width: Canvas.c.width, height: Canvas.c.height },
     ICs: Ic.IC_CONTAINER || [],
-    placedIcs: State.placedIcs.map(ic => serializePlacedIc(ic))
+    placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic))
   };
 }

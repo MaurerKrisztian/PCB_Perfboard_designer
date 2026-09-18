@@ -1,4 +1,6 @@
-import {State} from "../state/State";
+import {ToolState} from "../state/ToolState";
+import {LineState} from "../state/LineState";
+import {DotState} from "../state/DotState";
 import {setDotColor} from "./dot";
 import {setLineColor} from "./line";
 import {updateSelectionStatus} from "./selection-status";
@@ -44,15 +46,15 @@ function renderSwatches() {
     swatch.addEventListener('click', (e) => {
       const color = (e.currentTarget as HTMLElement).getAttribute('data-color');
       if (!color) return;
-      State.activeWireColor = color;
+      ToolState.activeWireColor = color;
       const badge = document.getElementById('activeColorBadge');
       if (badge) {
         badge.style.background = color;
         badge.style.boxShadow = `0 0 6px ${color}`;
       }
-      if (State.selectedLine) {
+      if (LineState.selectedLine) {
         setLineColor(color);
-      } else if (State.selectedDot) {
+      } else if (DotState.selectedDot) {
         setDotColor(color);
       }
       updateSelectionStatus();
@@ -150,7 +152,7 @@ function updatePickedColorFromMouse(clientX: number, clientY: number) {
 
     if (hexInput) hexInput.value = hex;
     if (previewBox) previewBox.style.background = hex;
-    State.activeWireColor = hex;
+    ToolState.activeWireColor = hex;
     const badge = document.getElementById('activeColorBadge');
     if (badge) {
       badge.style.background = hex;
@@ -193,12 +195,12 @@ document.getElementById('addCustomColorToPaletteBtn')?.addEventListener('click',
       saveCustomColorsToLocalStorage();
       renderSwatches();
     }
-    State.activeWireColor = hex;
+    ToolState.activeWireColor = hex;
     const badge = document.getElementById('activeColorBadge');
     if (badge) badge.style.background = hex;
-    if (State.selectedLine) {
+    if (LineState.selectedLine) {
       setLineColor(hex);
-    } else if (State.selectedDot) {
+    } else if (DotState.selectedDot) {
       setDotColor(hex);
     }
   }
