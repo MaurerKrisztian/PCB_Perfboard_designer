@@ -5,6 +5,8 @@ import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
 import {IProjectSave} from "../../interfaces/project-save.interface";
 import {Ic} from "../ic";
+import {StandardComponentState} from "../../state/StandardComponentState";
+import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
 
 const saveBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProjectBtn');
 saveBtn.addEventListener('click', function() {
@@ -35,12 +37,25 @@ export function serializePlacedIc(ic: Ic) {
   };
 }
 
+export function serializePlacedStandardComponent(component: PlacedStandardComponent) {
+  return {
+    id: component.id,
+    definitionId: component.definitionId,
+    value: component.value,
+    startDotX: component.startDot.x,
+    startDotY: component.startDot.y,
+    endDotX: component.endDot.x,
+    endDotY: component.endDot.y,
+  };
+}
+
 export function getSaveJson(): IProjectSave {
   return {
     dots: DotState.dots,
     lines: LineState.lines,
     canvas: { width: Canvas.c.width, height: Canvas.c.height },
     ICs: Ic.IC_CONTAINER || [],
-    placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic))
+    placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic)),
+    placedStandardComponents: StandardComponentState.placedComponents.map(c => serializePlacedStandardComponent(c))
   };
 }

@@ -5,6 +5,7 @@ import {IDot} from "../interfaces/dot.interface";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
+import {StandardComponentState} from "../state/StandardComponentState";
 
 
 export class Ic{
@@ -394,6 +395,8 @@ export function selectIc(id: number | string){
     return;
   }
   IcState.selectedIc = ic;
+  StandardComponentState.armedDefinitionId = undefined;
+  StandardComponentState.pendingStartDot = undefined;
 }
 
 export function rotateSelectedIc() {

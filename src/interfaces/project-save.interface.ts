@@ -7,5 +7,6 @@ export interface IProjectSave {
   dots: IDot[];
   ICs: Ic[];
   placedIcs?: any[];
+  placedStandardComponents?: any[];
   canvas: {width: number, height: number};
 }

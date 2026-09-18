@@ -647,6 +647,14 @@ kbd {
   margin-top: 0.5rem;
 }
 
+/* Shared catalog button container styling (Standard Components, etc.) */
+.catalog-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
 /* Tool Mode & Gauge Selector Active States */
 .tool-mode-btn.active-mode, .gauge-btn.active-mode {
   background: linear-gradient(135deg, #0284c7, #0369a1);

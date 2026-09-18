@@ -7,6 +7,7 @@ import {redrawCanvas} from "./draw-canvas";
 import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {changeSelectedDotColor} from "./dot";
+import {StandardComponentState} from "../state/StandardComponentState";
 
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('changeLineColorBtn').addEventListener('click', function() {
@@ -47,8 +48,25 @@ export function deleteLine(){
   if (IcState.selectedPlacedIc) {
     const index = IcState.placedIcs.indexOf(IcState.selectedPlacedIc);
     if (index > -1) {
+      const removedIc = IcState.selectedPlacedIc;
       IcState.placedIcs.splice(index, 1);
       IcState.selectedPlacedIc = undefined;
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'remove', kind: 'ic', ic: removedIc});
+      HistoryState.changeIndex++;
+      redrawCanvas();
+      return;
+    }
+  }
+  if (StandardComponentState.selectedPlacedComponent) {
+    const index = StandardComponentState.placedComponents.indexOf(StandardComponentState.selectedPlacedComponent);
+    if (index > -1) {
+      const removedComponent = StandardComponentState.selectedPlacedComponent;
+      StandardComponentState.placedComponents.splice(index, 1);
+      StandardComponentState.selectedPlacedComponent = undefined;
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'remove', kind: 'standard-component', component: removedComponent});
+      HistoryState.changeIndex++;
       redrawCanvas();
       return;
     }
@@ -58,7 +76,7 @@ export function deleteLine(){
     if(index > -1){
       // Store change
       HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'remove', line: LineState.selectedLine});
+      HistoryState.changes.push({type: 'remove', kind: 'line', line: LineState.selectedLine});
       HistoryState.changeIndex++;
       // Remove line
       LineState.lines.splice(index, 1);

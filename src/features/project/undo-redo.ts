@@ -1,25 +1,45 @@
 import {HistoryState} from "../../state/HistoryState";
 import {LineState} from "../../state/LineState";
+import {IcState} from "../../state/IcState";
+import {StandardComponentState} from "../../state/StandardComponentState";
 import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {ShortcutRegistry} from "../shortcut-keys";
+import {IChange} from "../../interfaces/change.interface";
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('backBtn').addEventListener('click', function() {
 undo();
 });
+
+function applyChange(change: IChange, direction: "add" | "remove") {
+  if (change.kind === "line") {
+    if (direction === "add") {
+      LineState.lines.push(change.line);
+    } else {
+      const index = LineState.lines.findIndex(l => l.start === change.line.start && l.end === change.line.end);
+      if (index > -1) LineState.lines.splice(index, 1);
+    }
+  } else if (change.kind === "ic") {
+    if (direction === "add") {
+      IcState.placedIcs.push(change.ic);
+    } else {
+      const index = IcState.placedIcs.indexOf(change.ic);
+      if (index > -1) IcState.placedIcs.splice(index, 1);
+    }
+  } else if (change.kind === "standard-component") {
+    if (direction === "add") {
+      StandardComponentState.placedComponents.push(change.component);
+    } else {
+      const index = StandardComponentState.placedComponents.indexOf(change.component);
+      if (index > -1) StandardComponentState.placedComponents.splice(index, 1);
+    }
+  }
+}
+
 export function undo(){
   if(HistoryState.changeIndex >= 0){
     const change = HistoryState.changes[HistoryState.changeIndex];
-    if(change.type == 'add'){
-      for(let i = 0; i < LineState.lines.length; i++) {
-        if(LineState.lines[i].start == change.line.start && LineState.lines[i].end == change.line.end){
-          LineState.lines.splice(i, 1);
-          break;
-        }
-      }
-    } else if(change.type == 'remove'){
-      LineState.lines.push(change.line);
-    }
+    applyChange(change, change.type === "add" ? "remove" : "add");
     HistoryState.changeIndex--;
     redrawCanvas();
   }
@@ -37,16 +57,7 @@ export function redo(){
     if (change == undefined){
       return;
     }
-    if(change.type == 'add'){
-      LineState.lines.push(change.line);
-    } else if(change.type == 'remove'){
-      for(let i = 0; i < LineState.lines.length; i++) {
-        if(LineState.lines[i].start == change.line.start && LineState.lines[i].end == change.line.end){
-          LineState.lines.splice(i, 1);
-          break;
-        }
-      }
-    }
+    applyChange(change, change.type);
     redrawCanvas();
   }
 }

@@ -9,6 +9,8 @@ import {Canvas} from "../state/Canvas";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {ILine} from "../interfaces/line.interface";
 import {addDescriptionToDot} from "./description";
+import {StandardComponentState} from "../state/StandardComponentState";
+import {PlacedStandardComponent} from "./standard-components/placed-standard-component";
 let isPanningBoard = false;
 let panStartX = 0;
 let panStartY = 0;
@@ -43,8 +45,21 @@ Canvas.c.addEventListener('mousedown', function(e) {
     if (ToolState.activeToolMode === 'eraser') {
       const placedIcIndex = IcState.placedIcs.findIndex(ic => ic.containsPoint(x, y));
       if (placedIcIndex > -1) {
-        IcState.placedIcs.splice(placedIcIndex, 1);
+        const [removedIc] = IcState.placedIcs.splice(placedIcIndex, 1);
         IcState.selectedPlacedIc = undefined;
+        HistoryState.changes.splice(HistoryState.changeIndex + 1);
+        HistoryState.changes.push({type: 'remove', kind: 'ic', ic: removedIc});
+        HistoryState.changeIndex++;
+        redrawCanvas();
+        return;
+      }
+      const placedComponentIndex = StandardComponentState.placedComponents.findIndex(c => c.containsPoint(x, y));
+      if (placedComponentIndex > -1) {
+        const [removedComponent] = StandardComponentState.placedComponents.splice(placedComponentIndex, 1);
+        StandardComponentState.selectedPlacedComponent = undefined;
+        HistoryState.changes.splice(HistoryState.changeIndex + 1);
+        HistoryState.changes.push({type: 'remove', kind: 'standard-component', component: removedComponent});
+        HistoryState.changeIndex++;
         redrawCanvas();
         return;
       }
@@ -67,26 +82,75 @@ Canvas.c.addEventListener('mousedown', function(e) {
       IcState.placedIcs.push(newInstance);
       IcState.selectedPlacedIc = newInstance;
       IcState.selectedIc = undefined;
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'add', kind: 'ic', ic: newInstance});
+      HistoryState.changeIndex++;
       redrawCanvas();
       return;
     }
 
-    // Check hit on an existing placed IC on canvas (Enable Drag & Drop)
-    const hitPlacedIc = IcState.placedIcs.find(ic => ic.containsPoint(x, y));
-    if (hitPlacedIc) {
-      IcState.selectedPlacedIc = hitPlacedIc;
-      IcState.isDraggingIc = true;
-      DotState.selectedDot = undefined;
-      LineState.selectedLine = undefined;
-      redrawCanvas();
+    // Placing a new Standard Component from catalog (two-click span)
+    if (StandardComponentState.armedDefinitionId && DotState.hoverDot) {
+      if (!StandardComponentState.pendingStartDot) {
+        StandardComponentState.pendingStartDot = DotState.hoverDot;
+        redrawCanvas();
+        return;
+      }
+      if (StandardComponentState.pendingStartDot !== DotState.hoverDot) {
+        const instance = new PlacedStandardComponent(
+          StandardComponentState.armedDefinitionId,
+          StandardComponentState.pendingStartDot,
+          DotState.hoverDot
+        );
+        StandardComponentState.placedComponents.push(instance);
+        StandardComponentState.selectedPlacedComponent = instance;
+        StandardComponentState.armedDefinitionId = undefined;
+        StandardComponentState.pendingStartDot = undefined;
+        HistoryState.changes.splice(HistoryState.changeIndex + 1);
+        HistoryState.changes.push({type: 'add', kind: 'standard-component', component: instance});
+        HistoryState.changeIndex++;
+        redrawCanvas();
+      }
       return;
     }
 
-    // Deselect placed IC if clicking on empty space
-    if (IcState.selectedPlacedIc) {
-      IcState.selectedPlacedIc = undefined;
-      redrawCanvas();
-      // Fall through to normal dot/line selection
+    // Skip IC/Standard Component select & drag while actively wiring, so a click on a pin/terminal
+    // dot connects a wire there instead of being swallowed as "select the parent component."
+    if (ToolState.activeToolMode !== 'wire') {
+      // Check hit on an existing placed IC on canvas (Enable Drag & Drop)
+      const hitPlacedIc = IcState.placedIcs.find(ic => ic.containsPoint(x, y));
+      if (hitPlacedIc) {
+        IcState.selectedPlacedIc = hitPlacedIc;
+        IcState.isDraggingIc = true;
+        DotState.selectedDot = undefined;
+        LineState.selectedLine = undefined;
+        redrawCanvas();
+        return;
+      }
+
+      // Deselect placed IC if clicking on empty space
+      if (IcState.selectedPlacedIc) {
+        IcState.selectedPlacedIc = undefined;
+        redrawCanvas();
+        // Fall through to normal dot/line selection
+      }
+
+      // Check hit on an existing placed Standard Component (select only, no drag)
+      const hitPlacedComponent = StandardComponentState.placedComponents.find(c => c.containsPoint(x, y));
+      if (hitPlacedComponent) {
+        StandardComponentState.selectedPlacedComponent = hitPlacedComponent;
+        DotState.selectedDot = undefined;
+        LineState.selectedLine = undefined;
+        redrawCanvas();
+        return;
+      }
+
+      // Deselect placed Standard Component if clicking on empty space
+      if (StandardComponentState.selectedPlacedComponent) {
+        StandardComponentState.selectedPlacedComponent = undefined;
+        redrawCanvas();
+        // Fall through to normal dot/line selection
+      }
     }
 
     setSelection(e);
@@ -116,6 +180,23 @@ window.addEventListener('mouseup', () => {
 // Right click context menu handler
 Canvas.c.addEventListener('contextmenu', function(e) {
   e.preventDefault();
+
+  const rect = Canvas.c.getBoundingClientRect();
+  const scaleX = Canvas.c.width / rect.width;
+  const scaleY = Canvas.c.height / rect.height;
+  const x = (e.clientX - rect.left) * scaleX;
+  const y = (e.clientY - rect.top) * scaleY;
+
+  const hitComponent = StandardComponentState.placedComponents.find(c => c.containsPoint(x, y));
+  if (hitComponent) {
+    StandardComponentState.selectedPlacedComponent = hitComponent;
+    DotState.selectedDot = undefined;
+    LineState.selectedLine = undefined;
+    redrawCanvas();
+    showContextMenu(e.clientX, e.clientY);
+    return;
+  }
+
   selectLine(e);
   if (!LineState.selectedLine && DotState.hoverDot) {
     DotState.selectedDot = DotState.hoverDot;
@@ -136,7 +217,7 @@ function handleEraserClick(event: MouseEvent) {
     const index = LineState.lines.indexOf(LineState.selectedLine);
     if (index > -1) {
       HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'remove', line: LineState.selectedLine});
+      HistoryState.changes.push({type: 'remove', kind: 'line', line: LineState.selectedLine});
       HistoryState.changeIndex++;
       LineState.lines.splice(index, 1);
       LineState.selectedLine = undefined;
@@ -199,7 +280,7 @@ function addNewLineIfNeeded(){
       };
       LineState.lines.push(newLine);
       HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'add', line: newLine});
+      HistoryState.changes.push({type: 'add', kind: 'line', line: newLine});
       HistoryState.changeIndex++;
 
       // Reset selection
@@ -269,6 +350,9 @@ ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event:
   IcState.selectedIc = undefined;
   IcState.selectedPlacedIc = undefined;
   IcState.isDraggingIc = false;
+  StandardComponentState.armedDefinitionId = undefined;
+  StandardComponentState.pendingStartDot = undefined;
+  StandardComponentState.selectedPlacedComponent = undefined;
   hideContextMenu();
   redrawCanvas();
 }});

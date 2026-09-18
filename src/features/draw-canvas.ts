@@ -6,6 +6,9 @@ import {IcState} from "../state/IcState";
 import {Canvas} from "../state/Canvas";
 import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
+import {StandardComponentState} from "../state/StandardComponentState";
+import {getComponentDefinition} from "./standard-components/component-definitions";
+import {drawStandardComponentBody} from "./standard-components/standard-component-render";
 
 function drawDot(dot: IDot){
   Canvas.ctx.beginPath();
@@ -116,6 +119,34 @@ function drawIcPlacementPreview() {
   Canvas.ctx.restore();
 }
 
+function drawStandardComponentPlacementPreview() {
+  if (!StandardComponentState.armedDefinitionId || !DotState.hoverDot) return;
+  const def = getComponentDefinition(StandardComponentState.armedDefinitionId);
+  if (!def) return;
+
+  Canvas.ctx.save();
+
+  if (!StandardComponentState.pendingStartDot) {
+    // No start dot chosen yet - show a small marker + hint at the hover dot
+    Canvas.ctx.beginPath();
+    Canvas.ctx.setLineDash([4, 3]);
+    Canvas.ctx.strokeStyle = "#38bdf8";
+    Canvas.ctx.lineWidth = 2;
+    Canvas.ctx.arc(DotState.hoverDot.x, DotState.hoverDot.y, 10, 0, Math.PI * 2);
+    Canvas.ctx.stroke();
+
+    Canvas.ctx.setLineDash([]);
+    Canvas.ctx.fillStyle = "#ffffff";
+    Canvas.ctx.font = "bold 11px Inter, Arial";
+    Canvas.ctx.textAlign = "center";
+    Canvas.ctx.fillText(`➕ Start ${def.name}`, DotState.hoverDot.x, DotState.hoverDot.y - 16);
+  } else {
+    drawStandardComponentBody(StandardComponentState.pendingStartDot, DotState.hoverDot, def, {ghost: true});
+  }
+
+  Canvas.ctx.restore();
+}
+
 export function redrawCanvas() {
   resetCanvas();
   // 1. Draw IC chip bodies
@@ -130,9 +161,14 @@ export function redrawCanvas() {
   for (let i = 0; i < LineState.lines.length; i++) {
     drawLine(LineState.lines[i]);
   }
-  // 4. Draw IC text badges on top of everything
+  // 4. Draw Standard Component bodies (above wires/dots, IC chip bodies stay underneath)
+  for (const component of StandardComponentState.placedComponents) {
+    component.draw();
+  }
+  // 5. Draw IC text badges on top of everything
   for (const ic of IcState.placedIcs) {
     ic.drawLabel();
   }
   drawIcPlacementPreview();
+  drawStandardComponentPlacementPreview();
 }
