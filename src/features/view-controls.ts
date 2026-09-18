@@ -23,14 +23,49 @@ function applyZoom(zoom: number) {
   if (text2) text2.innerText = zoomText;
 }
 
+// Zooms while keeping the content point under (anchorClientX, anchorClientY) fixed on screen,
+// so zoom expands around that point instead of always growing toward the container's bottom-right.
+function applyZoomAnchored(zoom: number, anchorClientX: number, anchorClientY: number) {
+  const container = document.getElementById('canvas-container');
+  const beforeRect = Canvas.c.getBoundingClientRect();
+  const fracX = beforeRect.width > 0 ? (anchorClientX - beforeRect.left) / beforeRect.width : 0.5;
+  const fracY = beforeRect.height > 0 ? (anchorClientY - beforeRect.top) / beforeRect.height : 0.5;
+
+  applyZoom(zoom);
+
+  if (!container) return;
+  const afterRect = Canvas.c.getBoundingClientRect();
+  const currentX = afterRect.left + fracX * afterRect.width;
+  const currentY = afterRect.top + fracY * afterRect.height;
+  container.scrollLeft += currentX - anchorClientX;
+  container.scrollTop += currentY - anchorClientY;
+}
+
+function getContainerCenterClientPoint(): {x: number, y: number} | null {
+  const container = document.getElementById('canvas-container');
+  if (!container) return null;
+  const rect = container.getBoundingClientRect();
+  return {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2};
+}
+
 startDevicePixelRatioWatch(getCurrentZoom, redrawCanvas);
 
 function zoomIn() {
-  applyZoom(currentZoom + 0.15);
+  const center = getContainerCenterClientPoint();
+  if (center) {
+    applyZoomAnchored(currentZoom + 0.15, center.x, center.y);
+  } else {
+    applyZoom(currentZoom + 0.15);
+  }
 }
 
 function zoomOut() {
-  applyZoom(currentZoom - 0.15);
+  const center = getContainerCenterClientPoint();
+  if (center) {
+    applyZoomAnchored(currentZoom - 0.15, center.x, center.y);
+  } else {
+    applyZoom(currentZoom - 0.15);
+  }
 }
 
 function fitToScreen(forcefit?: boolean) {
@@ -115,16 +150,20 @@ document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => tog
 document.getElementById('toggleFullscreenBtn')?.addEventListener('click', () => toggleFullscreenMode());
 document.getElementById('canvasFullscreenTrigger')?.addEventListener('click', () => toggleFullscreenMode());
 
-// Mouse Wheel Zoom on canvas (coalesced to at most one resize+redraw per frame)
+// Mouse Wheel Zoom on canvas (coalesced to at most one resize+redraw per frame),
+// anchored to the cursor position so the point under the mouse stays fixed.
 let pendingWheelZoom: number | null = null;
+let pendingWheelAnchor: {x: number, y: number} | null = null;
 Canvas.c?.addEventListener('wheel', (e: WheelEvent) => {
   e.preventDefault();
   const base = pendingWheelZoom ?? currentZoom;
   pendingWheelZoom = base + (e.deltaY < 0 ? 0.15 : -0.15);
+  pendingWheelAnchor = {x: e.clientX, y: e.clientY};
   requestAnimationFrame(() => {
-    if (pendingWheelZoom !== null) {
-      applyZoom(pendingWheelZoom);
+    if (pendingWheelZoom !== null && pendingWheelAnchor !== null) {
+      applyZoomAnchored(pendingWheelZoom, pendingWheelAnchor.x, pendingWheelAnchor.y);
       pendingWheelZoom = null;
+      pendingWheelAnchor = null;
     }
   });
 }, { passive: false });

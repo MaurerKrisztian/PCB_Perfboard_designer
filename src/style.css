@@ -557,6 +557,8 @@ input[type="number"]:focus, input[type="text"]:focus {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   position: relative;
   min-height: 540px;
+  max-height: calc(100vh - 80px);
+  overflow: hidden;
 }
 
 .status-bar {
@@ -586,8 +588,8 @@ input[type="number"]:focus, input[type="text"]:focus {
 
 #canvas-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: safe center;
+  align-items: safe center;
   background-color: #0b0f19;
   border: 2px solid #1f2937;
   border-radius: 10px;
@@ -768,11 +770,11 @@ body.fullscreen-active .right-sidebar {
 }
 
 .app-layout.fullscreen-mode #canvas-container {
-  overflow: hidden !important;
+  overflow: auto !important;
   flex: 1 !important;
   display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  align-items: safe center !important;
+  justify-content: safe center !important;
   padding: 0 !important;
 }
 
