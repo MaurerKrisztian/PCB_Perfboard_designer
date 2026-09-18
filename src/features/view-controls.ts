@@ -1,4 +1,6 @@
 import {Canvas} from "../state/Canvas";
+import {applyCanvasResolution, startDevicePixelRatioWatch} from "./canvas-sizing";
+import {redrawCanvas} from "./draw-canvas";
 
 // Fullscreen Focus Mode & Board Zoom Management
 let currentZoom = 1.0;
@@ -6,21 +8,22 @@ let isFullscreenMode = false;
 let isSidebarVisible = true;
 let isFitMode = false;
 
+export function getCurrentZoom(): number {
+  return currentZoom;
+}
+
 function applyZoom(zoom: number) {
   currentZoom = Math.min(3.0, Math.max(0.2, zoom));
-  const wrapper = document.getElementById('canvasZoomWrapper');
-  if (wrapper) {
-    wrapper.style.transform = `scale(${currentZoom})`;
-  } else if (Canvas.c) {
-    Canvas.c.style.transformOrigin = 'center center';
-    Canvas.c.style.transform = `scale(${currentZoom})`;
-  }
+  applyCanvasResolution(currentZoom);
+  redrawCanvas();
   const zoomText = `${Math.round(currentZoom * 100)}%`;
   const text1 = document.getElementById('zoomLevelText');
   const text2 = document.getElementById('fsZoomText');
   if (text1) text1.innerText = zoomText;
   if (text2) text2.innerText = zoomText;
 }
+
+startDevicePixelRatioWatch(getCurrentZoom, redrawCanvas);
 
 function zoomIn() {
   applyZoom(currentZoom + 0.15);
@@ -43,8 +46,8 @@ function fitToScreen(forcefit?: boolean) {
   const rect = container.getBoundingClientRect();
   const availableWidth = rect.width - 20;
   const availableHeight = rect.height - 20;
-  const canvasW = Canvas.c.width;
-  const canvasH = Canvas.c.height;
+  const canvasW = Canvas.gridWidth;
+  const canvasH = Canvas.gridHeight;
 
   if (availableWidth <= 0 || availableHeight <= 0) return;
 
@@ -112,14 +115,18 @@ document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => tog
 document.getElementById('toggleFullscreenBtn')?.addEventListener('click', () => toggleFullscreenMode());
 document.getElementById('canvasFullscreenTrigger')?.addEventListener('click', () => toggleFullscreenMode());
 
-// Mouse Wheel Zoom on canvas
+// Mouse Wheel Zoom on canvas (coalesced to at most one resize+redraw per frame)
+let pendingWheelZoom: number | null = null;
 Canvas.c?.addEventListener('wheel', (e: WheelEvent) => {
   e.preventDefault();
-  if (e.deltaY < 0) {
-    zoomIn();
-  } else {
-    zoomOut();
-  }
+  const base = pendingWheelZoom ?? currentZoom;
+  pendingWheelZoom = base + (e.deltaY < 0 ? 0.15 : -0.15);
+  requestAnimationFrame(() => {
+    if (pendingWheelZoom !== null) {
+      applyZoom(pendingWheelZoom);
+      pendingWheelZoom = null;
+    }
+  });
 }, { passive: false });
 
 window.addEventListener('resize', () => {

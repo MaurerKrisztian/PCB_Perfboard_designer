@@ -9,6 +9,8 @@ import {Ic} from "../ic";
 import {unserialize} from "../../utils/serialization";
 import {StandardComponentState} from "../../state/StandardComponentState";
 import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
+import {applyCanvasResolution} from "../canvas-sizing";
+import {getCurrentZoom} from "../view-controls";
 
 const loadInput = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectBtn');
 const loadTrigger = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectTrigger');
@@ -78,8 +80,9 @@ export function deserializePlacedStandardComponent(data: any): PlacedStandardCom
 }
 
 export function loadProject(project: IProjectSave){
-  Canvas.c.width = project.canvas.width;
-  Canvas.c.height = project.canvas.height;
+  Canvas.gridWidth = project.canvas.width;
+  Canvas.gridHeight = project.canvas.height;
+  applyCanvasResolution(getCurrentZoom());
   DotState.dots = project.dots;
   LineState.lines = project.lines;
   if (project.ICs) {

@@ -53,7 +53,7 @@ export function getSaveJson(): IProjectSave {
   return {
     dots: DotState.dots,
     lines: LineState.lines,
-    canvas: { width: Canvas.c.width, height: Canvas.c.height },
+    canvas: { width: Canvas.gridWidth, height: Canvas.gridHeight },
     ICs: Ic.IC_CONTAINER || [],
     placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic)),
     placedStandardComponents: StandardComponentState.placedComponents.map(c => serializePlacedStandardComponent(c))

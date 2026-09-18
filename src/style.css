@@ -601,6 +601,7 @@ input[type="number"]:focus, input[type="text"]:focus {
   display: block;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
   border-radius: 4px;
+  transition: width 0.15s ease-out, height 0.15s ease-out;
 }
 
 /* Description Readout */
