@@ -12,6 +12,9 @@ Canvas.c.addEventListener('mousemove', function(e) {
   const x = (e.clientX - rect.left) * scaleX;
   const y = (e.clientY - rect.top) * scaleY;
 
+  const previousHoverDot = State.hoverDot;
+  const previousHoverLine = State.hoverLine;
+
   // Check if mouse is within a dot
   State.hoverDot = undefined;
   for(let i = 0; i < State.dots.length; i++) {
@@ -44,9 +47,10 @@ Canvas.c.addEventListener('mousemove', function(e) {
 
   if (State.isDraggingIc && State.selectedPlacedIc) {
     State.selectedPlacedIc.updatePosition(x, y);
+    redrawCanvas();
+  } else if (State.hoverDot !== previousHoverDot || State.hoverLine !== previousHoverLine) {
+    redrawCanvas();
   }
-
-  redrawCanvas();
 
   if(State.hoverDot && State.hoverDot.description){
     Utils.getSafeHtmlElement('dotDescription').innerText = State.hoverDot.description;
