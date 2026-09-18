@@ -2,6 +2,7 @@ import {State} from "../../state/State";
 import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
+import {resetCanvas} from "../reset-canvas";
 
 export const widthInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixWidth')
 export const heightInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixHeight')
@@ -28,3 +29,19 @@ export function createDotGrid(horizontalDotNumbers: number, verticalDotNumbers: 
     }
   }
 }
+
+// Grid Preset Buttons listener
+document.querySelectorAll('#gridPresets .preset-btn').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    const target = e.currentTarget as HTMLElement;
+    const w = target.getAttribute('data-w');
+    const h = target.getAttribute('data-h');
+    if (w && h) {
+      widthInput.value = w;
+      heightInput.value = h;
+      createDotGrid(parseInt(w), parseInt(h));
+      resetCanvas();
+      redrawCanvas();
+    }
+  });
+});
