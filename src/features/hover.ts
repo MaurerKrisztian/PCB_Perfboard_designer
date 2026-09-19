@@ -2,10 +2,26 @@ import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
 import {GridConfig} from "../state/GridConfig";
 import {IcState} from "../state/IcState";
+import {StandardComponentState} from "../state/StandardComponentState";
+import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
+
+function findHoveredComponentValue(x: number, y: number): string | undefined {
+  for (const component of StandardComponentState.placedComponents) {
+    if (component.value && component.containsPoint(x, y)) {
+      return `${component.getDefinition()?.name}: ${component.value}`;
+    }
+  }
+  for (const component of AdvancedComponentState.placedComponents) {
+    if (component.value && component.containsPoint(x, y)) {
+      return `${component.getDefinition()?.name}: ${component.value}`;
+    }
+  }
+  return undefined;
+}
 
 Canvas.c.addEventListener('mousemove', function(e) {
   const {x, y} = Canvas.toDrawingCoordinates(e);
@@ -53,7 +69,7 @@ Canvas.c.addEventListener('mousemove', function(e) {
   if(DotState.hoverDot && DotState.hoverDot.description){
     Utils.getSafeHtmlElement('dotDescription').innerText = DotState.hoverDot.description;
   } else {
-    Utils.getSafeHtmlElement('dotDescription').innerText = '';
+    Utils.getSafeHtmlElement('dotDescription').innerText = findHoveredComponentValue(x, y) || '';
   }
 });
 

@@ -68,7 +68,7 @@ function zoomOut() {
   }
 }
 
-function fitToScreen(forcefit?: boolean) {
+export function fitToScreen(forcefit?: boolean) {
   const fitBtn = document.getElementById('zoomFitBtn');
   if (!forcefit && isFitMode) {
     isFitMode = false;
@@ -88,7 +88,7 @@ function fitToScreen(forcefit?: boolean) {
 
   const scaleX = availableWidth / canvasW;
   const scaleY = availableHeight / canvasH;
-  const fitScale = Math.min(scaleX, scaleY);
+  const fitScale = Math.min(scaleX, scaleY) * 0.95;
   applyZoom(fitScale);
   isFitMode = true;
   if (fitBtn) { fitBtn.innerText = '✕ Reset'; fitBtn.className = 'btn-danger'; }

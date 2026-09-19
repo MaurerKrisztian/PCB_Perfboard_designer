@@ -174,7 +174,7 @@ body {
   flex-direction: column;
   gap: 0;
   background: transparent;
-  padding: 0;
+  padding: 1rem 0 0;
 }
 
 /* Sidebar scrollable container */
@@ -258,15 +258,65 @@ body {
 }
 
 .sidebar-divider {
-  height: 4px;
+  height: 8px;
   flex-shrink: 0;
 }
 
-/* Tool Mode Grid (2x2) */
+/* Extra breathing room + a visible line between top-level sidebar groups (vs. dividers within a group) */
+.sidebar-group-divider {
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-group-divider::after {
+  content: "";
+  width: 100%;
+  height: 1px;
+  background: var(--border-light);
+}
+
+/* Sidebar Groups (visually bundles several sidebar-sections under one label) */
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sidebar-group-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Tool Mode: plain (non-collapsible) content living directly in the Tools group */
+.tool-mode-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+}
+
 .tool-mode-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+/* Wire arm button - arms wire placement, matching how components/ICs are armed */
+.wire-arm-btn {
+  width: 100%;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
 }
 
 .tool-mode-grid .tool-mode-btn {
@@ -323,58 +373,6 @@ body {
   background: #38bdf8;
 }
 
-/* Color action buttons - compact grid */
-.color-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.color-action-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0.4rem 0.6rem;
-  font-size: 0.78rem;
-  border-radius: 8px;
-  background: #1a2332;
-  border: 1px solid var(--border-light);
-  color: var(--text-main);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.color-action-btn:hover {
-  background: #243044;
-  border-color: #4b5563;
-}
-
-.color-action-icon {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.color-action-add {
-  color: #06b6d4;
-  border-color: rgba(6, 182, 212, 0.25);
-}
-
-.color-action-add:hover {
-  background: rgba(6, 182, 212, 0.1);
-  border-color: rgba(6, 182, 212, 0.5);
-}
-
-.color-action-delete {
-  color: #f87171;
-  border-color: rgba(239, 68, 68, 0.25);
-}
-
-.color-action-delete:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.5);
-}
 
 /* Active color dot in section header */
 .active-color-dot {
@@ -508,6 +506,19 @@ button.btn-success:hover {
 .color-swatch:hover {
   transform: scale(1.15);
   border-color: #ffffff;
+}
+
+.color-swatch-add {
+  background: #1a2332;
+  border-style: dashed;
+  border-color: var(--border-light);
+  color: #38bdf8;
+  font-size: 14px;
+}
+
+.color-swatch-add:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
 }
 
 /* Inputs */
@@ -659,7 +670,7 @@ kbd {
 }
 
 /* Tool Mode & Gauge Selector Active States */
-.tool-mode-btn.active-mode, .gauge-btn.active-mode {
+.tool-mode-btn.active-mode, .gauge-btn.active-mode, .wire-arm-btn.active-mode, .btn-accent.active-mode {
   background: linear-gradient(135deg, #0284c7, #0369a1);
   border-color: #38bdf8;
   color: #ffffff;
@@ -702,6 +713,14 @@ kbd {
 
 .context-menu button.ctx-danger:hover {
   background-color: rgba(239, 68, 68, 0.2);
+}
+
+.context-menu button.led-color-rgb-btn {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.25), rgba(34, 197, 94, 0.25), rgba(59, 130, 246, 0.25));
+}
+
+.context-menu button.led-color-rgb-btn:hover {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.4), rgba(34, 197, 94, 0.4), rgba(59, 130, 246, 0.4));
 }
 
 /* Rainbow Hue Bar Slider */

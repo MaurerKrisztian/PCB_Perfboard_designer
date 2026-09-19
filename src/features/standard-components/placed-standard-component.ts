@@ -10,6 +10,7 @@ const HIT_TEST_TOLERANCE = 18;
 export class PlacedStandardComponent {
   public id: number = Math.random() * 100;
   public value?: string;
+  public color?: string;
 
   constructor(
     public definitionId: string,
@@ -25,7 +26,7 @@ export class PlacedStandardComponent {
     const def = this.getDefinition();
     if (!def) return;
     const isSelected = this === StandardComponentState.selectedPlacedComponent;
-    drawStandardComponentBody(this.startDot, this.endDot, def, {selected: isSelected});
+    drawStandardComponentBody(this.startDot, this.endDot, def, {selected: isSelected, value: this.value, color: this.color});
   }
 
   containsPoint(x: number, y: number): boolean {

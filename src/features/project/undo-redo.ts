@@ -2,6 +2,7 @@ import {HistoryState} from "../../state/HistoryState";
 import {LineState} from "../../state/LineState";
 import {IcState} from "../../state/IcState";
 import {StandardComponentState} from "../../state/StandardComponentState";
+import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {ShortcutRegistry} from "../shortcut-keys";
@@ -32,6 +33,13 @@ function applyChange(change: IChange, direction: "add" | "remove") {
     } else {
       const index = StandardComponentState.placedComponents.indexOf(change.component);
       if (index > -1) StandardComponentState.placedComponents.splice(index, 1);
+    }
+  } else if (change.kind === "advanced-component") {
+    if (direction === "add") {
+      AdvancedComponentState.placedComponents.push(change.component);
+    } else {
+      const index = AdvancedComponentState.placedComponents.indexOf(change.component);
+      if (index > -1) AdvancedComponentState.placedComponents.splice(index, 1);
     }
   }
 }

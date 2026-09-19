@@ -11,6 +11,10 @@ import {ILine} from "../interfaces/line.interface";
 import {addDescriptionToDot} from "./description";
 import {StandardComponentState} from "../state/StandardComponentState";
 import {PlacedStandardComponent} from "./standard-components/placed-standard-component";
+import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
+import {disarmWire} from "./wire";
+import {updateSelectionStatus} from "./selection-status";
 let isPanningBoard = false;
 let panStartX = 0;
 let panStartY = 0;
@@ -59,6 +63,16 @@ Canvas.c.addEventListener('mousedown', function(e) {
         redrawCanvas();
         return;
       }
+      const placedAdvancedComponentIndex = AdvancedComponentState.placedComponents.findIndex(c => c.containsPoint(x, y));
+      if (placedAdvancedComponentIndex > -1) {
+        const [removedComponent] = AdvancedComponentState.placedComponents.splice(placedAdvancedComponentIndex, 1);
+        AdvancedComponentState.selectedPlacedComponent = undefined;
+        HistoryState.changes.splice(HistoryState.changeIndex + 1);
+        HistoryState.changes.push({type: 'remove', kind: 'advanced-component', component: removedComponent});
+        HistoryState.changeIndex++;
+        redrawCanvas();
+        return;
+      }
       handleEraserClick(e);
       return;
     }
@@ -85,7 +99,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
       return;
     }
 
-    // Placing a new Standard Component from catalog (two-click span)
+    // Placing a new Standard Component from catalog (two-click span, stays armed for repeated placement)
     if (StandardComponentState.armedDefinitionId && DotState.hoverDot) {
       if (!StandardComponentState.pendingStartDot) {
         StandardComponentState.pendingStartDot = DotState.hoverDot;
@@ -100,19 +114,61 @@ Canvas.c.addEventListener('mousedown', function(e) {
         );
         StandardComponentState.placedComponents.push(instance);
         StandardComponentState.selectedPlacedComponent = instance;
-        StandardComponentState.armedDefinitionId = undefined;
-        StandardComponentState.pendingStartDot = undefined;
         HistoryState.changes.splice(HistoryState.changeIndex + 1);
         HistoryState.changes.push({type: 'add', kind: 'standard-component', component: instance});
         HistoryState.changeIndex++;
-        redrawCanvas();
       }
+      StandardComponentState.pendingStartDot = undefined;
+      redrawCanvas();
+      return;
+    }
+
+    // Placing a new Advanced (fixed-pin) Component from catalog: pins are rigid, so a
+    // single click anchors the component using the current armed rotation, matching IC placement.
+    if (AdvancedComponentState.armedDefinitionId && DotState.hoverDot) {
+      const instance = new PlacedAdvancedComponent(
+        AdvancedComponentState.armedDefinitionId,
+        DotState.hoverDot,
+        AdvancedComponentState.armedRotation
+      );
+      AdvancedComponentState.placedComponents.push(instance);
+      AdvancedComponentState.selectedPlacedComponent = instance;
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'add', kind: 'advanced-component', component: instance});
+      HistoryState.changeIndex++;
+      redrawCanvas();
+      return;
+    }
+
+    // Placing a new Wire (two-click span, stays armed for repeated placement)
+    if (ToolState.armedWire && DotState.hoverDot) {
+      if (!ToolState.wireStartDot) {
+        ToolState.wireStartDot = DotState.hoverDot;
+        redrawCanvas();
+        return;
+      }
+      if (ToolState.wireStartDot !== DotState.hoverDot) {
+        const newLine: ILine = {
+          start: ToolState.wireStartDot,
+          end: DotState.hoverDot,
+          color: ToolState.activeWireColor || "#3b82f6",
+          width: ToolState.selectedWireWidth || 4
+        };
+        LineState.lines.push(newLine);
+        HistoryState.changes.splice(HistoryState.changeIndex + 1);
+        HistoryState.changes.push({type: 'add', kind: 'line', line: newLine});
+        HistoryState.changeIndex++;
+        DotState.selectedDot = undefined;
+        LineState.selectedLine = newLine;
+      }
+      ToolState.wireStartDot = undefined;
+      redrawCanvas();
       return;
     }
 
     // Skip IC/Standard Component select & drag while actively wiring, so a click on a pin/terminal
     // dot connects a wire there instead of being swallowed as "select the parent component."
-    if (ToolState.activeToolMode !== 'wire') {
+    if (!ToolState.armedWire) {
       // Check hit on an existing placed IC on canvas (Enable Drag & Drop)
       const hitPlacedIc = IcState.placedIcs.find(ic => ic.containsPoint(x, y));
       if (hitPlacedIc) {
@@ -144,6 +200,23 @@ Canvas.c.addEventListener('mousedown', function(e) {
       // Deselect placed Standard Component if clicking on empty space
       if (StandardComponentState.selectedPlacedComponent) {
         StandardComponentState.selectedPlacedComponent = undefined;
+        redrawCanvas();
+        // Fall through to normal dot/line selection
+      }
+
+      // Check hit on an existing placed Advanced Component (select only, no drag)
+      const hitPlacedAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(x, y));
+      if (hitPlacedAdvancedComponent) {
+        AdvancedComponentState.selectedPlacedComponent = hitPlacedAdvancedComponent;
+        DotState.selectedDot = undefined;
+        LineState.selectedLine = undefined;
+        redrawCanvas();
+        return;
+      }
+
+      // Deselect placed Advanced Component if clicking on empty space
+      if (AdvancedComponentState.selectedPlacedComponent) {
+        AdvancedComponentState.selectedPlacedComponent = undefined;
         redrawCanvas();
         // Fall through to normal dot/line selection
       }
@@ -182,6 +255,16 @@ Canvas.c.addEventListener('contextmenu', function(e) {
   const hitComponent = StandardComponentState.placedComponents.find(c => c.containsPoint(x, y));
   if (hitComponent) {
     StandardComponentState.selectedPlacedComponent = hitComponent;
+    DotState.selectedDot = undefined;
+    LineState.selectedLine = undefined;
+    redrawCanvas();
+    showContextMenu(e.clientX, e.clientY);
+    return;
+  }
+
+  const hitAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(x, y));
+  if (hitAdvancedComponent) {
+    AdvancedComponentState.selectedPlacedComponent = hitAdvancedComponent;
     DotState.selectedDot = undefined;
     LineState.selectedLine = undefined;
     redrawCanvas();
@@ -247,40 +330,36 @@ export function hideContextMenu() {
   if (menu) {
     menu.style.display = 'none';
   }
+  hideLedColorMenu();
+}
+
+export function showLedColorMenu() {
+  const menu = document.getElementById('ledColorMenu');
+  const contextMenu = document.getElementById('contextMenu');
+  if (!menu) return;
+  if (contextMenu) {
+    // Reuse the position the right-click context menu was already shown at.
+    menu.style.left = contextMenu.style.left;
+    menu.style.top = contextMenu.style.top;
+    contextMenu.style.display = 'none';
+  }
+  menu.style.display = 'block';
+}
+
+export function hideLedColorMenu() {
+  const menu = document.getElementById('ledColorMenu');
+  if (menu) {
+    menu.style.display = 'none';
+  }
 }
 
 window.addEventListener('click', (e) => {
   const menu = document.getElementById('contextMenu');
-  if (menu && !menu.contains(e.target as Node)) {
+  const ledColorMenu = document.getElementById('ledColorMenu');
+  if (menu && !menu.contains(e.target as Node) && ledColorMenu && !ledColorMenu.contains(e.target as Node)) {
     hideContextMenu();
   }
 });
-
-function addNewLineIfNeeded(){
-    if (ToolState.activeToolMode !== 'wire') {
-      return;
-    }
-    if (!DotState.hoverDot){
-      return;
-    }
-    if(DotState.selectedDot && DotState.selectedDot != DotState.hoverDot){
-      const newLine: ILine = {
-        start: DotState.selectedDot, 
-        end: DotState.hoverDot, 
-        color: ToolState.activeWireColor || "#3b82f6",
-        width: ToolState.selectedWireWidth || 4
-      };
-      LineState.lines.push(newLine);
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'add', kind: 'line', line: newLine});
-      HistoryState.changeIndex++;
-
-      // Reset selection
-      DotState.selectedDot = undefined;
-      LineState.selectedLine = newLine;
-      redrawCanvas();
-    }
-}
 
 function selectDot(){
   if (!DotState.hoverDot){
@@ -327,7 +406,6 @@ export function selectLine(event: MouseEvent) {
 }
 
 function setSelection(event) {
-  addNewLineIfNeeded();
   selectDot();
   selectLine(event);
 }
@@ -341,6 +419,10 @@ ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event:
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   StandardComponentState.selectedPlacedComponent = undefined;
+  AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.selectedPlacedComponent = undefined;
+  disarmWire();
   hideContextMenu();
+  updateSelectionStatus();
   redrawCanvas();
 }});

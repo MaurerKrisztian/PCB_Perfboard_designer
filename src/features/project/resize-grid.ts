@@ -6,7 +6,8 @@ import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
 import {resetCanvas} from "../reset-canvas";
 import {applyCanvasResolution} from "../canvas-sizing";
-import {getCurrentZoom} from "../view-controls";
+import {getCurrentZoom, fitToScreen} from "../view-controls";
+import {GRID_PRESETS} from "./grid-presets";
 
 export const widthInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixWidth')
 export const heightInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixHeight')
@@ -20,6 +21,7 @@ resizeBtn.addEventListener('click', function() {
   // Clear all lines and redraw the canvas
   LineState.lines = [];
   redrawCanvas();
+  fitToScreen(true);
 });
 
 export function createDotGrid(horizontalDotNumbers: number, verticalDotNumbers: number) {
@@ -35,18 +37,19 @@ export function createDotGrid(horizontalDotNumbers: number, verticalDotNumbers: 
   }
 }
 
-// Grid Preset Buttons listener
-document.querySelectorAll('#gridPresets .preset-btn').forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    const target = e.currentTarget as HTMLElement;
-    const w = target.getAttribute('data-w');
-    const h = target.getAttribute('data-h');
-    if (w && h) {
-      widthInput.value = w;
-      heightInput.value = h;
-      createDotGrid(parseInt(w), parseInt(h));
-      resetCanvas();
-      redrawCanvas();
-    }
+// Grid Preset Buttons
+const gridPresetsContainer = Utils.getSafeHtmlElement('gridPresets');
+for (const preset of GRID_PRESETS) {
+  const btn = document.createElement('button');
+  btn.className = 'preset-btn';
+  btn.textContent = preset.label;
+  btn.addEventListener('click', () => {
+    widthInput.value = String(preset.w);
+    heightInput.value = String(preset.h);
+    createDotGrid(preset.w, preset.h);
+    resetCanvas();
+    redrawCanvas();
+    fitToScreen(true);
   });
-});
+  gridPresetsContainer.appendChild(btn);
+}

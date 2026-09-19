@@ -9,8 +9,12 @@ import {Ic} from "../ic";
 import {unserialize} from "../../utils/serialization";
 import {StandardComponentState} from "../../state/StandardComponentState";
 import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
+import {AdvancedComponentState} from "../../state/AdvancedComponentState";
+import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 import {applyCanvasResolution} from "../canvas-sizing";
 import {getCurrentZoom} from "../view-controls";
+import {disarmWire} from "../wire";
+import {updateSelectionStatus} from "../selection-status";
 
 const loadInput = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectBtn');
 const loadTrigger = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectTrigger');
@@ -76,6 +80,26 @@ export function deserializePlacedStandardComponent(data: any): PlacedStandardCom
   if (data.value) {
     component.value = String(data.value);
   }
+  if (data.color) {
+    component.color = String(data.color);
+  }
+  return component;
+}
+
+export function deserializePlacedAdvancedComponent(data: any): PlacedAdvancedComponent | null {
+  if (!data || !data.definitionId) return null;
+  const anchorDot = DotState.dots.find(d => d.x === data.anchorDotX && d.y === data.anchorDotY);
+  if (!anchorDot) return null;
+
+  const parsedRotation = Number(data.rotationAngle);
+  const rotationAngle = ([0, 90, 180, 270].indexOf(parsedRotation) > -1 ? parsedRotation : 0) as 0 | 90 | 180 | 270;
+  const component = new PlacedAdvancedComponent(String(data.definitionId), anchorDot, rotationAngle);
+  if (data.id) {
+    component.id = Number(data.id);
+  }
+  if (data.value) {
+    component.value = String(data.value);
+  }
   return component;
 }
 
@@ -101,6 +125,13 @@ export function loadProject(project: IProjectSave){
   } else {
     StandardComponentState.placedComponents = [];
   }
+  if (project.placedAdvancedComponents) {
+    AdvancedComponentState.placedComponents = project.placedAdvancedComponents
+      .map(data => deserializePlacedAdvancedComponent(data))
+      .filter(c => c !== null) as PlacedAdvancedComponent[];
+  } else {
+    AdvancedComponentState.placedComponents = [];
+  }
   IcState.selectedPlacedIc = undefined;
   DotState.selectedDot = undefined;
   LineState.selectedLine = undefined;
@@ -108,5 +139,9 @@ export function loadProject(project: IProjectSave){
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   StandardComponentState.selectedPlacedComponent = undefined;
+  AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.selectedPlacedComponent = undefined;
+  disarmWire();
+  updateSelectionStatus();
   redrawCanvas();
 }

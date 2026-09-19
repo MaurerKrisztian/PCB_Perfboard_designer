@@ -6,6 +6,8 @@ import {ShortcutRegistry} from "./shortcut-keys";
 import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
 import {StandardComponentState} from "../state/StandardComponentState";
+import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {disarmWire} from "./wire";
 
 
 export class Ic{
@@ -36,8 +38,8 @@ export class Ic{
 
   static showICs(){
     Utils.getSafeHtmlElement("ic-items").innerHTML = Ic.IC_CONTAINER.map((item)=>{
-      const deleteBtn = item.isCustom 
-        ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>` 
+      const deleteBtn = item.isCustom
+        ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>`
         : '';
       return `<button class="btn btn-accent" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick='selectIc("${item.id}")'>📦 ${item.name}${deleteBtn}</button>`;
     }).join(" ");
@@ -230,6 +232,50 @@ export class Ic{
     Canvas.ctx.restore();
   }
 
+  getRealPinPositions(): {pin: number, x: number, y: number}[] {
+    if (!this.topLeftDot) return [];
+    const positions: {pin: number, x: number, y: number}[] = [];
+
+    if (this.rotationAngle === 0 || this.rotationAngle === 180) {
+      const pinsPerSide = this.heightPin;
+      const leftX = this.topLeftDot.x;
+      const rightX = this.topLeftDot.x + 50 * (this.widthPin - 1);
+      for (let i = 0; i < pinsPerSide; i++) {
+        const py = this.topLeftDot.y + i * 50;
+        const leftPinNum = this.rotationAngle === 0 ? (i + 1) : (pinsPerSide * 2 - i);
+        const rightPinNum = this.rotationAngle === 0 ? (pinsPerSide * 2 - i) : (i + 1);
+        positions.push({pin: leftPinNum, x: leftX, y: py});
+        positions.push({pin: rightPinNum, x: rightX, y: py});
+      }
+    } else {
+      const pinsPerSide = this.widthPin;
+      const topY = this.topLeftDot.y;
+      const bottomY = this.topLeftDot.y + 50 * (this.heightPin - 1);
+      for (let i = 0; i < pinsPerSide; i++) {
+        const px = this.topLeftDot.x + i * 50;
+        const topPinNum = this.rotationAngle === 90 ? (i + 1) : (pinsPerSide * 2 - i);
+        const bottomPinNum = this.rotationAngle === 90 ? (pinsPerSide * 2 - i) : (i + 1);
+        positions.push({pin: topPinNum, x: px, y: topY});
+        positions.push({pin: bottomPinNum, x: px, y: bottomY});
+      }
+    }
+
+    return positions;
+  }
+
+  drawPinMarkers() {
+    const positions = this.getRealPinPositions();
+    Canvas.ctx.save();
+    Canvas.ctx.strokeStyle = "#38bdf8";
+    Canvas.ctx.lineWidth = 1.5;
+    for (const {x, y} of positions) {
+      Canvas.ctx.beginPath();
+      Canvas.ctx.arc(x, y, 5, 0, Math.PI * 2);
+      Canvas.ctx.stroke();
+    }
+    Canvas.ctx.restore();
+  }
+
   drawLabel(){
     if (!this.topLeftDot) return;
     const isSelected = this === IcState.selectedPlacedIc;
@@ -261,6 +307,7 @@ export class Ic{
     Canvas.ctx.fillText(this.name, centerX, centerY + 4);
     Canvas.ctx.restore();
 
+    this.drawPinMarkers();
     this.drawPinLabels();
   }
 
@@ -397,6 +444,8 @@ export function selectIc(id: number | string){
   IcState.selectedIc = ic;
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
+  AdvancedComponentState.armedDefinitionId = undefined;
+  disarmWire();
 }
 
 export function rotateSelectedIc() {
@@ -405,8 +454,18 @@ export function rotateSelectedIc() {
     redrawCanvas();
     return;
   }
+  if (AdvancedComponentState.selectedPlacedComponent) {
+    AdvancedComponentState.selectedPlacedComponent.rotate();
+    redrawCanvas();
+    return;
+  }
   if (IcState.selectedIc) {
     IcState.selectedIc.rotate();
+    redrawCanvas();
+    return;
+  }
+  if (AdvancedComponentState.armedDefinitionId) {
+    AdvancedComponentState.armedRotation = ((AdvancedComponentState.armedRotation + 90) % 360) as 0 | 90 | 180 | 270;
     redrawCanvas();
     return;
   }
@@ -415,6 +474,13 @@ export function rotateSelectedIc() {
     if (hoveredIc) {
       hoveredIc.rotate();
       IcState.selectedPlacedIc = hoveredIc;
+      redrawCanvas();
+      return;
+    }
+    const hoveredAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(DotState.hoverDot!.x, DotState.hoverDot!.y));
+    if (hoveredAdvancedComponent) {
+      hoveredAdvancedComponent.rotate();
+      AdvancedComponentState.selectedPlacedComponent = hoveredAdvancedComponent;
       redrawCanvas();
       return;
     }
