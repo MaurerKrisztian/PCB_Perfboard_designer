@@ -1,4 +1,5 @@
-import {State} from "../state/State";
+import {DotState} from "../state/DotState";
+import {ToolState} from "../state/ToolState";
 import {redrawCanvas} from "./draw-canvas";
 import {Utils} from "../utils/utils";
 
@@ -7,24 +8,24 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('changeDotColorBtn').addEventListene
 });
 
 export function setDotColor(color: string){
-  if (State.selectedDot){
-    State.selectedDot.color = color;
+  if (DotState.selectedDot){
+    DotState.selectedDot.color = color;
     redrawCanvas();
   }
 }
 
 export function changeSelectedDotColor(){
-  if (!State.selectedDot){
+  if (!DotState.selectedDot){
     return;
   }
   const colorPicker = Utils.getSafeHtmlElement<HTMLInputElement>('colorPicker');
-  colorPicker.value = Utils.normalizeColor(State.selectedDot.color, "#a4a0a0");
+  colorPicker.value = Utils.normalizeColor(DotState.selectedDot.color, "#a4a0a0");
   colorPicker.oninput = colorPicker.onchange = function() {
-    State.activeWireColor = colorPicker.value;
+    ToolState.activeWireColor = colorPicker.value;
     const badge = document.getElementById('activeColorBadge');
     if (badge) badge.style.background = colorPicker.value;
-    if(State.selectedDot){
-      State.selectedDot.color = colorPicker.value;
+    if(DotState.selectedDot){
+      DotState.selectedDot.color = colorPicker.value;
       redrawCanvas();
     }
   };

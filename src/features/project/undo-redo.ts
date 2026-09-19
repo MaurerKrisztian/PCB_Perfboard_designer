@@ -1,4 +1,5 @@
-import {State} from "../../state/State";
+import {HistoryState} from "../../state/HistoryState";
+import {LineState} from "../../state/LineState";
 import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {ShortcutRegistry} from "../shortcut-keys";
@@ -7,19 +8,19 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('backBtn').addEventListener('click',
 undo();
 });
 export function undo(){
-  if(State.changeIndex >= 0){
-    const change = State.changes[State.changeIndex];
+  if(HistoryState.changeIndex >= 0){
+    const change = HistoryState.changes[HistoryState.changeIndex];
     if(change.type == 'add'){
-      for(let i = 0; i < State.lines.length; i++) {
-        if(State.lines[i].start == change.line.start && State.lines[i].end == change.line.end){
-          State.lines.splice(i, 1);
+      for(let i = 0; i < LineState.lines.length; i++) {
+        if(LineState.lines[i].start == change.line.start && LineState.lines[i].end == change.line.end){
+          LineState.lines.splice(i, 1);
           break;
         }
       }
     } else if(change.type == 'remove'){
-      State.lines.push(change.line);
+      LineState.lines.push(change.line);
     }
-    State.changeIndex--;
+    HistoryState.changeIndex--;
     redrawCanvas();
   }
 }
@@ -30,18 +31,18 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('forwardBtn').addEventListener('clic
 });
 
 export function redo(){
-  if(State.changeIndex < State.changes.length - 1){
-    State.changeIndex++;
-    const change = State.changes[State.changeIndex];
+  if(HistoryState.changeIndex < HistoryState.changes.length - 1){
+    HistoryState.changeIndex++;
+    const change = HistoryState.changes[HistoryState.changeIndex];
     if (change == undefined){
       return;
     }
     if(change.type == 'add'){
-      State.lines.push(change.line);
+      LineState.lines.push(change.line);
     } else if(change.type == 'remove'){
-      for(let i = 0; i < State.lines.length; i++) {
-        if(State.lines[i].start == change.line.start && State.lines[i].end == change.line.end){
-          State.lines.splice(i, 1);
+      for(let i = 0; i < LineState.lines.length; i++) {
+        if(LineState.lines[i].start == change.line.start && LineState.lines[i].end == change.line.end){
+          LineState.lines.splice(i, 1);
           break;
         }
       }

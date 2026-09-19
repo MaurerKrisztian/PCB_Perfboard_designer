@@ -1,5 +1,6 @@
 import {Canvas} from "../state/Canvas";
-import {State} from "../state/State";
+import {DotState} from "../state/DotState";
+import {IcState} from "../state/IcState";
 import {IDot} from "../interfaces/dot.interface";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {Utils} from "../utils/utils";
@@ -84,7 +85,7 @@ export class Ic{
   updatePosition(x: number, y: number){
     let minDistance: number | null = null;
     let minDot: IDot | null = null;
-    for (const dot of State.dots) {
+    for (const dot of DotState.dots) {
       const distance = this.calculateDistance(dot.x, dot.y, x, y);
       if (minDistance === null || distance < minDistance) {
         minDistance = distance;
@@ -97,7 +98,7 @@ export class Ic{
   drawBody(){
     if (!this.topLeftDot) return;
     Canvas.ctx.beginPath();
-    const isSelected = this === State.selectedPlacedIc;
+    const isSelected = this === IcState.selectedPlacedIc;
     
     Canvas.ctx.fillStyle = isSelected ? "rgba(30,58,138,0.9)" : "rgba(17,24,39,0.85)";
     Canvas.ctx.strokeStyle = isSelected ? "#38bdf8" : "#475569";
@@ -230,7 +231,7 @@ export class Ic{
 
   drawLabel(){
     if (!this.topLeftDot) return;
-    const isSelected = this === State.selectedPlacedIc;
+    const isSelected = this === IcState.selectedPlacedIc;
     const w = 50 * (this.widthPin - 1);
     const h = 50 * (this.heightPin - 1);
     const centerX = this.topLeftDot.x + (w / 2);
@@ -392,25 +393,25 @@ export function selectIc(id: number | string){
     console.error(`Ic with id: ${id} not found`);
     return;
   }
-  State.selectedIc = ic;
+  IcState.selectedIc = ic;
 }
 
 export function rotateSelectedIc() {
-  if (State.selectedPlacedIc) {
-    State.selectedPlacedIc.rotate();
+  if (IcState.selectedPlacedIc) {
+    IcState.selectedPlacedIc.rotate();
     redrawCanvas();
     return;
   }
-  if (State.selectedIc) {
-    State.selectedIc.rotate();
+  if (IcState.selectedIc) {
+    IcState.selectedIc.rotate();
     redrawCanvas();
     return;
   }
-  if (State.hoverDot) {
-    const hoveredIc = State.placedIcs.find(ic => ic.containsPoint(State.hoverDot!.x, State.hoverDot!.y));
+  if (DotState.hoverDot) {
+    const hoveredIc = IcState.placedIcs.find(ic => ic.containsPoint(DotState.hoverDot!.x, DotState.hoverDot!.y));
     if (hoveredIc) {
       hoveredIc.rotate();
-      State.selectedPlacedIc = hoveredIc;
+      IcState.selectedPlacedIc = hoveredIc;
       redrawCanvas();
       return;
     }

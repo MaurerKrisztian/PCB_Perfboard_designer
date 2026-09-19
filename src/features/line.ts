@@ -1,4 +1,8 @@
-import {State} from "../state/State";
+import {LineState} from "../state/LineState";
+import {ToolState} from "../state/ToolState";
+import {IcState} from "../state/IcState";
+import {HistoryState} from "../state/HistoryState";
+import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
 import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
@@ -15,24 +19,24 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('deleteLineBtn').addEventListener('c
 });
 
 export function setLineColor(color: string){
-  if (State.selectedLine){
-    State.selectedLine.color = color;
+  if (LineState.selectedLine){
+    LineState.selectedLine.color = color;
     redrawCanvas();
   }
 }
 
 function addColorToSelectedLine(){
-  if (!State.selectedLine) {
+  if (!LineState.selectedLine) {
     return;
   }
   const colorPicker = Utils.getSafeHtmlElement<HTMLInputElement>('colorPicker');
-  colorPicker.value = Utils.normalizeColor(State.selectedLine.color, "#777676");
+  colorPicker.value = Utils.normalizeColor(LineState.selectedLine.color, "#777676");
   colorPicker.oninput = colorPicker.onchange = function() {
-    State.activeWireColor = colorPicker.value;
+    ToolState.activeWireColor = colorPicker.value;
     const badge = document.getElementById('activeColorBadge');
     if (badge) badge.style.background = colorPicker.value;
-    if(State.selectedLine){
-      State.selectedLine.color = colorPicker.value;
+    if(LineState.selectedLine){
+      LineState.selectedLine.color = colorPicker.value;
       redrawCanvas();
     }
   };
@@ -40,33 +44,33 @@ function addColorToSelectedLine(){
 }
 
 export function deleteLine(){
-  if (State.selectedPlacedIc) {
-    const index = State.placedIcs.indexOf(State.selectedPlacedIc);
+  if (IcState.selectedPlacedIc) {
+    const index = IcState.placedIcs.indexOf(IcState.selectedPlacedIc);
     if (index > -1) {
-      State.placedIcs.splice(index, 1);
-      State.selectedPlacedIc = undefined;
+      IcState.placedIcs.splice(index, 1);
+      IcState.selectedPlacedIc = undefined;
       redrawCanvas();
       return;
     }
   }
-  if(State.selectedLine) {
-    const index = State.lines.indexOf(State.selectedLine);
+  if(LineState.selectedLine) {
+    const index = LineState.lines.indexOf(LineState.selectedLine);
     if(index > -1){
       // Store change
-      State.changes.splice(State.changeIndex + 1);
-      State.changes.push({type: 'remove', line: State.selectedLine});
-      State.changeIndex++;
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'remove', line: LineState.selectedLine});
+      HistoryState.changeIndex++;
       // Remove line
-      State.lines.splice(index, 1);
-      State.selectedLine = undefined;
+      LineState.lines.splice(index, 1);
+      LineState.selectedLine = undefined;
       redrawCanvas();
       return;
     }
   }
-  if (State.selectedDot) {
-    State.selectedDot.color = "#a4a0a0";
-    State.selectedDot.description = undefined;
-    State.selectedDot = undefined;
+  if (DotState.selectedDot) {
+    DotState.selectedDot.color = "#a4a0a0";
+    DotState.selectedDot.description = undefined;
+    DotState.selectedDot = undefined;
     redrawCanvas();
   }
 }

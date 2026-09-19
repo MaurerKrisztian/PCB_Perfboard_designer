@@ -1,33 +1,35 @@
 import {resetCanvas} from "./reset-canvas";
-import {State} from "../state/State";
+import {GridConfig} from "../state/GridConfig";
+import {DotState} from "../state/DotState";
+import {LineState} from "../state/LineState";
+import {IcState} from "../state/IcState";
 import {Canvas} from "../state/Canvas";
-import {Ic} from "./ic";
 import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
 
 function drawDot(dot: IDot){
   Canvas.ctx.beginPath();
-  Canvas.ctx.arc(dot.x, dot.y, State.dotRadius, 0, Math.PI*2);
+  Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius, 0, Math.PI*2);
   Canvas.ctx.fillStyle = dot.color || "#a4a0a0";
   Canvas.ctx.fill();
 
-  if (dot === State.selectedDot) {
+  if (dot === DotState.selectedDot) {
     // Outer glowing selection ring
     Canvas.ctx.beginPath();
-    Canvas.ctx.arc(dot.x, dot.y, State.dotRadius + 4, 0, Math.PI * 2);
+    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 4, 0, Math.PI * 2);
     Canvas.ctx.strokeStyle = "#38bdf8";
     Canvas.ctx.lineWidth = 3;
     Canvas.ctx.stroke();
 
     // Inner ring marker
     Canvas.ctx.beginPath();
-    Canvas.ctx.arc(dot.x, dot.y, State.dotRadius + 1, 0, Math.PI * 2);
+    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 1, 0, Math.PI * 2);
     Canvas.ctx.strokeStyle = "#ffffff";
     Canvas.ctx.lineWidth = 1.5;
     Canvas.ctx.stroke();
-  } else if (dot === State.hoverDot) {
+  } else if (dot === DotState.hoverDot) {
     Canvas.ctx.beginPath();
-    Canvas.ctx.arc(dot.x, dot.y, State.dotRadius + 3, 0, Math.PI * 2);
+    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 3, 0, Math.PI * 2);
     Canvas.ctx.strokeStyle = "#94a3b8";
     Canvas.ctx.lineWidth = 2;
     Canvas.ctx.stroke();
@@ -39,10 +41,10 @@ function drawDot(dot: IDot){
     Canvas.ctx.font = "10px Inter, Arial";
     Canvas.ctx.textAlign = "center";
     Canvas.ctx.fillStyle = dot.color || "#38bdf8";
-    if (dot === State.hoverDot) {
-      Canvas.ctx.fillText(dot.description, dot.x, dot.y + State.dotRadius + 12);
+    if (dot === DotState.hoverDot) {
+      Canvas.ctx.fillText(dot.description, dot.x, dot.y + GridConfig.dotRadius + 12);
     } else {
-      Canvas.ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + State.dotRadius + 12);
+      Canvas.ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + GridConfig.dotRadius + 12);
     }
   }
 }
@@ -51,7 +53,7 @@ function drawLine(line: ILine){
   const baseWidth = line.width || 4;
 
   // Selected line glowing highlight & terminal node handles
-  if (line === State.selectedLine) {
+  if (line === LineState.selectedLine) {
     // Outer selection glow aura
     Canvas.ctx.beginPath();
     Canvas.ctx.moveTo(line.start.x, line.start.y);
@@ -67,7 +69,7 @@ function drawLine(line: ILine){
     Canvas.ctx.arc(line.end.x, line.end.y, baseWidth + 3, 0, Math.PI * 2);
     Canvas.ctx.fillStyle = "#38bdf8";
     Canvas.ctx.fill();
-  } else if (line === State.hoverLine) {
+  } else if (line === LineState.hoverLine) {
     Canvas.ctx.beginPath();
     Canvas.ctx.moveTo(line.start.x, line.start.y);
     Canvas.ctx.lineTo(line.end.x, line.end.y);
@@ -88,10 +90,10 @@ function drawLine(line: ILine){
 }
 
 function drawIcPlacementPreview() {
-  if (!State.selectedIc || !State.hoverDot) return;
-  const targetDot = State.hoverDot;
-  const w = 50 * (State.selectedIc.widthPin - 1);
-  const h = 50 * (State.selectedIc.heightPin - 1);
+  if (!IcState.selectedIc || !DotState.hoverDot) return;
+  const targetDot = DotState.hoverDot;
+  const w = 50 * (IcState.selectedIc.widthPin - 1);
+  const h = 50 * (IcState.selectedIc.heightPin - 1);
 
   Canvas.ctx.save();
   Canvas.ctx.beginPath();
@@ -109,7 +111,7 @@ function drawIcPlacementPreview() {
   Canvas.ctx.fillStyle = "#ffffff";
   Canvas.ctx.font = "bold 11px Inter, Arial";
   Canvas.ctx.textAlign = "center";
-  Canvas.ctx.fillText(`➕ Place ${State.selectedIc.name}`, targetDot.x + (w / 2), targetDot.y + (h / 2) + 4);
+  Canvas.ctx.fillText(`➕ Place ${IcState.selectedIc.name}`, targetDot.x + (w / 2), targetDot.y + (h / 2) + 4);
 
   Canvas.ctx.restore();
 }
@@ -117,19 +119,19 @@ function drawIcPlacementPreview() {
 export function redrawCanvas() {
   resetCanvas();
   // 1. Draw IC chip bodies
-  for (const ic of State.placedIcs) {
+  for (const ic of IcState.placedIcs) {
     ic.drawBody();
   }
   // 2. Draw grid dots
-  for (let i = 0; i < State.dots.length; i++) {
-    drawDot(State.dots[i]);
+  for (let i = 0; i < DotState.dots.length; i++) {
+    drawDot(DotState.dots[i]);
   }
   // 3. Draw wires
-  for (let i = 0; i < State.lines.length; i++) {
-    drawLine(State.lines[i]);
+  for (let i = 0; i < LineState.lines.length; i++) {
+    drawLine(LineState.lines[i]);
   }
   // 4. Draw IC text badges on top of everything
-  for (const ic of State.placedIcs) {
+  for (const ic of IcState.placedIcs) {
     ic.drawLabel();
   }
   drawIcPlacementPreview();
