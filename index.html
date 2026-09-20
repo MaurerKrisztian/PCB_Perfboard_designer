@@ -7,8 +7,8 @@
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
 
     <title>Perfboard Designer | Virtual PCB Prototyping</title>
-  <script type="module" crossorigin src="./assets/index.38bd93ef.js"></script>
-  <link rel="stylesheet" href="./assets/index.c9974afb.css">
+  <script type="module" crossorigin src="./assets/index.c47eb1a8.js"></script>
+  <link rel="stylesheet" href="./assets/index.b6e7bd58.css">
 </head>
 
 <body>
@@ -248,6 +248,20 @@
         </div>
       </div>
 
+      <div class="sidebar-divider"></div>
+
+      <!-- Standard Components Container -->
+      <div class="sidebar-section" id="standard-components">
+        <div class="section-title" data-collapse="standardComponentsSection">
+          <span class="section-icon">🧩</span>
+          <span>Standard Components</span>
+          <span class="collapse-chevron">▾</span>
+        </div>
+        <div class="section-body" id="standardComponentsSection">
+          <div id="standard-components-items" class="catalog-items"></div>
+        </div>
+      </div>
+
     </aside>
 
     <!-- Center Workspace: Canvas Viewport -->
@@ -266,8 +280,8 @@
         </div>
       </div>
 
-      <div id="canvas-container" style="overflow:auto; flex:1; display:flex; justify-content:center; align-items:center; width:100%; height:100%; min-height:400px; padding:1rem;">
-        <div id="canvasZoomWrapper" style="display:inline-block; transform-origin: center center; transition: transform 0.15s ease-out;">
+      <div id="canvas-container" style="flex:1; width:100%; height:100%; min-height:400px; padding:1rem;">
+        <div id="canvasZoomWrapper" style="display:inline-block;">
           <canvas id="myCanvas" width="500" height="500"></canvas>
         </div>
       </div>
@@ -290,6 +304,7 @@
     <button id="ctxRotateBtn">🔄 Rotate Component</button>
     <button id="ctxColorBtn">🎨 Change Color</button>
     <button id="ctxNoteBtn">📝 Add/Edit Note</button>
+    <button id="ctxValueBtn">🔢 Set Value</button>
     <button id="ctxDeleteBtn" class="ctx-danger">🗑 Delete Item</button>
   </div>
 
