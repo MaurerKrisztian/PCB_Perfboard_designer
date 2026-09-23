@@ -7,7 +7,7 @@ export interface ComponentDefinition {
 }
 
 export function getIconPath(def: ComponentDefinition): string {
-  return def.iconPath ?? `/icons/components/${def.id}.svg`;
+  return def.iconPath ?? `icons/components/${def.id}.svg`;
 }
 
 export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
