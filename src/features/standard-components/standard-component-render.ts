@@ -132,6 +132,7 @@ const LED_SOLID_COLORS: Record<string, string> = {
   red: "#ef4444",
   green: "#22c55e",
   blue: "#3b82f6",
+  yellow: "#facc15",
 };
 const LED_RGB_STRIPE_COLORS = ["#ef4444", "#22c55e", "#3b82f6"];
 

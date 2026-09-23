@@ -99,6 +99,13 @@ export function drawAdvancedComponentBody(
     Canvas.ctx.stroke();
   }
 
+  // rect measures the body box *after* rotation, so at 90/270 its width and height are
+  // swapped relative to the artwork. Size the icon against the unrotated box, then turn it
+  // into place below - sizing it against rect instead squashes a wide part into a tall box.
+  const quarterTurned = rotationAngle === 90 || rotationAngle === 270;
+  const boxW = quarterTurned ? rect.h : rect.w;
+  const boxH = quarterTurned ? rect.w : rect.h;
+
   let iconW: number;
   let iconH: number;
   if (def.iconSize) {
@@ -107,20 +114,26 @@ export function drawAdvancedComponentBody(
     // Stretch to exactly fill the body box, rather than preserving the icon's native aspect
     // ratio - lets a definition's bodyOutline shape the part's proportions independently of
     // the source artwork (e.g. a MOSFET stretched a bit longer/thinner than its icon file).
-    iconW = rect.w;
-    iconH = rect.h;
+    iconW = boxW;
+    iconH = boxH;
   } else if (iconLoaded && icon.img.naturalWidth && icon.img.naturalHeight) {
     // Fit the icon's real aspect ratio inside the body box instead of forcing it into a
     // square, so parts with a non-square icon (e.g. a wide MOSFET footprint) fill the box.
     const fill = 0.9;
-    const scale = Math.min((rect.w * fill) / icon.img.naturalWidth, (rect.h * fill) / icon.img.naturalHeight);
+    const scale = Math.min((boxW * fill) / icon.img.naturalWidth, (boxH * fill) / icon.img.naturalHeight);
     iconW = icon.img.naturalWidth * scale;
     iconH = icon.img.naturalHeight * scale;
   } else {
-    iconW = iconH = Math.min(rect.w, rect.h) * 0.7;
+    iconW = iconH = Math.min(boxW, boxH) * 0.7;
   }
   if (iconLoaded) {
-    Canvas.ctx.drawImage(icon.img, iconAnchor.x - iconW / 2, iconAnchor.y - iconH / 2, iconW, iconH);
+    // Only the artwork turns with the part - the fallback label and pin numbers below stay
+    // upright so they remain readable at every rotation.
+    Canvas.ctx.save();
+    Canvas.ctx.translate(iconAnchor.x, iconAnchor.y);
+    Canvas.ctx.rotate((rotationAngle * Math.PI) / 180);
+    Canvas.ctx.drawImage(icon.img, -iconW / 2, -iconH / 2, iconW, iconH);
+    Canvas.ctx.restore();
   } else {
     Canvas.ctx.setLineDash([]);
     Canvas.ctx.fillStyle = "#ffffff";

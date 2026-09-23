@@ -10,9 +10,11 @@ const VALUE_EXAMPLES: Record<ComponentUnit, string> = {
   "H": "e.g. 100nH, 10uH, 1mH",
 };
 
-export const LED_COLORS = ["red", "green", "blue", "rgb"] as const;
+export const LED_COLORS = ["red", "green", "blue", "yellow", "rgb"] as const;
 export type LedColor = typeof LED_COLORS[number];
-const LED_COLOR_LABELS: Record<LedColor, string> = {red: "Red", green: "Green", blue: "Blue", rgb: "RGB"};
+const LED_COLOR_LABELS: Record<LedColor, string> = {
+  red: "Red", green: "Green", blue: "Blue", yellow: "Yellow", rgb: "RGB"
+};
 
 export function setSelectedLedColor(color: LedColor | undefined) {
   const component = StandardComponentState.selectedPlacedComponent;
