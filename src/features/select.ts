@@ -316,6 +316,9 @@ export function selectLine(event: MouseEvent) {
     if (Math.abs(d - (d1 + d2)) < GridConfig.lineSelectTolerance) {
       LineState.selectedLine = line;
       DotState.selectedDot = undefined;
+      // Clear stale component selections when selecting a wire
+      IcState.selectedPlacedIc = undefined;
+      StandardComponentState.selectedPlacedComponent = undefined;
       redrawCanvas();
       return;
     }
