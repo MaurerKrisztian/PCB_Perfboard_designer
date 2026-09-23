@@ -8,11 +8,7 @@ import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
 
 Canvas.c.addEventListener('mousemove', function(e) {
-  const rect = Canvas.c.getBoundingClientRect();
-  const scaleX = Canvas.c.width / rect.width;
-  const scaleY = Canvas.c.height / rect.height;
-  const x = (e.clientX - rect.left) * scaleX;
-  const y = (e.clientY - rect.top) * scaleY;
+  const {x, y} = Canvas.toDrawingCoordinates(e);
 
   const previousHoverDot = DotState.hoverDot;
   const previousHoverLine = LineState.hoverLine;

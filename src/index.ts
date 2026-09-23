@@ -13,6 +13,7 @@ import "./features/shortcut-keys";
 import "./features/dot";
 import "./features/project/reset-project";
 import "./features/ic-editor-modal";
+import "./features/standard-components/standard-components-panel";
 import "./features/toolbar";
 import "./features/context-menu-actions";
 import "./features/color-picker";

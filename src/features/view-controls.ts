@@ -1,4 +1,6 @@
 import {Canvas} from "../state/Canvas";
+import {applyCanvasResolution, startDevicePixelRatioWatch} from "./canvas-sizing";
+import {redrawCanvas} from "./draw-canvas";
 
 // Fullscreen Focus Mode & Board Zoom Management
 let currentZoom = 1.0;
@@ -6,15 +8,14 @@ let isFullscreenMode = false;
 let isSidebarVisible = true;
 let isFitMode = false;
 
+export function getCurrentZoom(): number {
+  return currentZoom;
+}
+
 function applyZoom(zoom: number) {
   currentZoom = Math.min(3.0, Math.max(0.2, zoom));
-  const wrapper = document.getElementById('canvasZoomWrapper');
-  if (wrapper) {
-    wrapper.style.transform = `scale(${currentZoom})`;
-  } else if (Canvas.c) {
-    Canvas.c.style.transformOrigin = 'center center';
-    Canvas.c.style.transform = `scale(${currentZoom})`;
-  }
+  applyCanvasResolution(currentZoom);
+  redrawCanvas();
   const zoomText = `${Math.round(currentZoom * 100)}%`;
   const text1 = document.getElementById('zoomLevelText');
   const text2 = document.getElementById('fsZoomText');
@@ -22,12 +23,49 @@ function applyZoom(zoom: number) {
   if (text2) text2.innerText = zoomText;
 }
 
+// Zooms while keeping the content point under (anchorClientX, anchorClientY) fixed on screen,
+// so zoom expands around that point instead of always growing toward the container's bottom-right.
+function applyZoomAnchored(zoom: number, anchorClientX: number, anchorClientY: number) {
+  const container = document.getElementById('canvas-container');
+  const beforeRect = Canvas.c.getBoundingClientRect();
+  const fracX = beforeRect.width > 0 ? (anchorClientX - beforeRect.left) / beforeRect.width : 0.5;
+  const fracY = beforeRect.height > 0 ? (anchorClientY - beforeRect.top) / beforeRect.height : 0.5;
+
+  applyZoom(zoom);
+
+  if (!container) return;
+  const afterRect = Canvas.c.getBoundingClientRect();
+  const currentX = afterRect.left + fracX * afterRect.width;
+  const currentY = afterRect.top + fracY * afterRect.height;
+  container.scrollLeft += currentX - anchorClientX;
+  container.scrollTop += currentY - anchorClientY;
+}
+
+function getContainerCenterClientPoint(): {x: number, y: number} | null {
+  const container = document.getElementById('canvas-container');
+  if (!container) return null;
+  const rect = container.getBoundingClientRect();
+  return {x: rect.left + rect.width / 2, y: rect.top + rect.height / 2};
+}
+
+startDevicePixelRatioWatch(getCurrentZoom, redrawCanvas);
+
 function zoomIn() {
-  applyZoom(currentZoom + 0.15);
+  const center = getContainerCenterClientPoint();
+  if (center) {
+    applyZoomAnchored(currentZoom + 0.15, center.x, center.y);
+  } else {
+    applyZoom(currentZoom + 0.15);
+  }
 }
 
 function zoomOut() {
-  applyZoom(currentZoom - 0.15);
+  const center = getContainerCenterClientPoint();
+  if (center) {
+    applyZoomAnchored(currentZoom - 0.15, center.x, center.y);
+  } else {
+    applyZoom(currentZoom - 0.15);
+  }
 }
 
 function fitToScreen(forcefit?: boolean) {
@@ -43,8 +81,8 @@ function fitToScreen(forcefit?: boolean) {
   const rect = container.getBoundingClientRect();
   const availableWidth = rect.width - 20;
   const availableHeight = rect.height - 20;
-  const canvasW = Canvas.c.width;
-  const canvasH = Canvas.c.height;
+  const canvasW = Canvas.gridWidth;
+  const canvasH = Canvas.gridHeight;
 
   if (availableWidth <= 0 || availableHeight <= 0) return;
 
@@ -112,14 +150,22 @@ document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => tog
 document.getElementById('toggleFullscreenBtn')?.addEventListener('click', () => toggleFullscreenMode());
 document.getElementById('canvasFullscreenTrigger')?.addEventListener('click', () => toggleFullscreenMode());
 
-// Mouse Wheel Zoom on canvas
+// Mouse Wheel Zoom on canvas (coalesced to at most one resize+redraw per frame),
+// anchored to the cursor position so the point under the mouse stays fixed.
+let pendingWheelZoom: number | null = null;
+let pendingWheelAnchor: {x: number, y: number} | null = null;
 Canvas.c?.addEventListener('wheel', (e: WheelEvent) => {
   e.preventDefault();
-  if (e.deltaY < 0) {
-    zoomIn();
-  } else {
-    zoomOut();
-  }
+  const base = pendingWheelZoom ?? currentZoom;
+  pendingWheelZoom = base + (e.deltaY < 0 ? 0.15 : -0.15);
+  pendingWheelAnchor = {x: e.clientX, y: e.clientY};
+  requestAnimationFrame(() => {
+    if (pendingWheelZoom !== null && pendingWheelAnchor !== null) {
+      applyZoomAnchored(pendingWheelZoom, pendingWheelAnchor.x, pendingWheelAnchor.y);
+      pendingWheelZoom = null;
+      pendingWheelAnchor = null;
+    }
+  });
 }, { passive: false });
 
 window.addEventListener('resize', () => {

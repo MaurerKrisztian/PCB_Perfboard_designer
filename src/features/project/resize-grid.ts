@@ -5,6 +5,8 @@ import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
 import {resetCanvas} from "../reset-canvas";
+import {applyCanvasResolution} from "../canvas-sizing";
+import {getCurrentZoom} from "../view-controls";
 
 export const widthInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixWidth')
 export const heightInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixHeight')
@@ -21,12 +23,13 @@ resizeBtn.addEventListener('click', function() {
 });
 
 export function createDotGrid(horizontalDotNumbers: number, verticalDotNumbers: number) {
-  Canvas.c.width = horizontalDotNumbers * GridConfig.dotSpace;
-  Canvas.c.height = verticalDotNumbers * GridConfig.dotSpace;
+  Canvas.gridWidth = horizontalDotNumbers * GridConfig.dotSpace;
+  Canvas.gridHeight = verticalDotNumbers * GridConfig.dotSpace;
+  applyCanvasResolution(getCurrentZoom());
 
   DotState.dots = [];
-  for(let x =  GridConfig.dotSpace / 2; x < Canvas.c.width; x +=  GridConfig.dotSpace){
-    for(let y =  GridConfig.dotSpace / 2; y < Canvas.c.height; y +=  GridConfig.dotSpace){
+  for(let x =  GridConfig.dotSpace / 2; x < Canvas.gridWidth; x +=  GridConfig.dotSpace){
+    for(let y =  GridConfig.dotSpace / 2; y < Canvas.gridHeight; y +=  GridConfig.dotSpace){
       DotState.dots.push({x: x, y: y, description: null, color: "#a4a0a0"});
     }
   }
