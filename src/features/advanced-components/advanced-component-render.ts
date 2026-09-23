@@ -75,26 +75,52 @@ export function drawAdvancedComponentBody(
     Canvas.ctx.fill();
   });
 
-  Canvas.ctx.beginPath();
-  Canvas.ctx.fillStyle = options.selected ? BODY_COLOR_SELECTED : BODY_COLOR;
-  Canvas.ctx.strokeStyle = options.selected ? BORDER_COLOR_SELECTED : BORDER_COLOR;
-  Canvas.ctx.lineWidth = options.selected ? 3 : 2;
-  if (hasOutline) {
-    Canvas.ctx.moveTo(outline[0].x, outline[0].y);
-    for (let i = 1; i < outline.length; i++) {
-      Canvas.ctx.lineTo(outline[i].x, outline[i].y);
-    }
-    Canvas.ctx.closePath();
-  } else {
-    Canvas.ctx.rect(rect.x, rect.y, rect.w, rect.h);
-  }
-  Canvas.ctx.fill();
-  Canvas.ctx.stroke();
-
   const icon = getCachedIcon(getAdvancedIconPath(def));
-  const iconSize = def.iconSize ?? Math.min(rect.w, rect.h) * 0.7;
-  if (icon.loaded && !icon.failed) {
-    Canvas.ctx.drawImage(icon.img, iconAnchor.x - iconSize / 2, iconAnchor.y - iconSize / 2, iconSize, iconSize);
+  const iconLoaded = icon.loaded && !icon.failed;
+  // For parts whose icon is meant to be the entire visible body, skip the box (fill + border)
+  // entirely once the icon has actually loaded so only the SVG artwork shows.
+  const skipBody = def.iconFillsBody && iconLoaded;
+
+  if (!skipBody) {
+    Canvas.ctx.beginPath();
+    Canvas.ctx.fillStyle = options.selected ? BODY_COLOR_SELECTED : BODY_COLOR;
+    Canvas.ctx.strokeStyle = options.selected ? BORDER_COLOR_SELECTED : BORDER_COLOR;
+    Canvas.ctx.lineWidth = options.selected ? 3 : 2;
+    if (hasOutline) {
+      Canvas.ctx.moveTo(outline[0].x, outline[0].y);
+      for (let i = 1; i < outline.length; i++) {
+        Canvas.ctx.lineTo(outline[i].x, outline[i].y);
+      }
+      Canvas.ctx.closePath();
+    } else {
+      Canvas.ctx.rect(rect.x, rect.y, rect.w, rect.h);
+    }
+    Canvas.ctx.fill();
+    Canvas.ctx.stroke();
+  }
+
+  let iconW: number;
+  let iconH: number;
+  if (def.iconSize) {
+    iconW = iconH = def.iconSize;
+  } else if (def.iconFillsBody) {
+    // Stretch to exactly fill the body box, rather than preserving the icon's native aspect
+    // ratio - lets a definition's bodyOutline shape the part's proportions independently of
+    // the source artwork (e.g. a MOSFET stretched a bit longer/thinner than its icon file).
+    iconW = rect.w;
+    iconH = rect.h;
+  } else if (iconLoaded && icon.img.naturalWidth && icon.img.naturalHeight) {
+    // Fit the icon's real aspect ratio inside the body box instead of forcing it into a
+    // square, so parts with a non-square icon (e.g. a wide MOSFET footprint) fill the box.
+    const fill = 0.9;
+    const scale = Math.min((rect.w * fill) / icon.img.naturalWidth, (rect.h * fill) / icon.img.naturalHeight);
+    iconW = icon.img.naturalWidth * scale;
+    iconH = icon.img.naturalHeight * scale;
+  } else {
+    iconW = iconH = Math.min(rect.w, rect.h) * 0.7;
+  }
+  if (iconLoaded) {
+    Canvas.ctx.drawImage(icon.img, iconAnchor.x - iconW / 2, iconAnchor.y - iconH / 2, iconW, iconH);
   } else {
     Canvas.ctx.setLineDash([]);
     Canvas.ctx.fillStyle = "#ffffff";
