@@ -60,9 +60,10 @@ const INLINE_3_PINS: PinOffset[] = [{dx: 0, dy: 0}, {dx: 1, dy: 0}, {dx: 2, dy: 
 // A TO-92's body sits over the middle pin only, with its outer legs splayed out to pins 1
 // and 3, so the box has to span the whole pin row (plus a tenth of a hole either side, for
 // the lead tips to land on the outer pin centers rather than stop short of them). The
-// resulting 2.2 x 0.48 aspect ratio matches transistor.svg's viewBox, so iconFillsBody
-// stretches the artwork without distorting it.
-const TRANSISTOR_HALF_HEIGHT = 0.24;
+// resulting 2.2 x 0.88 aspect ratio matches transistor.svg's viewBox, so iconFillsBody
+// stretches the artwork without distorting it. The box is taller than the leads need so
+// the (much larger) package artwork fits inside it at the icon's own proportions.
+const TRANSISTOR_HALF_HEIGHT = 0.44;
 const TRANSISTOR_OVERHANG = 0.1;
 const TRANSISTOR_BODY_OUTLINE: PinOffset[] = [
   {dx: 0 - TRANSISTOR_OVERHANG, dy: -TRANSISTOR_HALF_HEIGHT},
@@ -70,6 +71,9 @@ const TRANSISTOR_BODY_OUTLINE: PinOffset[] = [
   {dx: 2 + TRANSISTOR_OVERHANG, dy: TRANSISTOR_HALF_HEIGHT},
   {dx: 0 - TRANSISTOR_OVERHANG, dy: TRANSISTOR_HALF_HEIGHT},
 ];
+// The package now reaches nearly the full half-height above the pin row, so the numbers
+// have to clear it to sit on the board rather than on the artwork.
+const TRANSISTOR_PIN_LABEL_OFFSET: PinOffset = {dx: 0, dy: -(TRANSISTOR_HALF_HEIGHT + 0.24)};
 // Some parts (full-size potentiometers, MOSFETs) space their 3 legs one hole apart, so on
 // the perfboard grid they land on holes 1/3/5 - holes 2/4 sit under the body but aren't
 // connected to anything.
@@ -108,7 +112,8 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "transistor", category: "Semiconductor", name: "Transistor", fallbackLabel: "Q",
     pinOffsets: INLINE_3_PINS,
-    bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true
+    bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true,
+    pinLabelOffset: TRANSISTOR_PIN_LABEL_OFFSET
   },
   {
     id: "mosfet", category: "Semiconductor", name: "MOSFET", fallbackLabel: "MOS",

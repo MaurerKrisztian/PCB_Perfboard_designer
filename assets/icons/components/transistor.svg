@@ -1,8 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 24" width="110" height="24" role="img" aria-label="TO-92 transistor, seen from above">
-  <path d="M5 12H105" fill="none" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round"/>
-  <!-- The original body, verbatim from its old 100x100 viewBox, scaled up ~1.5x from how it
-       used to render and centered over the middle pin so it hides the lead behind it. -->
-  <g transform="translate(38.25 0.63) scale(0.335)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 44" width="110" height="44" role="img" aria-label="TO-92 transistor, seen from above">
+  <path d="M5 22H105" fill="none" stroke="#cbd5e1" stroke-width="5" stroke-linecap="round"/>
+  <!-- The original body, verbatim from its old 100x100 viewBox, scaled up ~3x from how it
+       used to render and centered over the middle pin so it hides the lead behind it. The
+       viewBox grew with it (24 -> 44 tall) so the body still has a little clearance top and
+       bottom; TRANSISTOR_HALF_HEIGHT grew to match, keeping the lead run the same length. -->
+  <g transform="translate(21.5 -0.8) scale(0.67)">
     <path d="M16 62A38.3 38.3 0 1 1 84 62z" fill="#33383d" stroke="#e2e8f0" stroke-width="4" stroke-linejoin="round"/>
   </g>
 </svg>
