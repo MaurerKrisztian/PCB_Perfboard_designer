@@ -28,13 +28,29 @@ export interface AdvancedComponentDefinition {
   // bounding box a poor stand-in for "the middle of the part" (e.g. a pot's wide flange).
   iconOffset?: PinOffset;
   iconSize?: number;
+  // Overrides where the pin number labels sit relative to each pin (grid units, unrotated,
+  // negative dy = above the pin row). Needed for parts whose body covers the default spot
+  // just above the pin - the numbers get pushed clear of the body instead of onto it.
+  pinLabelOffset?: PinOffset;
   unit?: ComponentUnit;
   // When true, the icon is scaled to fill the full body box (rather than padded within it)
   // and, once it has loaded, the body's solid color fill is skipped entirely so only the
   // icon's own artwork is visible. Only sensible when bodyOutline's aspect ratio matches the
   // icon's own aspect ratio, otherwise the icon will over/undershoot the box on one axis.
   iconFillsBody?: boolean;
+  // The part's pin count isn't fixed by the package: the user drags out a rows x cols block of
+  // pins at placement time (header pins). pinOffsets then only holds the 1x1 default - the real
+  // lattice lives on the placed instance's rows/cols.
+  gridSizable?: boolean;
+  // The icon is the artwork for a *single* pin, tiled once per pin at exactly one grid pitch,
+  // rather than one image stretched across the whole body. Implies no body box, no pin markers
+  // and no pin numbers - the tiles themselves are the part.
+  perPinIcon?: boolean;
 }
+
+// Half-extent (grid units) of one perPinIcon tile. At 0.5 a tile is exactly one grid pitch
+// wide, so neighbouring pins butt together into a continuous strip with no seam.
+export const PIN_TILE_HALF = 0.5;
 
 export function getAdvancedIconPath(def: AdvancedComponentDefinition): string {
   return def.iconPath ?? `/icons/components/${def.id}.svg`;
@@ -54,7 +70,6 @@ const TRANSISTOR_BODY_OUTLINE: PinOffset[] = [
   {dx: 2 + TRANSISTOR_OVERHANG, dy: TRANSISTOR_HALF_HEIGHT},
   {dx: 0 - TRANSISTOR_OVERHANG, dy: TRANSISTOR_HALF_HEIGHT},
 ];
-const Y_3_PINS: PinOffset[] = [{dx: 0, dy: 0}, {dx: 2, dy: 0}, {dx: 1, dy: -1}];
 // Some parts (full-size potentiometers, MOSFETs) space their 3 legs one hole apart, so on
 // the perfboard grid they land on holes 1/3/5 - holes 2/4 sit under the body but aren't
 // connected to anything.
@@ -72,6 +87,9 @@ const MOSFET_BODY_OUTLINE: PinOffset[] = [
   {dx: 2 + MOSFET_OVERHANG, dy: MOSFET_HALF_HEIGHT},
   {dx: 0 - MOSFET_OVERHANG, dy: MOSFET_HALF_HEIGHT},
 ];
+// The body reaches MOSFET_HALF_HEIGHT above the pin row, so the numbers have to clear that
+// (plus a little breathing room) to sit on the board rather than on the package artwork.
+const MOSFET_PIN_LABEL_OFFSET: PinOffset = {dx: 0, dy: -(MOSFET_HALF_HEIGHT + 0.24)};
 // Physical footprint: a 5-hole-wide, 2-hole-tall flange (the pins sit on its bottom edge),
 // with a narrower 3-hole-wide, 3-hole-long bushing/shaft tab hanging off its middle.
 const POT_OUTLINE_PAD = 0.3;
@@ -95,15 +113,20 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "mosfet", category: "Semiconductor", name: "MOSFET", fallbackLabel: "MOS",
     pinOffsets: INLINE_3_PINS,
-    bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true
+    bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
+    pinLabelOffset: MOSFET_PIN_LABEL_OFFSET
   },
   {
     id: "potentiometer", category: "Passive", name: "Potentiometer", fallbackLabel: "POT",
     pinOffsets: WIDE_INLINE_3_PINS, shadedOffsets: WIDE_INLINE_3_SHADED, bodyOutline: POT_BODY_OUTLINE,
     iconOffset: {dx: 2, dy: -0.5}, iconSize: 60, unit: "Ω"
   },
-  {id: "trim-potentiometer-inline", category: "Passive", name: "Trim Potentiometer (Inline)", fallbackLabel: "TRIM", pinOffsets: INLINE_3_PINS, unit: "Ω"},
-  {id: "trim-potentiometer-y", category: "Passive", name: "Trim Potentiometer (Y)", fallbackLabel: "TRIM-Y", pinOffsets: Y_3_PINS, unit: "Ω"},
+  {
+    id: "header-pins", category: "Connector", name: "Header Pins", fallbackLabel: "HDR",
+    // Only the 1x1 default lives here - the real lattice is the placed instance's rows/cols.
+    pinOffsets: [{dx: 0, dy: 0}],
+    gridSizable: true, perPinIcon: true
+  },
 ];
 
 export function getAdvancedComponentDefinition(id: string): AdvancedComponentDefinition | undefined {

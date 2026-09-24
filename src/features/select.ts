@@ -13,8 +13,11 @@ import {StandardComponentState} from "../state/StandardComponentState";
 import {PlacedStandardComponent} from "./standard-components/placed-standard-component";
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
+import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
 import {disarmWire} from "./wire";
 import {updateSelectionStatus} from "./selection-status";
+import {beginDrag, cancelDrag, endDrag} from "./component-drag";
+import {findDotAt} from "./dot-lookup";
 let isPanningBoard = false;
 let panStartX = 0;
 let panStartY = 0;
@@ -125,7 +128,46 @@ Canvas.c.addEventListener('mousedown', function(e) {
 
     // Placing a new Advanced (fixed-pin) Component from catalog: pins are rigid, so a
     // single click anchors the component using the current armed rotation, matching IC placement.
+    // The exception is a gridSizable part (header pins), whose block size is chosen by the user:
+    // that takes two clicks to span opposite corners, like a wire or a standard component.
     if (AdvancedComponentState.armedDefinitionId && DotState.hoverDot) {
+      const armedDef = getAdvancedComponentDefinition(AdvancedComponentState.armedDefinitionId);
+      if (armedDef?.gridSizable) {
+        if (!AdvancedComponentState.pendingAnchorDot) {
+          AdvancedComponentState.pendingAnchorDot = DotState.hoverDot;
+          redrawCanvas();
+          return;
+        }
+        const startDot = AdvancedComponentState.pendingAnchorDot;
+        const endDot = DotState.hoverDot;
+        // The lattice grows right/down from its anchor, so the anchor has to be the top-left
+        // corner of the spanned rect - neither clicked dot is it when spanning up and/or left.
+        const anchorDot = findDotAt(
+          Math.min(startDot.x, endDot.x),
+          Math.min(startDot.y, endDot.y)
+        );
+        if (anchorDot) {
+          const {rows, cols} = PlacedAdvancedComponent.gridSpanFromDots(startDot, endDot);
+          // Always unrotated: the spanned rect already fixes the block's orientation, and a
+          // rotation would swing the lattice off the holes the user just picked.
+          const block = new PlacedAdvancedComponent(
+            AdvancedComponentState.armedDefinitionId,
+            anchorDot,
+            0
+          );
+          block.rows = rows;
+          block.cols = cols;
+          AdvancedComponentState.placedComponents.push(block);
+          AdvancedComponentState.selectedPlacedComponent = block;
+          HistoryState.changes.splice(HistoryState.changeIndex + 1);
+          HistoryState.changes.push({type: 'add', kind: 'advanced-component', component: block});
+          HistoryState.changeIndex++;
+        }
+        // Stays armed for repeated placement, matching the standard component/wire flow.
+        AdvancedComponentState.pendingAnchorDot = undefined;
+        redrawCanvas();
+        return;
+      }
       const instance = new PlacedAdvancedComponent(
         AdvancedComponentState.armedDefinitionId,
         DotState.hoverDot,
@@ -173,7 +215,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
       const hitPlacedIc = IcState.placedIcs.find(ic => ic.containsPoint(x, y));
       if (hitPlacedIc) {
         IcState.selectedPlacedIc = hitPlacedIc;
-        IcState.isDraggingIc = true;
+        beginDrag({kind: "ic", ic: hitPlacedIc}, x, y);
         DotState.selectedDot = undefined;
         LineState.selectedLine = undefined;
         redrawCanvas();
@@ -187,10 +229,11 @@ Canvas.c.addEventListener('mousedown', function(e) {
         // Fall through to normal dot/line selection
       }
 
-      // Check hit on an existing placed Standard Component (select only, no drag)
+      // Check hit on an existing placed Standard Component (Enable Drag & Drop)
       const hitPlacedComponent = StandardComponentState.placedComponents.find(c => c.containsPoint(x, y));
       if (hitPlacedComponent) {
         StandardComponentState.selectedPlacedComponent = hitPlacedComponent;
+        beginDrag({kind: "standard-component", component: hitPlacedComponent}, x, y);
         DotState.selectedDot = undefined;
         LineState.selectedLine = undefined;
         redrawCanvas();
@@ -204,10 +247,11 @@ Canvas.c.addEventListener('mousedown', function(e) {
         // Fall through to normal dot/line selection
       }
 
-      // Check hit on an existing placed Advanced Component (select only, no drag)
+      // Check hit on an existing placed Advanced Component (Enable Drag & Drop)
       const hitPlacedAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(x, y));
       if (hitPlacedAdvancedComponent) {
         AdvancedComponentState.selectedPlacedComponent = hitPlacedAdvancedComponent;
+        beginDrag({kind: "advanced-component", component: hitPlacedAdvancedComponent}, x, y);
         DotState.selectedDot = undefined;
         LineState.selectedLine = undefined;
         redrawCanvas();
@@ -243,7 +287,7 @@ window.addEventListener('mouseup', () => {
     isPanningBoard = false;
     Canvas.c.style.cursor = 'crosshair';
   }
-  IcState.isDraggingIc = false;
+  endDrag();
 });
 
 // Right click context menu handler
@@ -415,11 +459,12 @@ ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event:
   LineState.selectedLine = undefined;
   IcState.selectedIc = undefined;
   IcState.selectedPlacedIc = undefined;
-  IcState.isDraggingIc = false;
+  cancelDrag();
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   StandardComponentState.selectedPlacedComponent = undefined;
   AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.pendingAnchorDot = undefined;
   AdvancedComponentState.selectedPlacedComponent = undefined;
   disarmWire();
   hideContextMenu();

@@ -16,10 +16,15 @@ export function updateSelectionStatus() {
   if (!statusEl) return;
   const modeLabel = ToolState.activeToolMode.toUpperCase();
   if (IcState.selectedPlacedIc) {
-    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> Placed IC Selected (${IcState.selectedPlacedIc.name}) [Click Pad to Relocate • Del to Remove]`;
+    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> Placed IC Selected (${IcState.selectedPlacedIc.name}) [Drag to Move • Del to Remove]`;
   } else if (AdvancedComponentState.selectedPlacedComponent) {
-    const def = AdvancedComponentState.selectedPlacedComponent.getDefinition();
-    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> ${def?.name ?? "Component"} Selected [R to Rotate • Del to Remove]`;
+    const selected = AdvancedComponentState.selectedPlacedComponent;
+    const def = selected.getDefinition();
+    const size = def?.gridSizable ? ` ${selected.rows}×${selected.cols}` : "";
+    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> ${def?.name ?? "Component"}${size} Selected [Drag to Move • R to Rotate • Del to Remove]`;
+  } else if (StandardComponentState.selectedPlacedComponent) {
+    const def = StandardComponentState.selectedPlacedComponent.getDefinition();
+    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> ${def?.name ?? "Component"} Selected [Drag to Move • Del to Remove]`;
   } else if (ToolState.armedWire) {
     statusEl.innerHTML = ToolState.wireStartDot
       ? `<span>Wire Started [Click end pad to connect]</span>`
@@ -33,7 +38,13 @@ export function updateSelectionStatus() {
   } else if (AdvancedComponentState.armedDefinitionId) {
     const def = getAdvancedComponentDefinition(AdvancedComponentState.armedDefinitionId);
     const name = def?.name ?? "Component";
-    statusEl.innerHTML = `<span>${name} Armed [Click pad to place • R to rotate]</span>`;
+    if (def?.gridSizable) {
+      statusEl.innerHTML = AdvancedComponentState.pendingAnchorDot
+        ? `<span>Placing ${name} [Click opposite corner]</span>`
+        : `<span>${name} Armed [Click first corner]</span>`;
+    } else {
+      statusEl.innerHTML = `<span>${name} Armed [Click pad to place • R to rotate]</span>`;
+    }
   } else if (IcState.selectedIc) {
     statusEl.innerHTML = `<span>IC Ready: ${IcState.selectedIc.name} [Click Pad to Place]</span>`;
   } else if (LineState.selectedLine) {

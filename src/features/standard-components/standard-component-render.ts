@@ -1,16 +1,23 @@
 import {Canvas} from "../../state/Canvas";
 import {IDot} from "../../interfaces/dot.interface";
-import {ComponentDefinition, getIconPath} from "./component-definitions";
+import {ComponentDefinition, getComponentBodySize, getIconPath} from "./component-definitions";
 import {getCachedIcon} from "./icon-cache";
 import {parseComponentValue} from "./component-value";
 import {getCeramicCapacitorCode, getResistorBandColors} from "./component-value-codes";
 
 // Icons are authored as square artwork (viewBox="0 0 100 100"), so the body renders as a
 // fixed square regardless of hole-to-hole distance; only the leads stretch to fill the rest.
-const BODY_SIZE = 32;
-const MIN_LEAD_LENGTH = 6;
+// Bodies are deliberately larger than one grid step, so on short spans they cover the dots
+// they sit between and no lead is drawn at all.
 const LEAD_COLOR = "#cbd5e1";
-const LEAD_WIDTH = 3;
+// Lead weight tracks the body so bigger parts don't end up with hairline leads: 4px at the
+// 64px default body, matching the 4-viewBox-unit outline the icons are drawn with.
+const LEAD_WIDTH_RATIO = 4 / 64;
+// The icons leave a transparent margin inside their 100x100 viewBox (the resistor body starts
+// at x=7, the LED's flat cathode edge at x=8), so a lead stopping at the body box would leave
+// a green sliver before the artwork begins. Leads run this far past the box edge instead; the
+// body is drawn over them afterwards, so the overlap never shows.
+const LEAD_BODY_OVERLAP_RATIO = 0.12;
 
 export interface DrawStandardComponentOptions {
   selected?: boolean;
@@ -26,8 +33,9 @@ export function drawStandardComponentBody(startDot: IDot, endDot: IDot, def: Com
   if (length === 0) return;
   const angle = Math.atan2(dy, dx);
 
-  // Body stays a fixed square; leads stretch to fill whatever's left between the two dots.
-  const bodySize = Math.max(4, Math.min(BODY_SIZE, length - MIN_LEAD_LENGTH * 2));
+  // Body stays a fixed square; leads stretch to fill whatever's left between the two dots
+  // (and are skipped entirely when the body is longer than the span).
+  const bodySize = getComponentBodySize(def);
   const bodyStart = (length - bodySize) / 2;
   const bodyEnd = bodyStart + bodySize;
 
@@ -41,15 +49,16 @@ export function drawStandardComponentBody(startDot: IDot, endDot: IDot, def: Com
   }
 
   Canvas.ctx.strokeStyle = options.selected ? "#38bdf8" : LEAD_COLOR;
-  Canvas.ctx.lineWidth = LEAD_WIDTH;
+  Canvas.ctx.lineWidth = bodySize * LEAD_WIDTH_RATIO;
   Canvas.ctx.lineCap = "round";
   Canvas.ctx.beginPath();
+  const leadOverlap = bodySize * LEAD_BODY_OVERLAP_RATIO;
   if (bodyStart > 0) {
     Canvas.ctx.moveTo(0, 0);
-    Canvas.ctx.lineTo(bodyStart, 0);
+    Canvas.ctx.lineTo(bodyStart + leadOverlap, 0);
   }
   if (bodyEnd < length) {
-    Canvas.ctx.moveTo(bodyEnd, 0);
+    Canvas.ctx.moveTo(bodyEnd - leadOverlap, 0);
     Canvas.ctx.lineTo(length, 0);
   }
   Canvas.ctx.stroke();
@@ -80,7 +89,8 @@ const RESISTOR_BAND_WIDTH = RESISTOR_BAND_BASE_WIDTH + RESISTOR_BAND_MARGIN * 2;
 const RESISTOR_BAND_VIEWBOX_HEIGHT = 26; // slightly taller than the body's 40..60 span
 
 const CERAMIC_CODE_COLOR = "#3a2410";
-const CERAMIC_CODE_FONT = "bold 13px Inter, Arial";
+// Scales with the body so the code keeps the same proportions on any body size.
+const CERAMIC_CODE_FONT_RATIO = 0.4;
 
 function drawValueOverlay(def: ComponentDefinition, value: string, bodyStart: number, bodySize: number) {
   // Gated on def.id, not def.unit - electrolytic-capacitor also has unit "F" but must stay untouched.
@@ -118,10 +128,10 @@ function drawCeramicCapacitorCode(value: string, bodyStart: number, bodySize: nu
 
   Canvas.ctx.save();
   Canvas.ctx.fillStyle = CERAMIC_CODE_COLOR;
-  Canvas.ctx.font = CERAMIC_CODE_FONT;
+  Canvas.ctx.font = `bold ${Math.round(bodySize * CERAMIC_CODE_FONT_RATIO)}px Inter, Arial`;
   Canvas.ctx.textAlign = "center";
   Canvas.ctx.textBaseline = "middle";
-  Canvas.ctx.fillText(text, bodyStart + bodySize / 2, 1);
+  Canvas.ctx.fillText(text, bodyStart + bodySize / 2, bodySize * 0.03);
   Canvas.ctx.restore();
 }
 

@@ -9,6 +9,16 @@ export interface ComponentDefinition {
   iconPath?: string;
   fallbackLabel: string;
   unit?: ComponentUnit;
+  // Side length of the rendered square body, in canvas pixels. Defaults to DEFAULT_BODY_SIZE.
+  bodySize?: number;
+}
+
+// One grid step is GridConfig.dotSpace (50px), so the default body spans a bit more than
+// hole-to-hole: a component placed between adjacent dots covers the whole gap.
+export const DEFAULT_BODY_SIZE = 64;
+
+export function getComponentBodySize(def: ComponentDefinition): number {
+  return def.bodySize ?? DEFAULT_BODY_SIZE;
 }
 
 export function getIconPath(def: ComponentDefinition): string {
@@ -18,7 +28,7 @@ export function getIconPath(def: ComponentDefinition): string {
 export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {id: "resistor", category: "Passive", name: "Resistor", fallbackLabel: "R", unit: "Ω"},
   {id: "ceramic-capacitor", category: "Passive", name: "Ceramic Capacitor", fallbackLabel: "C", unit: "F"},
-  {id: "electrolytic-capacitor", category: "Passive", name: "Electrolytic Capacitor", fallbackLabel: "C+", unit: "F"},
+  {id: "electrolytic-capacitor", category: "Passive", name: "Electrolytic Capacitor", fallbackLabel: "C+", unit: "F", bodySize: 96},
   {id: "inductor", category: "Passive", name: "Inductor", fallbackLabel: "L", unit: "H"},
   {id: "led", category: "Semiconductor", name: "LED", fallbackLabel: "LED"},
   {id: "diode", category: "Semiconductor", name: "Diode", fallbackLabel: "D"},

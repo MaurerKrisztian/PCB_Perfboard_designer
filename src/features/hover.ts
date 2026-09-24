@@ -8,6 +8,27 @@ import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
+import {ToolState} from "../state/ToolState";
+import {DragState} from "../state/DragState";
+import {updateDrag} from "./component-drag";
+
+function isOverPlacedPart(x: number, y: number): boolean {
+  return IcState.placedIcs.some(ic => ic.containsPoint(x, y))
+    || StandardComponentState.placedComponents.some(c => c.containsPoint(x, y))
+    || AdvancedComponentState.placedComponents.some(c => c.containsPoint(x, y));
+}
+
+// Hint that a placed part can be picked up. Left alone while the cursor reads 'grabbing', which
+// means a drag or a board pan owns it right now.
+function updateDragCursor(x: number, y: number) {
+  if (Canvas.c.style.cursor === 'grabbing') return;
+  const canDrag = ToolState.activeToolMode === 'select'
+    && !ToolState.armedWire
+    && !IcState.selectedIc
+    && !StandardComponentState.armedDefinitionId
+    && !AdvancedComponentState.armedDefinitionId;
+  Canvas.c.style.cursor = canDrag && isOverPlacedPart(x, y) ? 'move' : 'crosshair';
+}
 
 function findHoveredComponentValue(x: number, y: number): string | undefined {
   for (const component of StandardComponentState.placedComponents) {
@@ -59,10 +80,10 @@ Canvas.c.addEventListener('mousemove', function(e) {
   }
 
 
-  if (IcState.isDraggingIc && IcState.selectedPlacedIc) {
-    IcState.selectedPlacedIc.updatePosition(x, y);
-    redrawCanvas();
-  } else if (DotState.hoverDot !== previousHoverDot || LineState.hoverLine !== previousHoverLine) {
+  const dragMoved = DragState.target ? updateDrag(x, y) : false;
+  updateDragCursor(x, y);
+
+  if (dragMoved || DotState.hoverDot !== previousHoverDot || LineState.hoverLine !== previousHoverLine) {
     redrawCanvas();
   }
 

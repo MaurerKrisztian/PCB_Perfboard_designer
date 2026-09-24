@@ -1,5 +1,5 @@
 import {Canvas} from "../../state/Canvas";
-import {AdvancedComponentDefinition, getAdvancedIconPath} from "./advanced-component-definitions";
+import {AdvancedComponentDefinition, getAdvancedIconPath, PIN_TILE_HALF} from "./advanced-component-definitions";
 import {getCachedIcon} from "../standard-components/icon-cache";
 import {rotateOffset} from "./rotate-offset";
 import {GridConfig} from "../../state/GridConfig";
@@ -15,10 +15,21 @@ const BORDER_COLOR_SELECTED = "#38bdf8";
 const PIN_COLOR = "#cbd5e1";
 const PIN1_COLOR = "#38bdf8";
 const SHADED_PIN_COLOR = "rgba(148,163,184,0.35)";
-const PIN_LABEL_FONT = "600 9px monospace, sans-serif";
-const PIN_LABEL_COLOR = "#e2e8f0";
+const PIN_LABEL_FONT = "700 11px monospace, sans-serif";
+const PIN_LABEL_COLOR = "#f8fafc";
+// Dark halo stroked behind each pin number so it stays readable wherever it lands - over
+// the board background, a dark body fill, or a light patch of an icon (e.g. the MOSFET's
+// metal tab, which the plain light-grey text used to disappear into).
+const PIN_LABEL_HALO_COLOR = "rgba(2,6,23,0.9)";
+const PIN_LABEL_HALO_WIDTH = 3;
 // Local, pre-rotation offset (grid units) from a pin to where its number label is drawn.
+// Definitions whose body would sit on top of that spot override it with pinLabelOffset.
 const PIN_LABEL_OFFSET = {dx: 0, dy: -0.35};
+// Fallback colors for a perPinIcon tile, used until its SVG has loaded (and if it never does).
+// Deliberately close to the artwork so a missing icon degrades rather than breaks the drawing.
+const TILE_BODY_COLOR = "#1f1f26";
+const TILE_PAD_COLOR = "#e8d296";
+const TILE_PAD_RADIUS_RATIO = 0.13;
 
 export interface Point {
   x: number;
@@ -40,6 +51,55 @@ export function getBoundingRect(points: Point[], pad: number = 0) {
   return {x: minX, y: minY, w: maxX - minX, h: maxY - minY};
 }
 
+// Parts whose icon is one pin's artwork (header pins): the tiles themselves are the body, so
+// there's no body polygon, no pin markers and no pin numbers to draw - a 2x20 header would
+// otherwise be buried under 40 numbers and 40 marker dots.
+function drawTiledPinComponent(
+  pins: Point[],
+  outline: Point[],
+  def: AdvancedComponentDefinition,
+  options: DrawAdvancedComponentOptions
+) {
+  const icon = getCachedIcon(getAdvancedIconPath(def));
+  const iconLoaded = icon.loaded && !icon.failed;
+  // One full grid pitch per tile, so neighbouring pins butt into a continuous strip.
+  const tileSize = PIN_TILE_HALF * 2 * GridConfig.dotSpace;
+  const half = tileSize / 2;
+
+  Canvas.ctx.save();
+  if (options.ghost) {
+    Canvas.ctx.globalAlpha = 0.55;
+  }
+
+  pins.forEach((pin) => {
+    if (iconLoaded) {
+      // The tile is square, so it looks the same at every rotation - no ctx.rotate needed.
+      Canvas.ctx.drawImage(icon.img, pin.x - half, pin.y - half, tileSize, tileSize);
+      return;
+    }
+    Canvas.ctx.fillStyle = TILE_BODY_COLOR;
+    Canvas.ctx.fillRect(pin.x - half, pin.y - half, tileSize, tileSize);
+    Canvas.ctx.beginPath();
+    Canvas.ctx.fillStyle = TILE_PAD_COLOR;
+    Canvas.ctx.arc(pin.x, pin.y, tileSize * TILE_PAD_RADIUS_RATIO, 0, Math.PI * 2);
+    Canvas.ctx.fill();
+  });
+
+  // Without a body fill there's nothing else to carry selection/ghost state, so outline the
+  // whole block instead.
+  if ((options.selected || options.ghost) && outline.length >= 3) {
+    const rect = getBoundingRect(outline);
+    Canvas.ctx.beginPath();
+    Canvas.ctx.strokeStyle = BORDER_COLOR_SELECTED;
+    Canvas.ctx.lineWidth = options.selected ? 3 : 2;
+    if (options.ghost) Canvas.ctx.setLineDash([6, 4]);
+    Canvas.ctx.rect(rect.x, rect.y, rect.w, rect.h);
+    Canvas.ctx.stroke();
+  }
+
+  Canvas.ctx.restore();
+}
+
 export function drawAdvancedComponentBody(
   pins: Point[],
   shadedPins: Point[],
@@ -50,6 +110,10 @@ export function drawAdvancedComponentBody(
   options: DrawAdvancedComponentOptions = {}
 ) {
   if (pins.length === 0) return;
+  if (def.perPinIcon) {
+    drawTiledPinComponent(pins, outline, def, options);
+    return;
+  }
   const hasOutline = outline.length >= 3;
   const rect = hasOutline ? getBoundingRect(outline) : getBoundingRect([...pins, ...shadedPins], PIN_PAD);
 
@@ -149,13 +213,16 @@ export function drawAdvancedComponentBody(
   Canvas.ctx.fillStyle = PIN_LABEL_COLOR;
   Canvas.ctx.textAlign = "center";
   Canvas.ctx.textBaseline = "middle";
-  const labelOffset = rotateOffset(PIN_LABEL_OFFSET.dx, PIN_LABEL_OFFSET.dy, rotationAngle);
+  Canvas.ctx.strokeStyle = PIN_LABEL_HALO_COLOR;
+  Canvas.ctx.lineWidth = PIN_LABEL_HALO_WIDTH;
+  Canvas.ctx.lineJoin = "round";
+  const pinLabelOffset = def.pinLabelOffset ?? PIN_LABEL_OFFSET;
+  const labelOffset = rotateOffset(pinLabelOffset.dx, pinLabelOffset.dy, rotationAngle);
   pins.forEach((pin, i) => {
-    Canvas.ctx.fillText(
-      String(i + 1),
-      pin.x + labelOffset.x * GridConfig.dotSpace,
-      pin.y + labelOffset.y * GridConfig.dotSpace
-    );
+    const x = pin.x + labelOffset.x * GridConfig.dotSpace;
+    const y = pin.y + labelOffset.y * GridConfig.dotSpace;
+    Canvas.ctx.strokeText(String(i + 1), x, y);
+    Canvas.ctx.fillText(String(i + 1), x, y);
   });
 
   Canvas.ctx.restore();

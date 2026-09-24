@@ -8,6 +8,7 @@ import {redrawCanvas} from "./draw-canvas";
 import {StandardComponentState} from "../state/StandardComponentState";
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {disarmWire} from "./wire";
+import {findNearestDot} from "./dot-lookup";
 
 
 export class Ic{
@@ -86,16 +87,7 @@ export class Ic{
   }
 
   updatePosition(x: number, y: number){
-    let minDistance: number | null = null;
-    let minDot: IDot | null = null;
-    for (const dot of DotState.dots) {
-      const distance = this.calculateDistance(dot.x, dot.y, x, y);
-      if (minDistance === null || distance < minDistance) {
-        minDistance = distance;
-        minDot = dot;
-      }
-    }
-    this.topLeftDot = minDot;
+    this.topLeftDot = findNearestDot(x, y) ?? null;
   }
 
   drawBody(){
@@ -403,12 +395,6 @@ export class Ic{
     }
   }
 
-  calculateDistance(x1: number, y1: number, x2: number, y2: number) {
-    const deltaX = x2 - x1;
-    const deltaY = y2 - y1;
-    return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-  }
-
   rotate(){
     this.rotationAngle = ((this.rotationAngle + 90) % 360) as 0 | 90 | 180 | 270;
     const tmp = this.widthPin;
@@ -422,6 +408,13 @@ Ic.add(new Ic(4, 4, {1: "GND", 2: "TRIG", 3: "OUT", 4: "RESET", 5: "CTRL", 6: "T
 Ic.add(new Ic(4, 7, {1: "1A", 2: "1B", 3: "1Y", 4: "2A", 5: "2B", 6: "2Y", 7: "GND", 14: "VCC"}, "DIP-14 Logic"));
 Ic.add(new Ic(4, 8, {1: "EN", 2: "1D", 3: "1Q", 4: "2D", 5: "2Q", 8: "GND", 16: "VCC"}, "DIP-16 Logic"));
 Ic.add(new Ic(4, 14, {1: "RESET", 2: "RX", 3: "TX", 7: "VCC", 8: "GND", 22: "GND", 20: "AVCC"}, "ATmega328P"));
+// Arduino Nano: 0.6" between header rows, 15 pins per side. Labels as silkscreened on the board.
+Ic.add(new Ic(7, 15, {
+  1: "D13", 2: "3V3", 3: "REF", 4: "A0", 5: "A1", 6: "A2", 7: "A3", 8: "A4",
+  9: "A5", 10: "A6", 11: "A7", 12: "5V", 13: "RST", 14: "GND", 15: "VIN",
+  16: "TX1", 17: "RX0", 18: "RST", 19: "GND", 20: "D2", 21: "D3", 22: "D4",
+  23: "D5", 24: "D6", 25: "D7", 26: "D8", 27: "D9", 28: "D10", 29: "D11", 30: "D12"
+}, "Arduino Nano"));
 
 // Load custom ICs from localStorage on load
 Ic.loadCustomIcsFromLocalStorage();
@@ -445,6 +438,7 @@ export function selectIc(id: number | string){
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.pendingAnchorDot = undefined;
   disarmWire();
 }
 

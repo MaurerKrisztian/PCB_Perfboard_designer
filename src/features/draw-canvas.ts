@@ -35,7 +35,8 @@ function drawDot(dot: IDot){
     Canvas.ctx.strokeStyle = "#ffffff";
     Canvas.ctx.lineWidth = 1.5;
     Canvas.ctx.stroke();
-  } else if (dot === ToolState.wireStartDot || dot === StandardComponentState.pendingStartDot) {
+  } else if (dot === ToolState.wireStartDot || dot === StandardComponentState.pendingStartDot
+             || dot === AdvancedComponentState.pendingAnchorDot) {
     // Pending placement start pad highlight
     Canvas.ctx.beginPath();
     Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 4, 0, Math.PI * 2);
@@ -164,11 +165,33 @@ function drawAdvancedComponentPlacementPreview() {
   const def = getAdvancedComponentDefinition(AdvancedComponentState.armedDefinitionId);
   if (!def) return;
 
-  const ghost = new PlacedAdvancedComponent(def.id, DotState.hoverDot, AdvancedComponentState.armedRotation);
+  let ghostAnchor = DotState.hoverDot;
+  let ghostSpan: {rows: number; cols: number} | undefined;
+  if (def.gridSizable && AdvancedComponentState.pendingAnchorDot) {
+    // Second half of the two-click span: preview the whole block from its top-left corner,
+    // using the same anchor/size math the commit path in select.ts runs.
+    const startDot = AdvancedComponentState.pendingAnchorDot;
+    const endDot = DotState.hoverDot;
+    const topLeft = DotState.dots.find(
+      d => d.x === Math.min(startDot.x, endDot.x) && d.y === Math.min(startDot.y, endDot.y)
+    );
+    if (topLeft) {
+      ghostAnchor = topLeft;
+      ghostSpan = PlacedAdvancedComponent.gridSpanFromDots(startDot, endDot);
+    }
+  }
+
+  // Grid-sizable blocks always place unrotated - see the commit path in select.ts.
+  const ghostRotation = def.gridSizable ? 0 : AdvancedComponentState.armedRotation;
+  const ghost = new PlacedAdvancedComponent(def.id, ghostAnchor, ghostRotation);
+  if (ghostSpan) {
+    ghost.rows = ghostSpan.rows;
+    ghost.cols = ghostSpan.cols;
+  }
   Canvas.ctx.save();
   drawAdvancedComponentBody(
     ghost.getPinPositions(), ghost.getShadedPositions(), ghost.getBodyOutline(), ghost.getIconAnchor(),
-    def, AdvancedComponentState.armedRotation, {ghost: true}
+    def, ghostRotation, {ghost: true}
   );
   Canvas.ctx.restore();
 }

@@ -10,12 +10,14 @@ export function armAdvancedComponent(definitionId: string) {
   if (AdvancedComponentState.armedDefinitionId === definitionId) {
     // Clicking the already-armed component again disarms it
     AdvancedComponentState.armedDefinitionId = undefined;
+    AdvancedComponentState.pendingAnchorDot = undefined;
     updateAdvancedComponentButtonHighlight();
     redrawCanvas();
     return;
   }
   AdvancedComponentState.armedDefinitionId = definitionId;
   AdvancedComponentState.armedRotation = 0;
+  AdvancedComponentState.pendingAnchorDot = undefined;
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   IcState.selectedIc = undefined;

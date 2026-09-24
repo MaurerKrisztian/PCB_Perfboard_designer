@@ -1,5 +1,6 @@
 import {Utils} from "../../utils/utils";
 import {StandardComponentState} from "../../state/StandardComponentState";
+import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {IcState} from "../../state/IcState";
 import {redrawCanvas} from "../draw-canvas";
 import {disarmWire} from "../wire";
@@ -16,6 +17,8 @@ export function armStandardComponent(definitionId: string) {
   }
   StandardComponentState.armedDefinitionId = definitionId;
   StandardComponentState.pendingStartDot = undefined;
+  AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.pendingAnchorDot = undefined;
   IcState.selectedIc = undefined;
   disarmWire();
   updateStandardComponentButtonHighlight();

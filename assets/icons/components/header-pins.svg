@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- One male header pin seen from above: the black plastic shroud around a single
+       position, with the gold-plated pin tip in the middle. Drawn edge-to-edge so that
+       tiling this icon once per pin butts neighbouring positions into one solid strip. -->
+  <rect x="0" y="0" width="100" height="100" fill="#141418"/>
+  <rect x="2" y="2" width="96" height="96" fill="#1f1f26"/>
+  <circle cx="50" cy="50" r="17" fill="#c9a94f"/>
+  <circle cx="50" cy="50" r="13" fill="#e8d296"/>
+</svg>

@@ -60,6 +60,8 @@ export function serializePlacedAdvancedComponent(component: PlacedAdvancedCompon
     rotationAngle: component.rotationAngle,
     anchorDotX: component.anchorDot.x,
     anchorDotY: component.anchorDot.y,
+    rows: component.rows,
+    cols: component.cols,
   };
 }
 

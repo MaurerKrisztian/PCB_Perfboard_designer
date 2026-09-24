@@ -21,6 +21,7 @@ document.querySelectorAll('#toolModeSelector .tool-mode-btn').forEach((btn) => {
       StandardComponentState.armedDefinitionId = undefined;
       StandardComponentState.pendingStartDot = undefined;
       AdvancedComponentState.armedDefinitionId = undefined;
+      AdvancedComponentState.pendingAnchorDot = undefined;
       IcState.selectedIc = undefined;
       updateSelectionStatus();
       redrawCanvas();

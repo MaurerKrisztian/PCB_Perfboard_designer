@@ -100,6 +100,10 @@ export function deserializePlacedAdvancedComponent(data: any): PlacedAdvancedCom
   if (data.value) {
     component.value = String(data.value);
   }
+  // Projects saved before grid-sizable parts existed carry no rows/cols, and correctly fall
+  // back to the 1x1 that every fixed-geometry part uses.
+  component.rows = Math.max(1, Math.round(Number(data.rows)) || 1);
+  component.cols = Math.max(1, Math.round(Number(data.cols)) || 1);
   return component;
 }
 
@@ -140,6 +144,7 @@ export function loadProject(project: IProjectSave){
   StandardComponentState.pendingStartDot = undefined;
   StandardComponentState.selectedPlacedComponent = undefined;
   AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.pendingAnchorDot = undefined;
   AdvancedComponentState.selectedPlacedComponent = undefined;
   disarmWire();
   updateSelectionStatus();

@@ -19,6 +19,7 @@ export function armWire() {
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.pendingAnchorDot = undefined;
   IcState.selectedIc = undefined;
   Utils.getSafeHtmlElement('wireArmBtn').classList.add('active-mode');
   redrawCanvas();
