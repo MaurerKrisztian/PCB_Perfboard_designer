@@ -202,9 +202,15 @@ Canvas.c.addEventListener('mousedown', function(e) {
         HistoryState.changeIndex++;
         DotState.selectedDot = undefined;
         LineState.selectedLine = newLine;
+        // Chain the run: the end pad becomes the next wire's start, so a series of
+        // connections costs one click per wire instead of two.
+        ToolState.wireStartDot = DotState.hoverDot;
+      } else {
+        // Clicking the same pad again ends the run without drawing anything.
+        ToolState.wireStartDot = undefined;
       }
-      ToolState.wireStartDot = undefined;
       redrawCanvas();
+      updateSelectionStatus();
       return;
     }
 
@@ -455,6 +461,14 @@ function setSelection(event) {
 }
 
 ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event: ()=>{
+  // Mid-run, Escape only breaks the chain and leaves the wire tool armed, so ending a
+  // run does not cost a re-arm. A second press falls through and disarms it.
+  if (ToolState.armedWire && ToolState.wireStartDot) {
+    ToolState.wireStartDot = undefined;
+    updateSelectionStatus();
+    redrawCanvas();
+    return;
+  }
   DotState.selectedDot = undefined;
   LineState.selectedLine = undefined;
   IcState.selectedIc = undefined;

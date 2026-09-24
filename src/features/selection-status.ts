@@ -27,7 +27,7 @@ export function updateSelectionStatus() {
     statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> ${def?.name ?? "Component"} Selected [Drag to Move • Del to Remove]`;
   } else if (ToolState.armedWire) {
     statusEl.innerHTML = ToolState.wireStartDot
-      ? `<span>Wire Started [Click end pad to connect]</span>`
+      ? `<span>Wiring Run [Click next pad • Same pad or Esc to end run]</span>`
       : `<span>Wire Tool Armed [Click start pad]</span>`;
   } else if (StandardComponentState.armedDefinitionId) {
     const def = getComponentDefinition(StandardComponentState.armedDefinitionId);
