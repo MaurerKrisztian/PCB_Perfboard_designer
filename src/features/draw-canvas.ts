@@ -7,8 +7,13 @@ import {Canvas} from "../state/Canvas";
 import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
 import {StandardComponentState} from "../state/StandardComponentState";
+import {ToolState} from "../state/ToolState";
 import {getComponentDefinition} from "./standard-components/component-definitions";
 import {drawStandardComponentBody} from "./standard-components/standard-component-render";
+import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
+import {drawAdvancedComponentBody} from "./advanced-components/advanced-component-render";
+import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
 
 function drawDot(dot: IDot){
   Canvas.ctx.beginPath();
@@ -29,6 +34,14 @@ function drawDot(dot: IDot){
     Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 1, 0, Math.PI * 2);
     Canvas.ctx.strokeStyle = "#ffffff";
     Canvas.ctx.lineWidth = 1.5;
+    Canvas.ctx.stroke();
+  } else if (dot === ToolState.wireStartDot || dot === StandardComponentState.pendingStartDot
+             || dot === AdvancedComponentState.pendingAnchorDot) {
+    // Pending placement start pad highlight
+    Canvas.ctx.beginPath();
+    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 4, 0, Math.PI * 2);
+    Canvas.ctx.strokeStyle = "#22c55e";
+    Canvas.ctx.lineWidth = 3;
     Canvas.ctx.stroke();
   } else if (dot === DotState.hoverDot) {
     Canvas.ctx.beginPath();
@@ -147,6 +160,76 @@ function drawStandardComponentPlacementPreview() {
   Canvas.ctx.restore();
 }
 
+function drawAdvancedComponentPlacementPreview() {
+  if (!AdvancedComponentState.armedDefinitionId || !DotState.hoverDot) return;
+  const def = getAdvancedComponentDefinition(AdvancedComponentState.armedDefinitionId);
+  if (!def) return;
+
+  let ghostAnchor = DotState.hoverDot;
+  let ghostSpan: {rows: number; cols: number} | undefined;
+  if (def.gridSizable && AdvancedComponentState.pendingAnchorDot) {
+    // Second half of the two-click span: preview the whole block from its top-left corner,
+    // using the same anchor/size math the commit path in select.ts runs.
+    const startDot = AdvancedComponentState.pendingAnchorDot;
+    const endDot = DotState.hoverDot;
+    const topLeft = DotState.dots.find(
+      d => d.x === Math.min(startDot.x, endDot.x) && d.y === Math.min(startDot.y, endDot.y)
+    );
+    if (topLeft) {
+      ghostAnchor = topLeft;
+      ghostSpan = PlacedAdvancedComponent.gridSpanFromDots(startDot, endDot);
+    }
+  }
+
+  // Grid-sizable blocks always place unrotated - see the commit path in select.ts.
+  const ghostRotation = def.gridSizable ? 0 : AdvancedComponentState.armedRotation;
+  const ghost = new PlacedAdvancedComponent(def.id, ghostAnchor, ghostRotation);
+  if (ghostSpan) {
+    ghost.rows = ghostSpan.rows;
+    ghost.cols = ghostSpan.cols;
+  }
+  Canvas.ctx.save();
+  drawAdvancedComponentBody(
+    ghost.getPinPositions(), ghost.getShadedPositions(), ghost.getBodyOutline(), ghost.getIconAnchor(),
+    def, ghostRotation, {ghost: true}
+  );
+  Canvas.ctx.restore();
+}
+
+function drawWirePlacementPreview() {
+  if (!ToolState.armedWire || !DotState.hoverDot) return;
+
+  Canvas.ctx.save();
+
+  if (!ToolState.wireStartDot) {
+    // No start dot chosen yet - show a small marker + hint at the hover dot
+    Canvas.ctx.beginPath();
+    Canvas.ctx.setLineDash([4, 3]);
+    Canvas.ctx.strokeStyle = "#38bdf8";
+    Canvas.ctx.lineWidth = 2;
+    Canvas.ctx.arc(DotState.hoverDot.x, DotState.hoverDot.y, 10, 0, Math.PI * 2);
+    Canvas.ctx.stroke();
+
+    Canvas.ctx.setLineDash([]);
+    Canvas.ctx.fillStyle = "#ffffff";
+    Canvas.ctx.font = "bold 11px Inter, Arial";
+    Canvas.ctx.textAlign = "center";
+    Canvas.ctx.fillText("➕ Start Wire", DotState.hoverDot.x, DotState.hoverDot.y - 16);
+  } else if (ToolState.wireStartDot !== DotState.hoverDot) {
+    Canvas.ctx.beginPath();
+    Canvas.ctx.setLineDash([6, 4]);
+    Canvas.ctx.moveTo(ToolState.wireStartDot.x, ToolState.wireStartDot.y);
+    Canvas.ctx.lineTo(DotState.hoverDot.x, DotState.hoverDot.y);
+    Canvas.ctx.strokeStyle = ToolState.activeWireColor || "#3b82f6";
+    Canvas.ctx.lineWidth = ToolState.selectedWireWidth || 4;
+    Canvas.ctx.lineCap = "round";
+    Canvas.ctx.globalAlpha = 0.55;
+    Canvas.ctx.stroke();
+  }
+
+  Canvas.ctx.restore();
+}
+
 export function redrawCanvas() {
   resetCanvas();
   // 1. Draw IC chip bodies
@@ -165,10 +248,16 @@ export function redrawCanvas() {
   for (const component of StandardComponentState.placedComponents) {
     component.draw();
   }
-  // 5. Draw IC text badges on top of everything
+  // 5. Draw Advanced (fixed-pin) Component bodies
+  for (const component of AdvancedComponentState.placedComponents) {
+    component.draw();
+  }
+  // 6. Draw IC text badges on top of everything
   for (const ic of IcState.placedIcs) {
     ic.drawLabel();
   }
   drawIcPlacementPreview();
   drawStandardComponentPlacementPreview();
+  drawAdvancedComponentPlacementPreview();
+  drawWirePlacementPreview();
 }

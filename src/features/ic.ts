@@ -6,6 +6,9 @@ import {ShortcutRegistry} from "./shortcut-keys";
 import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
 import {StandardComponentState} from "../state/StandardComponentState";
+import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {disarmWire} from "./wire";
+import {findNearestDot} from "./dot-lookup";
 
 
 export class Ic{
@@ -36,8 +39,8 @@ export class Ic{
 
   static showICs(){
     Utils.getSafeHtmlElement("ic-items").innerHTML = Ic.IC_CONTAINER.map((item)=>{
-      const deleteBtn = item.isCustom 
-        ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>` 
+      const deleteBtn = item.isCustom
+        ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>`
         : '';
       return `<button class="btn btn-accent" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick='selectIc("${item.id}")'>📦 ${item.name}${deleteBtn}</button>`;
     }).join(" ");
@@ -84,16 +87,7 @@ export class Ic{
   }
 
   updatePosition(x: number, y: number){
-    let minDistance: number | null = null;
-    let minDot: IDot | null = null;
-    for (const dot of DotState.dots) {
-      const distance = this.calculateDistance(dot.x, dot.y, x, y);
-      if (minDistance === null || distance < minDistance) {
-        minDistance = distance;
-        minDot = dot;
-      }
-    }
-    this.topLeftDot = minDot;
+    this.topLeftDot = findNearestDot(x, y) ?? null;
   }
 
   drawBody(){
@@ -230,6 +224,50 @@ export class Ic{
     Canvas.ctx.restore();
   }
 
+  getRealPinPositions(): {pin: number, x: number, y: number}[] {
+    if (!this.topLeftDot) return [];
+    const positions: {pin: number, x: number, y: number}[] = [];
+
+    if (this.rotationAngle === 0 || this.rotationAngle === 180) {
+      const pinsPerSide = this.heightPin;
+      const leftX = this.topLeftDot.x;
+      const rightX = this.topLeftDot.x + 50 * (this.widthPin - 1);
+      for (let i = 0; i < pinsPerSide; i++) {
+        const py = this.topLeftDot.y + i * 50;
+        const leftPinNum = this.rotationAngle === 0 ? (i + 1) : (pinsPerSide * 2 - i);
+        const rightPinNum = this.rotationAngle === 0 ? (pinsPerSide * 2 - i) : (i + 1);
+        positions.push({pin: leftPinNum, x: leftX, y: py});
+        positions.push({pin: rightPinNum, x: rightX, y: py});
+      }
+    } else {
+      const pinsPerSide = this.widthPin;
+      const topY = this.topLeftDot.y;
+      const bottomY = this.topLeftDot.y + 50 * (this.heightPin - 1);
+      for (let i = 0; i < pinsPerSide; i++) {
+        const px = this.topLeftDot.x + i * 50;
+        const topPinNum = this.rotationAngle === 90 ? (i + 1) : (pinsPerSide * 2 - i);
+        const bottomPinNum = this.rotationAngle === 90 ? (pinsPerSide * 2 - i) : (i + 1);
+        positions.push({pin: topPinNum, x: px, y: topY});
+        positions.push({pin: bottomPinNum, x: px, y: bottomY});
+      }
+    }
+
+    return positions;
+  }
+
+  drawPinMarkers() {
+    const positions = this.getRealPinPositions();
+    Canvas.ctx.save();
+    Canvas.ctx.strokeStyle = "#38bdf8";
+    Canvas.ctx.lineWidth = 1.5;
+    for (const {x, y} of positions) {
+      Canvas.ctx.beginPath();
+      Canvas.ctx.arc(x, y, 5, 0, Math.PI * 2);
+      Canvas.ctx.stroke();
+    }
+    Canvas.ctx.restore();
+  }
+
   drawLabel(){
     if (!this.topLeftDot) return;
     const isSelected = this === IcState.selectedPlacedIc;
@@ -261,6 +299,7 @@ export class Ic{
     Canvas.ctx.fillText(this.name, centerX, centerY + 4);
     Canvas.ctx.restore();
 
+    this.drawPinMarkers();
     this.drawPinLabels();
   }
 
@@ -356,12 +395,6 @@ export class Ic{
     }
   }
 
-  calculateDistance(x1: number, y1: number, x2: number, y2: number) {
-    const deltaX = x2 - x1;
-    const deltaY = y2 - y1;
-    return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-  }
-
   rotate(){
     this.rotationAngle = ((this.rotationAngle + 90) % 360) as 0 | 90 | 180 | 270;
     const tmp = this.widthPin;
@@ -375,6 +408,13 @@ Ic.add(new Ic(4, 4, {1: "GND", 2: "TRIG", 3: "OUT", 4: "RESET", 5: "CTRL", 6: "T
 Ic.add(new Ic(4, 7, {1: "1A", 2: "1B", 3: "1Y", 4: "2A", 5: "2B", 6: "2Y", 7: "GND", 14: "VCC"}, "DIP-14 Logic"));
 Ic.add(new Ic(4, 8, {1: "EN", 2: "1D", 3: "1Q", 4: "2D", 5: "2Q", 8: "GND", 16: "VCC"}, "DIP-16 Logic"));
 Ic.add(new Ic(4, 14, {1: "RESET", 2: "RX", 3: "TX", 7: "VCC", 8: "GND", 22: "GND", 20: "AVCC"}, "ATmega328P"));
+// Arduino Nano: 0.6" between header rows, 15 pins per side. Labels as silkscreened on the board.
+Ic.add(new Ic(7, 15, {
+  1: "D13", 2: "3V3", 3: "REF", 4: "A0", 5: "A1", 6: "A2", 7: "A3", 8: "A4",
+  9: "A5", 10: "A6", 11: "A7", 12: "5V", 13: "RST", 14: "GND", 15: "VIN",
+  16: "TX1", 17: "RX0", 18: "RST", 19: "GND", 20: "D2", 21: "D3", 22: "D4",
+  23: "D5", 24: "D6", 25: "D7", 26: "D8", 27: "D9", 28: "D10", 29: "D11", 30: "D12"
+}, "Arduino Nano"));
 
 // Load custom ICs from localStorage on load
 Ic.loadCustomIcsFromLocalStorage();
@@ -397,6 +437,9 @@ export function selectIc(id: number | string){
   IcState.selectedIc = ic;
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
+  AdvancedComponentState.armedDefinitionId = undefined;
+  AdvancedComponentState.pendingAnchorDot = undefined;
+  disarmWire();
 }
 
 export function rotateSelectedIc() {
@@ -405,8 +448,18 @@ export function rotateSelectedIc() {
     redrawCanvas();
     return;
   }
+  if (AdvancedComponentState.selectedPlacedComponent) {
+    AdvancedComponentState.selectedPlacedComponent.rotate();
+    redrawCanvas();
+    return;
+  }
   if (IcState.selectedIc) {
     IcState.selectedIc.rotate();
+    redrawCanvas();
+    return;
+  }
+  if (AdvancedComponentState.armedDefinitionId) {
+    AdvancedComponentState.armedRotation = ((AdvancedComponentState.armedRotation + 90) % 360) as 0 | 90 | 180 | 270;
     redrawCanvas();
     return;
   }
@@ -415,6 +468,13 @@ export function rotateSelectedIc() {
     if (hoveredIc) {
       hoveredIc.rotate();
       IcState.selectedPlacedIc = hoveredIc;
+      redrawCanvas();
+      return;
+    }
+    const hoveredAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(DotState.hoverDot!.x, DotState.hoverDot!.y));
+    if (hoveredAdvancedComponent) {
+      hoveredAdvancedComponent.rotate();
+      AdvancedComponentState.selectedPlacedComponent = hoveredAdvancedComponent;
       redrawCanvas();
       return;
     }

@@ -1,15 +1,19 @@
 import {IDot} from "../../interfaces/dot.interface";
 import {StandardComponentState} from "../../state/StandardComponentState";
-import {ComponentDefinition, getComponentDefinition} from "./component-definitions";
+import {ComponentDefinition, getComponentBodySize, getComponentDefinition} from "./component-definitions";
 import {drawStandardComponentBody} from "./standard-component-render";
 
-// Wider than GridConfig.lineSelectTolerance (used for hairline wires) since the
-// component body renders ~32px tall, so clicks anywhere near the visible body should register.
-const HIT_TEST_TOLERANCE = 18;
+// Wider than GridConfig.lineSelectTolerance (used for hairline wires) since the component
+// body renders as a square of getComponentBodySize(def) px, so clicks anywhere near the
+// visible body should register. Derived from the body size so bigger parts stay as easy to
+// click as small ones; the fallback covers components whose definition has gone missing.
+const HIT_TEST_TOLERANCE_RATIO = 0.6;
+const FALLBACK_HIT_TEST_TOLERANCE = 18;
 
 export class PlacedStandardComponent {
   public id: number = Math.random() * 100;
   public value?: string;
+  public color?: string;
 
   constructor(
     public definitionId: string,
@@ -25,7 +29,12 @@ export class PlacedStandardComponent {
     const def = this.getDefinition();
     if (!def) return;
     const isSelected = this === StandardComponentState.selectedPlacedComponent;
-    drawStandardComponentBody(this.startDot, this.endDot, def, {selected: isSelected});
+    drawStandardComponentBody(this.startDot, this.endDot, def, {selected: isSelected, value: this.value, color: this.color});
+  }
+
+  private getHitTestTolerance(): number {
+    const def = this.getDefinition();
+    return def ? getComponentBodySize(def) * HIT_TEST_TOLERANCE_RATIO : FALLBACK_HIT_TEST_TOLERANCE;
   }
 
   containsPoint(x: number, y: number): boolean {
@@ -41,6 +50,6 @@ export class PlacedStandardComponent {
       Math.pow(this.endDot.x - this.startDot.x, 2) + Math.pow(this.endDot.y - this.startDot.y, 2)
     );
 
-    return Math.abs(d - (d1 + d2)) < HIT_TEST_TOLERANCE;
+    return Math.abs(d - (d1 + d2)) < this.getHitTestTolerance();
   }
 }

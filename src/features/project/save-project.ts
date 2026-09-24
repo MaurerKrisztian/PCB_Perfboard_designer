@@ -7,6 +7,8 @@ import {IProjectSave} from "../../interfaces/project-save.interface";
 import {Ic} from "../ic";
 import {StandardComponentState} from "../../state/StandardComponentState";
 import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
+import {AdvancedComponentState} from "../../state/AdvancedComponentState";
+import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 
 const saveBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProjectBtn');
 saveBtn.addEventListener('click', function() {
@@ -42,10 +44,24 @@ export function serializePlacedStandardComponent(component: PlacedStandardCompon
     id: component.id,
     definitionId: component.definitionId,
     value: component.value,
+    color: component.color,
     startDotX: component.startDot.x,
     startDotY: component.startDot.y,
     endDotX: component.endDot.x,
     endDotY: component.endDot.y,
+  };
+}
+
+export function serializePlacedAdvancedComponent(component: PlacedAdvancedComponent) {
+  return {
+    id: component.id,
+    definitionId: component.definitionId,
+    value: component.value,
+    rotationAngle: component.rotationAngle,
+    anchorDotX: component.anchorDot.x,
+    anchorDotY: component.anchorDot.y,
+    rows: component.rows,
+    cols: component.cols,
   };
 }
 
@@ -56,6 +72,7 @@ export function getSaveJson(): IProjectSave {
     canvas: { width: Canvas.gridWidth, height: Canvas.gridHeight },
     ICs: Ic.IC_CONTAINER || [],
     placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic)),
-    placedStandardComponents: StandardComponentState.placedComponents.map(c => serializePlacedStandardComponent(c))
+    placedStandardComponents: StandardComponentState.placedComponents.map(c => serializePlacedStandardComponent(c)),
+    placedAdvancedComponents: AdvancedComponentState.placedComponents.map(c => serializePlacedAdvancedComponent(c))
   };
 }

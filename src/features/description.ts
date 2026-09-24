@@ -1,16 +1,6 @@
 import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
-import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
-// Add description
-Utils.getSafeHtmlElement<HTMLButtonElement>('addDescriptionBtn').addEventListener('click', function() {
-  addDescriptionToDot();
-});
-
-// Delete description
-Utils.getSafeHtmlElement<HTMLButtonElement>('deleteDescriptionBtn').addEventListener('click', function() {
-  removeDescriptionFromDot();
-});
 
 export function addDescriptionToDot(targetDot?: any){
   const dot = targetDot || DotState.selectedDot || DotState.hoverDot;
