@@ -13,14 +13,21 @@ export function disarmWire() {
   document.getElementById('wireArmBtn')?.classList.remove('active-mode');
 }
 
+function restoreToolModeHighlight() {
+  document.querySelectorAll('#toolModeSelector .tool-mode-btn').forEach(b => b.classList.remove('active-mode'));
+  document.querySelector(`#toolModeSelector .tool-mode-btn[data-mode="${ToolState.activeToolMode}"]`)?.classList.add('active-mode');
+}
+
 export function armWire() {
   ToolState.armedWire = true;
   ToolState.wireStartDot = undefined;
+  ToolState.activeToolMode = 'select';
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   AdvancedComponentState.armedDefinitionId = undefined;
   AdvancedComponentState.pendingAnchorDot = undefined;
   IcState.selectedIc = undefined;
+  document.querySelectorAll('#toolModeSelector .tool-mode-btn').forEach(b => b.classList.remove('active-mode'));
   Utils.getSafeHtmlElement('wireArmBtn').classList.add('active-mode');
   redrawCanvas();
   updateSelectionStatus();
@@ -29,6 +36,7 @@ export function armWire() {
 Utils.getSafeHtmlElement<HTMLButtonElement>('wireArmBtn').addEventListener('click', () => {
   if (ToolState.armedWire) {
     disarmWire();
+    restoreToolModeHighlight();
     redrawCanvas();
     updateSelectionStatus();
   } else {
@@ -42,6 +50,7 @@ ShortcutRegistry.add({
   event: () => {
     if (ToolState.armedWire) {
       disarmWire();
+      restoreToolModeHighlight();
       redrawCanvas();
       updateSelectionStatus();
     } else {
