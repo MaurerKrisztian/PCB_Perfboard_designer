@@ -117,11 +117,17 @@ export class PlacedAdvancedComponent {
     );
   }
 
-  containsPoint(x: number, y: number): boolean {
+  // Axis-aligned box around the visible body - the outline if the definition has one,
+  // otherwise the pins padded out the same way the renderer draws the default body box.
+  getBodyRect(): {x: number; y: number; w: number; h: number} {
     const outline = this.getBodyOutline();
-    const rect = outline.length >= 3
+    return outline.length >= 3
       ? getBoundingRect(outline)
       : getBoundingRect([...this.getPinPositions(), ...this.getShadedPositions()], PIN_PAD);
+  }
+
+  containsPoint(x: number, y: number): boolean {
+    const rect = this.getBodyRect();
     return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
   }
 }

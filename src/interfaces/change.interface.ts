@@ -8,6 +8,9 @@ import {PlacedAdvancedComponent} from "../features/advanced-components/placed-ad
 // list of dots (see getAnchorDots), so one from/to shape covers all of them.
 export type IChange =
   | { type: "add" | "remove"; kind: "line"; line: ILine }
+  // A same-color, collinear wire placement absorbed one or more existing wires into itself.
+  // Recorded as one entry so undo/redo treats the whole merge as a single step.
+  | { type: "merge"; kind: "line"; removed: ILine[]; merged: ILine }
   | { type: "add" | "remove"; kind: "ic"; ic: Ic }
   | { type: "add" | "remove"; kind: "standard-component"; component: PlacedStandardComponent }
   | { type: "add" | "remove"; kind: "advanced-component"; component: PlacedAdvancedComponent }

@@ -26,18 +26,33 @@ export interface DrawStandardComponentOptions {
   color?: string;
 }
 
-export function drawStandardComponentBody(startDot: IDot, endDot: IDot, def: ComponentDefinition, options: DrawStandardComponentOptions = {}) {
+// Local-space (rotated so the span lies along the x-axis, origin at startDot) geometry of a
+// placed component's body/leads, shared by the renderer and the hit test so they always agree
+// on where the artwork actually is.
+export interface StandardComponentSpan {
+  length: number;
+  angle: number;
+  bodySize: number;
+  bodyStart: number;
+  bodyEnd: number;
+}
+
+export function getStandardComponentSpan(startDot: IDot, endDot: IDot, def: ComponentDefinition): StandardComponentSpan {
   const dx = endDot.x - startDot.x;
   const dy = endDot.y - startDot.y;
   const length = Math.sqrt(dx * dx + dy * dy);
-  if (length === 0) return;
   const angle = Math.atan2(dy, dx);
-
   // Body stays a fixed square; leads stretch to fill whatever's left between the two dots
   // (and are skipped entirely when the body is longer than the span).
   const bodySize = getComponentBodySize(def);
   const bodyStart = (length - bodySize) / 2;
   const bodyEnd = bodyStart + bodySize;
+  return {length, angle, bodySize, bodyStart, bodyEnd};
+}
+
+export function drawStandardComponentBody(startDot: IDot, endDot: IDot, def: ComponentDefinition, options: DrawStandardComponentOptions = {}) {
+  const {length, angle, bodySize, bodyStart, bodyEnd} = getStandardComponentSpan(startDot, endDot, def);
+  if (length === 0) return;
 
   Canvas.ctx.save();
   Canvas.ctx.translate(startDot.x, startDot.y);

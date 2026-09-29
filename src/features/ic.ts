@@ -277,10 +277,10 @@ export class Ic{
     const centerY = this.topLeftDot.y + (h / 2);
 
     Canvas.ctx.save();
-    Canvas.ctx.font = "bold 11px Inter, Arial";
+    Canvas.ctx.font = "bold 15px Inter, Arial";
     const textWidth = Canvas.ctx.measureText(this.name).width;
-    const badgeW = textWidth + 16;
-    const badgeH = 20;
+    const badgeW = textWidth + 20;
+    const badgeH = 26;
 
     // Draw background badge pill behind label
     Canvas.ctx.beginPath();
@@ -296,7 +296,8 @@ export class Ic{
     // Draw high-contrast text
     Canvas.ctx.fillStyle = isSelected ? "#38bdf8" : "#ffffff";
     Canvas.ctx.textAlign = "center";
-    Canvas.ctx.fillText(this.name, centerX, centerY + 4);
+    Canvas.ctx.textBaseline = "middle";
+    Canvas.ctx.fillText(this.name, centerX, centerY + 1);
     Canvas.ctx.restore();
 
     this.drawPinMarkers();

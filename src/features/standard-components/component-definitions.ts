@@ -11,6 +11,10 @@ export interface ComponentDefinition {
   unit?: ComponentUnit;
   // Side length of the rendered square body, in canvas pixels. Defaults to DEFAULT_BODY_SIZE.
   bodySize?: number;
+  // Half the artwork's thickness across the lead axis, in the icon's 100-unit viewBox
+  // (outline stroke included). Lets value labels hug the visible body instead of the whole
+  // square icon box. Defaults to 50, i.e. the full box.
+  artworkHalfThickness?: number;
 }
 
 // One grid step is GridConfig.dotSpace (50px), so the default body spans a bit more than
@@ -26,12 +30,12 @@ export function getIconPath(def: ComponentDefinition): string {
 }
 
 export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
-  {id: "resistor", category: "Passive", name: "Resistor", fallbackLabel: "R", unit: "Ω"},
-  {id: "ceramic-capacitor", category: "Passive", name: "Ceramic Capacitor", fallbackLabel: "C", unit: "F"},
-  {id: "electrolytic-capacitor", category: "Passive", name: "Electrolytic Capacitor", fallbackLabel: "C+", unit: "F", bodySize: 96},
-  {id: "inductor", category: "Passive", name: "Inductor", fallbackLabel: "L", unit: "H"},
+  {id: "resistor", category: "Passive", name: "Resistor", fallbackLabel: "R", unit: "Ω", artworkHalfThickness: 17},
+  {id: "ceramic-capacitor", category: "Passive", name: "Ceramic Capacitor", fallbackLabel: "C", unit: "F", artworkHalfThickness: 38},
+  {id: "electrolytic-capacitor", category: "Passive", name: "Electrolytic Capacitor", fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44},
+  {id: "inductor", category: "Passive", name: "Inductor", fallbackLabel: "L", unit: "H", artworkHalfThickness: 17},
   {id: "led", category: "Semiconductor", name: "LED", fallbackLabel: "LED"},
-  {id: "diode", category: "Semiconductor", name: "Diode", fallbackLabel: "D"},
+  {id: "diode", category: "Semiconductor", name: "Diode", fallbackLabel: "D", artworkHalfThickness: 18},
 ];
 
 export function getComponentDefinition(id: string): ComponentDefinition | undefined {

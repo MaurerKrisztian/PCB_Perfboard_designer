@@ -14,6 +14,7 @@ import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
 import {drawAdvancedComponentBody} from "./advanced-components/advanced-component-render";
 import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
+import {drawComponentValueLabels} from "./component-value-labels";
 
 function drawDot(dot: IDot){
   Canvas.ctx.beginPath();
@@ -252,7 +253,9 @@ export function redrawCanvas() {
   for (const component of AdvancedComponentState.placedComponents) {
     component.draw();
   }
-  // 6. Draw IC text badges on top of everything
+  // 6. Draw silkscreen-style component value labels (when toggled on)
+  drawComponentValueLabels();
+  // 7. Draw IC text badges on top of everything
   for (const ic of IcState.placedIcs) {
     ic.drawLabel();
   }

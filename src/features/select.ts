@@ -18,6 +18,7 @@ import {disarmWire} from "./wire";
 import {updateSelectionStatus} from "./selection-status";
 import {beginDrag, cancelDrag, endDrag} from "./component-drag";
 import {findDotAt} from "./dot-lookup";
+import {mergeNewWire} from "./wire-merge";
 let isPanningBoard = false;
 let panStartX = 0;
 let panStartY = 0;
@@ -196,12 +197,19 @@ Canvas.c.addEventListener('mousedown', function(e) {
           color: ToolState.activeWireColor || "#3b82f6",
           width: ToolState.selectedWireWidth || 4
         };
-        LineState.lines.push(newLine);
+        // Same-color wires that end up collinear and touching (e.g. a chained run) fold into
+        // one wire, unless the shared dot is a pin - that endpoint has to stay splittable.
+        const {line: placedLine, absorbed} = mergeNewWire(newLine);
+        LineState.lines.push(placedLine);
         HistoryState.changes.splice(HistoryState.changeIndex + 1);
-        HistoryState.changes.push({type: 'add', kind: 'line', line: newLine});
+        if (absorbed.length > 0) {
+          HistoryState.changes.push({type: 'merge', kind: 'line', removed: absorbed, merged: placedLine});
+        } else {
+          HistoryState.changes.push({type: 'add', kind: 'line', line: placedLine});
+        }
         HistoryState.changeIndex++;
         DotState.selectedDot = undefined;
-        LineState.selectedLine = newLine;
+        LineState.selectedLine = placedLine;
         // Chain the run: the end pad becomes the next wire's start, so a series of
         // connections costs one click per wire instead of two.
         ToolState.wireStartDot = DotState.hoverDot;
@@ -323,7 +331,7 @@ Canvas.c.addEventListener('contextmenu', function(e) {
   }
 
   selectLine(e);
-  if (!LineState.selectedLine && DotState.hoverDot) {
+  if (!LineState.selectedLine) {
     DotState.selectedDot = DotState.hoverDot;
     redrawCanvas();
   }
@@ -411,6 +419,32 @@ window.addEventListener('click', (e) => {
   }
 });
 
+// Perpendicular distance from (x,y) to the segment, clamped to the segment itself - used to
+// rank "how close is this click to this wire" rather than just "is it within tolerance."
+function distanceToSegment(x: number, y: number, line: ILine): number {
+  const dx = line.end.x - line.start.x;
+  const dy = line.end.y - line.start.y;
+  const lengthSq = dx * dx + dy * dy;
+  if (lengthSq === 0) {
+    return Math.hypot(x - line.start.x, y - line.start.y);
+  }
+  const t = Math.max(0, Math.min(1, ((x - line.start.x) * dx + (y - line.start.y) * dy) / lengthSq));
+  return Math.hypot(x - (line.start.x + t * dx), y - (line.start.y + t * dy));
+}
+
+function findLineAt(x: number, y: number): ILine | undefined {
+  let closest: ILine | undefined;
+  let closestDistance = GridConfig.lineSelectTolerance;
+  for (const line of LineState.lines) {
+    const distance = distanceToSegment(x, y, line);
+    if (distance < closestDistance) {
+      closest = line;
+      closestDistance = distance;
+    }
+  }
+  return closest;
+}
+
 function selectDot(){
   if (!DotState.hoverDot){
     return;
@@ -420,29 +454,38 @@ function selectDot(){
   redrawCanvas();
 }
 
+// A hovered dot only outranks a wire under the cursor when the click actually lands on the
+// dot itself (dotClickPriorityRadius) - otherwise the dot's generous hover/snap radius would
+// swallow clicks on most of a short wire, since wires span only 50px between dots.
+function dotOutranksLineAt(x: number, y: number): boolean {
+  if (!DotState.hoverDot) {
+    return false;
+  }
+  return Math.hypot(x - DotState.hoverDot.x, y - DotState.hoverDot.y) <= GridConfig.dotClickPriorityRadius;
+}
+
 export function selectLine(event: MouseEvent) {
-  if (DotState.hoverDot) {
+  const {x, y} = Canvas.toDrawingCoordinates(event);
+
+  if (dotOutranksLineAt(x, y)) {
+    LineState.selectedLine = undefined;
     return;
   }
 
+  const line = findLineAt(x, y);
+  LineState.selectedLine = line;
+  if (line) {
+    DotState.selectedDot = undefined;
+  }
+  redrawCanvas();
+}
+
+function setSelection(event: MouseEvent) {
   const {x, y} = Canvas.toDrawingCoordinates(event);
 
-  for (let i = 0; i < LineState.lines.length; i++) {
-    const line = LineState.lines[i];
-
-    const dx1 = line.start.x - x;
-    const dy1 = line.start.y - y;
-    const dx2 = line.end.x - x;
-    const dy2 = line.end.y - y;
-
-    const d1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-    const d2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-    const d = Math.sqrt(
-      Math.pow(line.end.x - line.start.x, 2) + Math.pow(line.end.y - line.start.y, 2)
-    );
-
-    if (Math.abs(d - (d1 + d2)) < GridConfig.lineSelectTolerance) {
+  if (!dotOutranksLineAt(x, y)) {
+    const line = findLineAt(x, y);
+    if (line) {
       LineState.selectedLine = line;
       DotState.selectedDot = undefined;
       redrawCanvas();
@@ -450,14 +493,11 @@ export function selectLine(event: MouseEvent) {
     }
   }
 
-  DotState.selectedDot = undefined;
-  LineState.selectedLine = undefined;
-  redrawCanvas();
-}
-
-function setSelection(event) {
   selectDot();
-  selectLine(event);
+  if (!DotState.hoverDot) {
+    LineState.selectedLine = undefined;
+    redrawCanvas();
+  }
 }
 
 ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event: ()=>{

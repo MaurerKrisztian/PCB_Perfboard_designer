@@ -1,6 +1,7 @@
 import {Canvas} from "../state/Canvas";
 import {applyCanvasResolution, startDevicePixelRatioWatch} from "./canvas-sizing";
 import {redrawCanvas} from "./draw-canvas";
+import {ViewState} from "../state/ViewState";
 
 // Fullscreen Focus Mode & Board Zoom Management
 let currentZoom = 1.0;
@@ -140,10 +141,39 @@ function toggleFullscreenMode(enable?: boolean) {
   }
 }
 
-// Bind Zoom, Sidebar & Fullscreen buttons
+const SHOW_VALUES_STORAGE_KEY = 'show_component_values';
+
+function setComponentValuesVisible(show: boolean) {
+  ViewState.showComponentValues = show;
+  const btn = document.getElementById('toggleValuesBtn');
+  if (btn) {
+    btn.innerText = show ? '🏷 Values: On' : '🏷 Values';
+    btn.className = show ? 'btn-accent' : 'btn';
+  }
+}
+
+function toggleComponentValues() {
+  setComponentValuesVisible(!ViewState.showComponentValues);
+  try {
+    localStorage.setItem(SHOW_VALUES_STORAGE_KEY, String(ViewState.showComponentValues));
+  } catch (e) {
+    console.error("Failed to save value label visibility to localStorage", e);
+  }
+  redrawCanvas();
+}
+
+// Restore the remembered preference; index.ts does the initial redraw after all imports.
+try {
+  setComponentValuesVisible(localStorage.getItem(SHOW_VALUES_STORAGE_KEY) === 'true');
+} catch (e) {
+  console.error("Failed to load value label visibility from localStorage", e);
+}
+
+// Bind Zoom, Sidebar, Value labels & Fullscreen buttons
 document.getElementById('zoomInBtn')?.addEventListener('click', zoomIn);
 document.getElementById('zoomOutBtn')?.addEventListener('click', zoomOut);
 document.getElementById('zoomFitBtn')?.addEventListener('click', () => fitToScreen());
+document.getElementById('toggleValuesBtn')?.addEventListener('click', toggleComponentValues);
 
 document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => toggleSidebar());
 

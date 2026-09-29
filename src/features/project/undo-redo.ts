@@ -22,6 +22,21 @@ function applyChange(change: IChange, direction: "apply" | "revert") {
     return;
   }
 
+  if (change.type === "merge") {
+    if (direction === "apply") {
+      for (const removed of change.removed) {
+        const index = LineState.lines.findIndex(l => l.start === removed.start && l.end === removed.end);
+        if (index > -1) LineState.lines.splice(index, 1);
+      }
+      LineState.lines.push(change.merged);
+    } else {
+      const index = LineState.lines.findIndex(l => l.start === change.merged.start && l.end === change.merged.end);
+      if (index > -1) LineState.lines.splice(index, 1);
+      LineState.lines.push(...change.removed);
+    }
+    return;
+  }
+
   const add = (change.type === "add") === (direction === "apply");
   if (change.kind === "line") {
     if (add) {

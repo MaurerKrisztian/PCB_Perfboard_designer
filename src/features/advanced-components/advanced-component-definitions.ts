@@ -32,6 +32,10 @@ export interface AdvancedComponentDefinition {
   // negative dy = above the pin row). Needed for parts whose body covers the default spot
   // just above the pin - the numbers get pushed clear of the body instead of onto it.
   pinLabelOffset?: PinOffset;
+  // Where to center the value label on the part itself (grid units, unrotated, relative to
+  // pins[0]), for packages with a spot that reads like silkscreen (e.g. a MOSFET's black
+  // body). Parts without it get their value label next to the body instead.
+  valueLabelOffset?: PinOffset;
   unit?: ComponentUnit;
   // When true, the icon is scaled to fill the full body box (rather than padded within it)
   // and, once it has loaded, the body's solid color fill is skipped entirely so only the
@@ -94,6 +98,9 @@ const MOSFET_BODY_OUTLINE: PinOffset[] = [
 // The body reaches MOSFET_HALF_HEIGHT above the pin row, so the numbers have to clear that
 // (plus a little breathing room) to sit on the board rather than on the package artwork.
 const MOSFET_PIN_LABEL_OFFSET: PinOffset = {dx: 0, dy: -(MOSFET_HALF_HEIGHT + 0.24)};
+// Middle of mosfet.svg's black plastic, between the metal tab's edge (viewBox y=17) and the
+// bottom outline (y=40), out of a 46-tall viewBox mapped onto the body's height.
+const MOSFET_VALUE_LABEL_OFFSET: PinOffset = {dx: 1, dy: ((17 + 40) / 2 - 23) / 46 * (MOSFET_HALF_HEIGHT * 2)};
 // Physical footprint: a 5-hole-wide, 2-hole-tall flange (the pins sit on its bottom edge),
 // with a narrower 3-hole-wide, 3-hole-long bushing/shaft tab hanging off its middle.
 const POT_OUTLINE_PAD = 0.3;
@@ -119,7 +126,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     id: "mosfet", category: "Semiconductor", name: "MOSFET", fallbackLabel: "MOS",
     pinOffsets: INLINE_3_PINS,
     bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
-    pinLabelOffset: MOSFET_PIN_LABEL_OFFSET
+    pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
   },
   {
     id: "potentiometer", category: "Passive", name: "Potentiometer", fallbackLabel: "POT",
