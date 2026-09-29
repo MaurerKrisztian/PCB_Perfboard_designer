@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 195 46" width="195" height="46" role="img" aria-label="TO-220 MOSFET, seen from above">
+  <defs>
+    <clipPath id="to220Top">
+      <rect x="3" y="4" width="189" height="38" rx="6"/>
+    </clipPath>
+  </defs>
+  <rect x="3" y="4" width="189" height="38" rx="6" fill="#2a2e33" stroke="#e2e8f0" stroke-width="4"/>
+  <g clip-path="url(#to220Top)">
+    <rect x="3" y="4" width="189" height="13" fill="#9aa5b1"/>
+    <rect x="3" y="4" width="189" height="4" fill="#c4ced8"/>
+    <rect x="3" y="15" width="189" height="2" fill="#78828d"/>
+    <path d="M3 17h189" fill="none" stroke="#12151a" stroke-width="2"/>
+    <path d="M3 37h189" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-opacity="0.12"/>
+  </g>
+</svg>

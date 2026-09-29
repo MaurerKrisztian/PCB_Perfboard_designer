@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Inductor">
+  <defs>
+    <clipPath id="indBody">
+      <path d="M9 60c-4.5-5-4.5-15 0-20 7.5-6 73.5-6 81 0 4.5 5 4.5 15 0 20-7.5 6-73.5 6-81 0z"/>
+    </clipPath>
+  </defs>
+  <path d="M9 60c-4.5-5-4.5-15 0-20 7.5-6 73.5-6 81 0 4.5 5 4.5 15 0 20-7.5 6-73.5 6-81 0z" fill="#3f3a34" stroke="#e2e8f0" stroke-width="4"/>
+  <g clip-path="url(#indBody)" fill="none" stroke="#c2833f" stroke-width="5">
+    <circle cx="24" cy="50" r="11"/>
+    <circle cx="41" cy="50" r="11"/>
+    <circle cx="58" cy="50" r="11"/>
+    <circle cx="75" cy="50" r="11"/>
+  </g>
+</svg>
