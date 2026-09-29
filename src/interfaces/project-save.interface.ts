@@ -8,5 +8,6 @@ export interface IProjectSave {
   ICs: Ic[];
   placedIcs?: any[];
   placedStandardComponents?: any[];
+  placedAdvancedComponents?: any[];
   canvas: {width: number, height: number};
 }

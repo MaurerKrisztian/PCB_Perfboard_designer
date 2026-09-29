@@ -1,47 +1,18 @@
 import {LineState} from "../state/LineState";
-import {ToolState} from "../state/ToolState";
 import {IcState} from "../state/IcState";
 import {HistoryState} from "../state/HistoryState";
 import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
-import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {changeSelectedDotColor} from "./dot";
 import {StandardComponentState} from "../state/StandardComponentState";
-
-
-Utils.getSafeHtmlElement<HTMLButtonElement>('changeLineColorBtn').addEventListener('click', function() {
-  addColorToSelectedLine()
-});
-
-// Delete line
-Utils.getSafeHtmlElement<HTMLButtonElement>('deleteLineBtn').addEventListener('click', function() {
- deleteLine();
-});
+import {AdvancedComponentState} from "../state/AdvancedComponentState";
 
 export function setLineColor(color: string){
   if (LineState.selectedLine){
     LineState.selectedLine.color = color;
     redrawCanvas();
   }
-}
-
-function addColorToSelectedLine(){
-  if (!LineState.selectedLine) {
-    return;
-  }
-  const colorPicker = Utils.getSafeHtmlElement<HTMLInputElement>('colorPicker');
-  colorPicker.value = Utils.normalizeColor(LineState.selectedLine.color, "#777676");
-  colorPicker.oninput = colorPicker.onchange = function() {
-    ToolState.activeWireColor = colorPicker.value;
-    const badge = document.getElementById('activeColorBadge');
-    if (badge) badge.style.background = colorPicker.value;
-    if(LineState.selectedLine){
-      LineState.selectedLine.color = colorPicker.value;
-      redrawCanvas();
-    }
-  };
-  colorPicker.click();
 }
 
 export function deleteLine(){
@@ -71,6 +42,19 @@ export function deleteLine(){
       return;
     }
   }
+  if (AdvancedComponentState.selectedPlacedComponent) {
+    const index = AdvancedComponentState.placedComponents.indexOf(AdvancedComponentState.selectedPlacedComponent);
+    if (index > -1) {
+      const removedComponent = AdvancedComponentState.selectedPlacedComponent;
+      AdvancedComponentState.placedComponents.splice(index, 1);
+      AdvancedComponentState.selectedPlacedComponent = undefined;
+      HistoryState.changes.splice(HistoryState.changeIndex + 1);
+      HistoryState.changes.push({type: 'remove', kind: 'advanced-component', component: removedComponent});
+      HistoryState.changeIndex++;
+      redrawCanvas();
+      return;
+    }
+  }
   if(LineState.selectedLine) {
     const index = LineState.lines.indexOf(LineState.selectedLine);
     if(index > -1){
@@ -95,7 +79,6 @@ export function deleteLine(){
 
 ShortcutRegistry.add({key: "Delete", event: deleteLine, description: "Delete line."})
 ShortcutRegistry.add({key: "c", event: () => {
-    addColorToSelectedLine()
     changeSelectedDotColor()
-  }, description: "Change dot/line color."})
+  }, description: "Change dot color."})
 

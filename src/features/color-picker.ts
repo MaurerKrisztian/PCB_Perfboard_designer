@@ -1,7 +1,5 @@
 import {ToolState} from "../state/ToolState";
 import {LineState} from "../state/LineState";
-import {DotState} from "../state/DotState";
-import {setDotColor} from "./dot";
 import {setLineColor} from "./line";
 import {updateSelectionStatus} from "./selection-status";
 
@@ -32,7 +30,9 @@ function renderSwatches() {
   if (!container) return;
   const defaultColors = ["#ef4444", "#3b82f6", "#10b981", "#eab308", "#f97316", "#a855f7", "#ffffff", "#1e293b"];
 
-  let html = defaultColors.map(c =>
+  let html = `<button class="color-swatch color-swatch-add" id="toggleCustomColorPanelBtn" title="Custom color">＋</button>`;
+
+  html += defaultColors.map(c =>
     `<button class="color-swatch" data-color="${c}" style="background:${c};" title="${c}"></button>`
   ).join('');
 
@@ -42,7 +42,20 @@ function renderSwatches() {
 
   container.innerHTML = html;
 
-  container.querySelectorAll('.color-swatch').forEach((swatch) => {
+  document.getElementById('toggleCustomColorPanelBtn')?.addEventListener('click', () => {
+    const panel = document.getElementById('customColorPanel');
+    if (panel) {
+      const isOpen = panel.style.display === 'flex';
+      panel.style.display = isOpen ? 'none' : 'flex';
+      if (!isOpen) {
+        setTimeout(() => {
+          drawColorSpectrum();
+        }, 50);
+      }
+    }
+  });
+
+  container.querySelectorAll('.color-swatch[data-color]').forEach((swatch) => {
     swatch.addEventListener('click', (e) => {
       const color = (e.currentTarget as HTMLElement).getAttribute('data-color');
       if (!color) return;
@@ -54,8 +67,6 @@ function renderSwatches() {
       }
       if (LineState.selectedLine) {
         setLineColor(color);
-      } else if (DotState.selectedDot) {
-        setDotColor(color);
       }
       updateSelectionStatus();
     });
@@ -84,23 +95,9 @@ const hueBar = document.getElementById('hueBar') as HTMLInputElement;
 const spectrumHandle = document.getElementById('spectrumHandle');
 const hexInput = document.getElementById('hexColorInput') as HTMLInputElement;
 const previewBox = document.getElementById('colorPreviewBox');
-const togglePanelBtn = document.getElementById('toggleCustomColorPanelBtn');
-const panel = document.getElementById('customColorPanel');
 
 let currentHue = 195;
 let isMouseDownOnSpectrum = false;
-
-togglePanelBtn?.addEventListener('click', () => {
-  if (panel) {
-    const isOpen = panel.style.display === 'flex';
-    panel.style.display = isOpen ? 'none' : 'flex';
-    if (!isOpen) {
-      setTimeout(() => {
-        drawColorSpectrum();
-      }, 50);
-    }
-  }
-});
 
 function drawColorSpectrum() {
   if (!spectrumCanvas) return;
@@ -200,8 +197,6 @@ document.getElementById('addCustomColorToPaletteBtn')?.addEventListener('click',
     if (badge) badge.style.background = hex;
     if (LineState.selectedLine) {
       setLineColor(hex);
-    } else if (DotState.selectedDot) {
-      setDotColor(hex);
     }
   }
 });
