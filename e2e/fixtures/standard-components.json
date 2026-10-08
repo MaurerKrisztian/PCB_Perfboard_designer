@@ -1,0 +1,467 @@
+{
+ "dots": [
+  {
+   "x": 25,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  }
+ ],
+ "lines": [
+  {
+   "start": {
+    "x": 25,
+    "y": 275,
+    "description": null,
+    "color": "#a4a0a0"
+   },
+   "end": {
+    "x": 475,
+    "y": 275,
+    "description": null,
+    "color": "#a4a0a0"
+   },
+   "color": "#0000ff",
+   "width": 4
+  },
+  {
+   "start": {
+    "x": 225,
+    "y": 25,
+    "description": null,
+    "color": "#a4a0a0"
+   },
+   "end": {
+    "x": 225,
+    "y": 225,
+    "description": null,
+    "color": "#a4a0a0"
+   },
+   "color": "#ff0000",
+   "width": 4
+  }
+ ],
+ "canvas": {
+  "width": 500,
+  "height": 300
+ },
+ "ICs": [],
+ "placedIcs": [],
+ "placedStandardComponents": [
+  {
+   "id": 1,
+   "definitionId": "resistor",
+   "value": "10k",
+   "color": "#d2b48c",
+   "startDotX": 75,
+   "startDotY": 25,
+   "endDotX": 175,
+   "endDotY": 25
+  },
+  {
+   "id": 2,
+   "definitionId": "ceramic-capacitor",
+   "value": "100n",
+   "color": "#d2b48c",
+   "startDotX": 325,
+   "startDotY": 25,
+   "endDotX": 425,
+   "endDotY": 25
+  },
+  {
+   "id": 3,
+   "definitionId": "electrolytic-capacitor",
+   "value": "470u",
+   "color": "#d2b48c",
+   "startDotX": 75,
+   "startDotY": 125,
+   "endDotX": 175,
+   "endDotY": 125
+  },
+  {
+   "id": 4,
+   "definitionId": "inductor",
+   "value": "10u",
+   "color": "#d2b48c",
+   "startDotX": 325,
+   "startDotY": 125,
+   "endDotX": 425,
+   "endDotY": 125
+  },
+  {
+   "id": 5,
+   "definitionId": "led",
+   "value": "",
+   "color": "#ff0000",
+   "startDotX": 75,
+   "startDotY": 225,
+   "endDotX": 175,
+   "endDotY": 225
+  },
+  {
+   "id": 6,
+   "definitionId": "diode",
+   "value": "",
+   "color": "#d2b48c",
+   "startDotX": 325,
+   "startDotY": 225,
+   "endDotX": 425,
+   "endDotY": 225
+  }
+ ],
+ "placedAdvancedComponents": []
+}

@@ -1,15 +1,26 @@
 import {expect, test} from "@playwright/test";
+import fs from "fs";
 import path from "path";
 
-// Loads a saved project through the real "Load" file input and compares the canvas to a baseline
-// image. When rendering changes on purpose, re-baseline with `npm run e2e:update` and review the
-// image diff in git - no test code changes needed.
-test("sample board renders as expected", async ({page}) => {
-  await page.goto("/");
-  await page.setInputFiles("#loadProjectBtn", path.join(__dirname, "fixtures", "sample-board.json"));
+// One fixture per component system (see CLAUDE.md "Two parallel component systems" + IC chips).
+// Each fixture is a saved project, loaded through the real "Load" file input and compared to a
+// baseline image. Dropping a new .json into e2e/fixtures/ automatically adds a test. When rendering
+// changes on purpose, re-baseline with `npm run e2e:update` and review the image diff in git.
+const fixturesDir = path.join(__dirname, "fixtures");
+const fixtures = fs.readdirSync(fixturesDir).filter((f) => f.endsWith(".json"));
 
-  const canvas = page.locator("#myCanvas");
-  await expect(canvas).toHaveJSProperty("width", 400);
+for (const file of fixtures) {
+  const name = path.basename(file, ".json");
 
-  await expect(canvas).toHaveScreenshot("sample-board.png", {maxDiffPixelRatio: 0.01});
-});
+  test(`${name} board renders as expected`, async ({page}) => {
+    const project = JSON.parse(fs.readFileSync(path.join(fixturesDir, file), "utf-8"));
+
+    await page.goto("/");
+    await page.setInputFiles("#loadProjectBtn", path.join(fixturesDir, file));
+
+    const canvas = page.locator("#myCanvas");
+    await expect(canvas).toHaveJSProperty("width", project.canvas.width);
+
+    await expect(canvas).toHaveScreenshot(`${name}.png`, {maxDiffPixelRatio: 0.01});
+  });
+}

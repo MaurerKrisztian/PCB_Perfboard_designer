@@ -20,9 +20,29 @@ npm run format:check   # prettier --check "./**"
 npm run deploy         # build + publish dist/ to GitHub Pages (gh-pages)
 ```
 
-There is no test suite/framework in this repo (no test script, no test runner in
-devDependencies). **Do not introduce Playwright or any other automated test tooling** — the user
-tests changes manually in the browser.
+```bash
+npm run e2e          # Playwright E2E tests (starts the dev server itself)
+npm run e2e:update   # re-baseline snapshot images — see rules below
+```
+
+## E2E tests (Playwright)
+
+Small suite in `e2e/`: a smoke test (fails on any console/page error at startup) and canvas
+snapshot tests that load a saved project from `e2e/fixtures/` through the real Load input and
+compare against baseline PNGs in `e2e/__snapshots__/`. First-time setup: `npx playwright install chromium`.
+
+- Run `npm run e2e` after any change that affects rendering, startup, or project load/save.
+- **A failing snapshot is not automatically a test problem.** Decide whether the visual change
+  was intended. If it was, run `npm run e2e:update`, look at the changed PNGs, and mention them
+  in the PR/summary. If it wasn't, fix the code. **Never re-baseline just to make a failure go
+  away** — that hides regressions.
+- A smoke-test failure is a real bug (e.g. a 404 or thrown error at startup); fix the cause
+  rather than filtering the error out of the test.
+- New component type or visible feature: add it to an existing fixture in `e2e/fixtures/` (or
+  add a fixture) rather than writing a new interaction test, then re-baseline. Fixtures are
+  project save files — if the save format changes, re-save them from the app.
+- Keep the suite small and snapshot-driven; avoid pixel-coordinate assertions and per-feature
+  click scripts.
 
 ## Architecture
 

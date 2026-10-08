@@ -1,0 +1,866 @@
+{
+ "dots": [
+  {
+   "x": 25,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 25,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 75,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 125,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 175,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 225,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 275,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 325,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 375,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 425,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 475,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 525,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 25,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 75,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 125,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 175,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 225,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 275,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 325,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 375,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 425,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 475,
+   "description": null,
+   "color": "#a4a0a0"
+  },
+  {
+   "x": 575,
+   "y": 525,
+   "description": null,
+   "color": "#a4a0a0"
+  }
+ ],
+ "lines": [],
+ "canvas": {
+  "width": 600,
+  "height": 550
+ },
+ "ICs": [],
+ "placedIcs": [
+  {
+   "id": 13,
+   "widthPin": 4,
+   "heightPin": 4,
+   "pinDescription": {
+    "1": "GND",
+    "2": "TRIG",
+    "3": "OUT",
+    "4": "RESET",
+    "5": "CTRL",
+    "6": "THRESH",
+    "7": "DISCH",
+    "8": "VCC"
+   },
+   "name": "NE555 Timer",
+   "isCustom": false,
+   "rotationAngle": 0,
+   "topLeftDotX": 75,
+   "topLeftDotY": 75
+  },
+  {
+   "id": 14,
+   "widthPin": 4,
+   "heightPin": 7,
+   "pinDescription": {
+    "1": "1A",
+    "2": "1B",
+    "3": "1Y",
+    "4": "2A",
+    "5": "2B",
+    "6": "2Y",
+    "7": "GND",
+    "14": "VCC"
+   },
+   "name": "DIP-14 Logic",
+   "isCustom": false,
+   "rotationAngle": 0,
+   "topLeftDotX": 325,
+   "topLeftDotY": 75
+  },
+  {
+   "id": 15,
+   "widthPin": 4,
+   "heightPin": 4,
+   "pinDescription": {
+    "1": "GND",
+    "2": "TRIG",
+    "3": "OUT",
+    "4": "RESET",
+    "5": "CTRL",
+    "6": "THRESH",
+    "7": "DISCH",
+    "8": "VCC"
+   },
+   "name": "NE555 Timer",
+   "isCustom": false,
+   "rotationAngle": 90,
+   "topLeftDotX": 75,
+   "topLeftDotY": 375
+  }
+ ],
+ "placedStandardComponents": [],
+ "placedAdvancedComponents": []
+}
