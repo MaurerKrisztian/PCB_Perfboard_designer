@@ -323,6 +323,7 @@ export class Ic{
 
   clone(): Ic {
     const copy = new Ic(this.widthPin, this.heightPin, { ...this.pinDescription }, this.name, this.isCustom);
+    copy.rotationAngle = this.rotationAngle;
     return copy;
   }
 
@@ -435,7 +436,7 @@ export function selectIc(id: number | string){
     console.error(`Ic with id: ${id} not found`);
     return;
   }
-  IcState.selectedIc = ic;
+  IcState.selectedIc = ic.clone();
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   AdvancedComponentState.armedDefinitionId = undefined;
