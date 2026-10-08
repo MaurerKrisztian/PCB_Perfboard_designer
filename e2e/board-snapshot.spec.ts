@@ -20,7 +20,10 @@ for (const file of fixtures) {
 
     const canvas = page.locator("#myCanvas");
     await expect(canvas).toHaveJSProperty("width", project.canvas.width);
+    // Component icons are fetched lazily the first time they're drawn; wait for them so the
+    // snapshot shows the artwork rather than the fallback text label.
+    await page.waitForLoadState("networkidle");
 
-    await expect(canvas).toHaveScreenshot(`${name}.png`, {maxDiffPixelRatio: 0.01});
+    await expect(canvas).toHaveScreenshot(`${name}.png`, {maxDiffPixelRatio: 0.001});
   });
 }
