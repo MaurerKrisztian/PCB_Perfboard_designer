@@ -10,6 +10,9 @@ const heightInputEl = document.getElementById('icHeightInput') as HTMLInputEleme
 const pinLabelsContainer = document.getElementById('icPinLabelsContainer');
 const totalPinsCount = document.getElementById('totalPinsCount');
 
+// Labels typed in this modal session, keyed by pin number, so they survive grid re-renders
+let typedPinLabels: Record<number, string> = {};
+
 function renderPinInputs() {
   if (!pinLabelsContainer || !heightInputEl) return;
   const h = parseInt(heightInputEl.value || "4");
@@ -25,9 +28,14 @@ function renderPinInputs() {
     `;
   }
   pinLabelsContainer.innerHTML = html;
+  for (let i = 1; i <= totalPins; i++) {
+    const input = document.getElementById(`pinInput_${i}`) as HTMLInputElement | null;
+    if (input) input.value = typedPinLabels[i] ?? '';
+  }
 }
 
 openModalBtn?.addEventListener('click', () => {
+  typedPinLabels = {};
   renderPinInputs();
   if (modal) modal.style.display = 'flex';
 });
@@ -38,6 +46,12 @@ closeModalBtn?.addEventListener('click', () => {
 
 cancelModalBtn?.addEventListener('click', () => {
   if (modal) modal.style.display = 'none';
+});
+
+pinLabelsContainer?.addEventListener('input', (e) => {
+  const input = e.target as HTMLInputElement;
+  const match = input.id.match(/^pinInput_(\d+)$/);
+  if (match) typedPinLabels[Number(match[1])] = input.value;
 });
 
 heightInputEl?.addEventListener('input', renderPinInputs);
