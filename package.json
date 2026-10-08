@@ -14,13 +14,16 @@
     "format": "prettier --write \"./**\"",
     "format:check": "prettier --check \"./**\"",
     "predeploy": "npm run build",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "e2e": "playwright test",
+    "e2e:update": "playwright test --update-snapshots"
   },
   "license": "ISC",
   "dependencies": {
     "vanilla-picker": "2.12.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
     "@typescript-eslint/eslint-plugin": "5.33.0",
     "@typescript-eslint/parser": "5.33.0",
     "autoprefixer": "10.4.8",
