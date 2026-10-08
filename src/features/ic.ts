@@ -39,10 +39,13 @@ export class Ic{
 
   static showICs(){
     Utils.getSafeHtmlElement("ic-items").innerHTML = Ic.IC_CONTAINER.map((item)=>{
+      const editBtn = item.isCustom
+        ? `<span onclick="event.stopPropagation(); editCustomIc('${item.id}')" title="Edit custom component" style="margin-left:6px;cursor:pointer;color:#38bdf8;font-weight:bold;">✎</span>`
+        : '';
       const deleteBtn = item.isCustom
         ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>`
         : '';
-      return `<button class="btn btn-accent" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick='selectIc("${item.id}")'>📦 ${item.name}${deleteBtn}</button>`;
+      return `<button class="btn btn-accent" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick='selectIc("${item.id}")'>📦 ${item.name}${editBtn}${deleteBtn}</button>`;
     }).join(" ");
   }
 
