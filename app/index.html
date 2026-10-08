@@ -193,44 +193,17 @@
 
       <div class="sidebar-divider"></div>
 
-      <!-- Standard Components Container -->
-      <div class="sidebar-section" id="standard-components">
-        <div class="section-title" data-collapse="standardComponentsSection">
+      <!-- Components catalog: search + category tree, rendered by features/catalog/components-panel.ts -->
+      <div class="sidebar-section" id="components">
+        <div class="section-title" data-collapse="componentsSection">
           <span class="section-icon">🧩</span>
-          <span>Standard Components</span>
+          <span>Components</span>
           <span class="collapse-chevron">▾</span>
         </div>
-        <div class="section-body" id="standardComponentsSection">
-          <div id="standard-components-items" class="catalog-items"></div>
-        </div>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
-      <!-- Advanced Components Container -->
-      <div class="sidebar-section" id="advanced-components">
-        <div class="section-title" data-collapse="advancedComponentsSection">
-          <span class="section-icon">🧩</span>
-          <span>Advanced Components</span>
-          <span class="collapse-chevron">▾</span>
-        </div>
-        <div class="section-body" id="advancedComponentsSection">
-          <div id="advanced-components-items" class="catalog-items"></div>
-        </div>
-      </div>
-
-      <div class="sidebar-divider"></div>
-
-      <!-- IC Components Container -->
-      <div class="sidebar-section" id="ic">
-        <div class="section-title" data-collapse="icSection">
-          <span class="section-icon">🔌</span>
-          <span>Integrated Circuits</span>
-          <button id="createCustomIcTrigger" class="ic-add-btn" onclick="event.stopPropagation()">＋</button>
-          <span class="collapse-chevron">▾</span>
-        </div>
-        <div class="section-body" id="icSection">
-          <div id="ic-items"></div>
+        <div class="section-body catalog-section-body" id="componentsSection">
+          <input type="search" id="catalogSearch" class="catalog-search" placeholder="Search components…  ( / )" autocomplete="off" spellcheck="false">
+          <div id="catalog-results" class="catalog-results" hidden></div>
+          <div id="catalog-tree" class="catalog-tree"></div>
         </div>
       </div>
 
@@ -297,7 +270,7 @@
   <div id="icEditorModal" class="modal-overlay" style="display:none;">
     <div class="modal-card">
       <div class="modal-header">
-        <span id="icModalTitle" class="modal-title">⚙ Create Custom IC / Component</span>
+        <span id="icModalTitle" class="modal-title">⚙ Create Custom IC / Module</span>
         <button id="closeIcModalBtn" class="close-btn">&times;</button>
       </div>
 
@@ -305,6 +278,14 @@
         <div class="form-group">
           <label>Component Name:</label>
           <input type="text" id="icNameInput" placeholder="e.g. ESP8266-01, LM358, Custom Chip" value="Custom Chip">
+        </div>
+
+        <div class="form-group">
+          <label>Type (where it's listed in Components):</label>
+          <select id="icTypeSelect">
+            <option value="ic">IC</option>
+            <option value="module">Module</option>
+          </select>
         </div>
 
         <div class="form-row">

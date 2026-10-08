@@ -6,7 +6,7 @@ import {redrawCanvas} from "../draw-canvas";
 import {Canvas} from "../../state/Canvas";
 import {IProjectSave} from "../../interfaces/project-save.interface";
 import {Ic} from "../ic";
-import {unserialize} from "../../utils/serialization";
+import {notifyCatalogChanged} from "../catalog/catalog-events";
 import {StandardComponentState} from "../../state/StandardComponentState";
 import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
 import {AdvancedComponentState} from "../../state/AdvancedComponentState";
@@ -113,9 +113,11 @@ export function loadProject(project: IProjectSave){
   applyCanvasResolution(getCurrentZoom());
   DotState.dots = project.dots;
   LineState.lines = project.lines;
-  if (project.ICs) {
-    Ic.IC_CONTAINER = project.ICs.map(ic => unserialize(ic, Ic));
-    Ic.showICs();
+  // Merge the project's custom ICs into the catalog rather than replacing it: older saves hold
+  // the whole catalog, and replacing it would hide built-ins added since they were saved.
+  if (project.ICs && Ic.mergeCustomIcs(project.ICs.filter(ic => ic && ic.isCustom)) > 0) {
+    Ic.saveCustomIcsToLocalStorage();
+    notifyCatalogChanged();
   }
   if (project.placedIcs) {
     IcState.placedIcs = project.placedIcs.map(data => deserializePlacedIc(data)).filter(ic => ic !== null) as Ic[];

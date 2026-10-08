@@ -3,16 +3,14 @@ import {IcState} from "../state/IcState";
 import {LineState} from "../state/LineState";
 import {DotState} from "../state/DotState";
 import {StandardComponentState} from "../state/StandardComponentState";
-import {updateStandardComponentButtonHighlight} from "./standard-components/standard-components-panel";
 import {getComponentDefinition} from "./standard-components/component-definitions";
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
-import {updateAdvancedComponentButtonHighlight} from "./advanced-components/advanced-components-panel";
 import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
+import {notifyArmedPartChanged} from "./catalog/catalog-events";
 
 export function updateSelectionStatus() {
   const statusEl = document.getElementById('activeSelectionStatus');
-  updateStandardComponentButtonHighlight();
-  updateAdvancedComponentButtonHighlight();
+  notifyArmedPartChanged();
   if (!statusEl) return;
   const modeLabel = ToolState.activeToolMode.toUpperCase();
   if (IcState.selectedPlacedIc) {

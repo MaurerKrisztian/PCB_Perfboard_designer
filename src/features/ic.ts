@@ -3,19 +3,39 @@ import {DotState} from "../state/DotState";
 import {IcState} from "../state/IcState";
 import {IDot} from "../interfaces/dot.interface";
 import {ShortcutRegistry} from "./shortcut-keys";
-import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
 import {StandardComponentState} from "../state/StandardComponentState";
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {disarmWire} from "./wire";
 import {findNearestDot} from "./dot-lookup";
+import {IC_DEFINITIONS} from "./ic-definitions";
+import {CategoryId, isCategoryId} from "./catalog/catalog-categories";
+import {notifyArmedPartChanged, notifyCatalogChanged} from "./catalog/catalog-events";
 
+// A custom IC as stored in localStorage ('custom_ics') and in a project file's ICs list.
+export interface CustomIcData {
+  id: number;
+  name: string;
+  widthPin: number;
+  heightPin: number;
+  pinDescription?: Record<number, string>;
+  category?: string;
+  isCustom?: boolean;
+}
 
 export class Ic{
+  // The catalog templates listed in the Components panel: built-ins from IC_DEFINITIONS, then
+  // the user's custom ones. Placing one clones it into IcState.placedIcs.
   static IC_CONTAINER: Ic[] = [];
 
   public id = Math.random() * 100;
   public isCustom?: boolean = false;
+  // Where a catalog template is listed in the Components panel tree.
+  public category: CategoryId = "ics.custom";
+  // The IC_DEFINITIONS entry a built-in template came from; undefined for custom parts.
+  public definitionId?: string;
+  // Set on the armed copy of a catalog template (see selectIc); undefined everywhere else.
+  public armedFrom?: Ic;
   public rotationAngle: number = 0; // 0, 90, 180, 270
   topLeftDot: IDot | null = null;
 
@@ -34,56 +54,51 @@ export class Ic{
     if (saveToStorage) {
       this.saveCustomIcsToLocalStorage();
     }
-    this.showICs();
+    notifyCatalogChanged();
   }
 
-  static showICs(){
-    Utils.getSafeHtmlElement("ic-items").innerHTML = Ic.IC_CONTAINER.map((item)=>{
-      const editBtn = item.isCustom
-        ? `<span onclick="event.stopPropagation(); editCustomIc('${item.id}')" title="Edit custom component" style="margin-left:6px;cursor:pointer;color:#38bdf8;font-weight:bold;">✎</span>`
-        : '';
-      const deleteBtn = item.isCustom
-        ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>`
-        : '';
-      return `<button class="btn btn-accent" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick='selectIc("${item.id}")'>📦 ${item.name}${editBtn}${deleteBtn}</button>`;
-    }).join(" ");
+  static getCustomIcsData(): CustomIcData[] {
+    return Ic.IC_CONTAINER.filter(ic => ic.isCustom).map(ic => ({
+      id: ic.id,
+      name: ic.name,
+      widthPin: ic.widthPin,
+      heightPin: ic.heightPin,
+      pinDescription: ic.pinDescription,
+      category: ic.category,
+      isCustom: true
+    }));
   }
 
   static saveCustomIcsToLocalStorage() {
     try {
-      const customIcs = Ic.IC_CONTAINER.filter(ic => ic.isCustom).map(ic => ({
-        id: ic.id,
-        name: ic.name,
-        widthPin: ic.widthPin,
-        heightPin: ic.heightPin,
-        pinDescription: ic.pinDescription,
-        isCustom: true
-      }));
-      localStorage.setItem('custom_ics', JSON.stringify(customIcs));
+      localStorage.setItem('custom_ics', JSON.stringify(this.getCustomIcsData()));
     } catch (e) {
       console.error("Failed to save custom ICs to localStorage", e);
     }
+  }
+
+  // Adds custom ICs not already in the catalog (matched by id). Returns how many were added.
+  // Entries saved before categories existed have none, and land in ICs > Custom.
+  static mergeCustomIcs(customIcs: CustomIcData[]): number {
+    let added = 0;
+    for (const data of customIcs) {
+      if (!data || data.widthPin == null || data.heightPin == null) continue;
+      if (Ic.IC_CONTAINER.some(ic => String(ic.id) === String(data.id))) continue;
+      const newIc = new Ic(Number(data.widthPin), Number(data.heightPin), data.pinDescription || {}, String(data.name || 'Custom IC'), true);
+      newIc.id = data.id;
+      newIc.category = isCategoryId(data.category) ? data.category : "ics.custom";
+      Ic.IC_CONTAINER.push(newIc);
+      added++;
+    }
+    return added;
   }
 
   static loadCustomIcsFromLocalStorage() {
     try {
       const stored = localStorage.getItem('custom_ics');
       if (!stored) return;
-      const customIcs = JSON.parse(stored) as Array<{
-        id: number;
-        name: string;
-        widthPin: number;
-        heightPin: number;
-        pinDescription: Record<number, string>;
-      }>;
-      for (const data of customIcs) {
-        if (!Ic.IC_CONTAINER.some(ic => String(ic.id) === String(data.id))) {
-          const newIc = new Ic(data.widthPin, data.heightPin, data.pinDescription || {}, data.name, true);
-          newIc.id = data.id;
-          Ic.IC_CONTAINER.push(newIc);
-        }
-      }
-      this.showICs();
+      this.mergeCustomIcs(JSON.parse(stored) as CustomIcData[]);
+      notifyCatalogChanged();
     } catch (e) {
       console.error("Failed to load custom ICs from localStorage", e);
     }
@@ -408,28 +423,25 @@ export class Ic{
   }
 }
 
-// Predefined IC components
-Ic.add(new Ic(4, 4, {1: "GND", 2: "TRIG", 3: "OUT", 4: "RESET", 5: "CTRL", 6: "THRESH", 7: "DISCH", 8: "VCC"}, "NE555 Timer"));
-Ic.add(new Ic(4, 7, {1: "1A", 2: "1B", 3: "1Y", 4: "2A", 5: "2B", 6: "2Y", 7: "GND", 14: "VCC"}, "DIP-14 Logic"));
-Ic.add(new Ic(4, 8, {1: "EN", 2: "1D", 3: "1Q", 4: "2D", 5: "2Q", 8: "GND", 16: "VCC"}, "DIP-16 Logic"));
-Ic.add(new Ic(4, 14, {1: "RESET", 2: "RX", 3: "TX", 7: "VCC", 8: "GND", 22: "GND", 20: "AVCC"}, "ATmega328P"));
-// Arduino Nano: 0.6" between header rows, 15 pins per side. Labels as silkscreened on the board.
-Ic.add(new Ic(7, 15, {
-  1: "D13", 2: "3V3", 3: "REF", 4: "A0", 5: "A1", 6: "A2", 7: "A3", 8: "A4",
-  9: "A5", 10: "A6", 11: "A7", 12: "5V", 13: "RST", 14: "GND", 15: "VIN",
-  16: "TX1", 17: "RX0", 18: "RST", 19: "GND", 20: "D2", 21: "D3", 22: "D4",
-  23: "D5", 24: "D6", 25: "D7", 26: "D8", 27: "D9", 28: "D10", 29: "D11", 30: "D12"
-}, "Arduino Nano"));
-
-// Load custom ICs from localStorage on load
+// Built-in catalog templates, then the user's custom ones from localStorage
+for (const def of IC_DEFINITIONS) {
+  const ic = new Ic(def.widthPin, def.heightPin, {...def.pinDescription}, def.name);
+  ic.category = def.category;
+  ic.definitionId = def.id;
+  Ic.IC_CONTAINER.push(ic);
+}
 Ic.loadCustomIcsFromLocalStorage();
 
 export function deleteCustomIc(id: number | string) {
   const index = Ic.IC_CONTAINER.findIndex(ic => String(ic.id) === String(id));
   if (index > -1) {
-    Ic.IC_CONTAINER.splice(index, 1);
+    const [removed] = Ic.IC_CONTAINER.splice(index, 1);
+    if (IcState.selectedIc?.armedFrom === removed) {
+      IcState.selectedIc = undefined;
+      redrawCanvas();
+    }
     Ic.saveCustomIcsToLocalStorage();
-    Ic.showICs();
+    notifyCatalogChanged();
   }
 }
 
@@ -439,12 +451,21 @@ export function selectIc(id: number | string){
     console.error(`Ic with id: ${id} not found`);
     return;
   }
-  IcState.selectedIc = ic.clone();
+  // Arm a copy so rotating while armed never changes the catalog template. `armedFrom` lets the
+  // panel highlight the template, and clicking it again disarms it.
+  if (IcState.selectedIc?.armedFrom === ic) {
+    IcState.selectedIc = undefined;
+  } else {
+    IcState.selectedIc = ic.clone();
+    IcState.selectedIc.armedFrom = ic;
+  }
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;
   AdvancedComponentState.armedDefinitionId = undefined;
   AdvancedComponentState.pendingAnchorDot = undefined;
   disarmWire();
+  notifyArmedPartChanged();
+  redrawCanvas();
 }
 
 export function rotateSelectedIc() {
@@ -492,6 +513,4 @@ ShortcutRegistry.add({
   event: rotateSelectedIc
 });
 
-(window as any).selectIc = selectIc;
-(window as any).deleteCustomIc = deleteCustomIc;
 (window as any).rotateSelectedIc = rotateSelectedIc;

@@ -1,8 +1,18 @@
 import {Ic} from "./ic";
+import {CategoryId} from "./catalog/catalog-categories";
+import {notifyCatalogChanged} from "./catalog/catalog-events";
+
+export type CustomIcType = "ic" | "module";
+
+// Which Custom subcategory of the Components panel a new part is listed under.
+const CUSTOM_CATEGORY: Record<CustomIcType, CategoryId> = {
+  ic: "ics.custom",
+  module: "modules.custom",
+};
 
 // IC Editor Modal Handlers
 const modal = document.getElementById('icEditorModal');
-const openModalBtn = document.getElementById('createCustomIcTrigger');
+const typeSelectEl = document.getElementById('icTypeSelect') as HTMLSelectElement;
 const closeModalBtn = document.getElementById('closeIcModalBtn');
 const cancelModalBtn = document.getElementById('cancelCustomIcBtn');
 const saveIcBtn = document.getElementById('saveCustomIcBtn');
@@ -66,7 +76,9 @@ function renderPinInputs(labels?: Record<number, string>) {
   }
 }
 
-openModalBtn?.addEventListener('click', () => {
+// Opened from the Components panel's "Custom IC…" / "Custom Module…" entries, with the type
+// preselected. The user can still switch it before saving.
+export function openIcEditor(type: CustomIcType) {
   if (editingIc) {
     // Don't carry the previously edited IC's values into a new one.
     editingIc = undefined;
@@ -74,10 +86,11 @@ openModalBtn?.addEventListener('click', () => {
     widthInputEl.value = '4';
     heightInputEl.value = '4';
   }
+  if (typeSelectEl) typeSelectEl.value = type;
   renderPinInputs({});
   if (modalTitle) modalTitle.innerText = CREATE_TITLE;
   if (modal) modal.style.display = 'flex';
-});
+}
 
 export function editCustomIc(id: number | string) {
   const ic = Ic.IC_CONTAINER.find(item => String(item.id) === String(id));
@@ -86,12 +99,11 @@ export function editCustomIc(id: number | string) {
   nameInputEl.value = ic.name;
   widthInputEl.value = String(ic.widthPin);
   heightInputEl.value = String(ic.heightPin);
+  if (typeSelectEl) typeSelectEl.value = ic.category.indexOf('modules') === 0 ? 'module' : 'ic';
   renderPinInputs(ic.pinDescription);
   if (modalTitle) modalTitle.innerText = EDIT_TITLE;
   if (modal) modal.style.display = 'flex';
 }
-
-(window as any).editCustomIc = editCustomIc;
 
 closeModalBtn?.addEventListener('click', () => {
   if (modal) modal.style.display = 'none';
@@ -115,6 +127,7 @@ saveIcBtn?.addEventListener('click', () => {
   const width = readIcDimension(widthInputEl);
   const height = readIcDimension(heightInputEl);
   const pinDescriptions = readPinLabels(height * 2);
+  const category = CUSTOM_CATEGORY[typeSelectEl?.value === 'module' ? 'module' : 'ic'];
 
   if (editingIc) {
     // Only the catalog entry changes; ICs already placed on the board keep their own copy.
@@ -122,10 +135,13 @@ saveIcBtn?.addEventListener('click', () => {
     editingIc.widthPin = width;
     editingIc.heightPin = height;
     editingIc.pinDescription = pinDescriptions;
+    editingIc.category = category;
     Ic.saveCustomIcsToLocalStorage();
-    Ic.showICs();
+    notifyCatalogChanged();
   } else {
-    Ic.add(new Ic(width, height, pinDescriptions, name, true), true);
+    const customIc = new Ic(width, height, pinDescriptions, name, true);
+    customIc.category = category;
+    Ic.add(customIc, true);
   }
 
   if (modal) modal.style.display = 'none';

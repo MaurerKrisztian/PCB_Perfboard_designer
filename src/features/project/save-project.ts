@@ -70,7 +70,8 @@ export function getSaveJson(): IProjectSave {
     dots: DotState.dots,
     lines: LineState.lines,
     canvas: { width: Canvas.gridWidth, height: Canvas.gridHeight },
-    ICs: Ic.IC_CONTAINER || [],
+    // Only custom ICs, so they travel with the project - built-ins always come from the code
+    ICs: Ic.getCustomIcsData(),
     placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic)),
     placedStandardComponents: StandardComponentState.placedComponents.map(c => serializePlacedStandardComponent(c)),
     placedAdvancedComponents: AdvancedComponentState.placedComponents.map(c => serializePlacedAdvancedComponent(c))

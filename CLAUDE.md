@@ -57,6 +57,22 @@ change that affects what's on screen. `redrawCanvas` redraws everything from scr
 (immediate-mode style) in a fixed layer order: IC bodies → grid dots → wires → standard
 components → advanced components → IC labels → in-progress placement previews.
 
+**Components catalog** (`src/features/catalog/`): the sidebar's single Components section — a
+search box over a category tree. It only decides where parts are *listed*; placing them is still
+done by the three systems below. `catalog-categories.ts` declares the tree (one line per
+category, `parentId` for nesting, array order = display order; `CategoryId` is derived from it so a
+bad id fails to compile). Every part definition names one `category: CategoryId` plus optional
+search `keywords`. `catalog.ts` merges all three systems into `CatalogItem`s whose
+`activate`/`isArmed`/`remove` closures hide which system backs them; `catalog-search.ts` ranks by
+match quality (exact > prefix > word prefix > substring > fuzzy) with kind (component >
+subcategory > category) only as a tiebreak; `components-panel.ts` renders it. **Only `index.ts`
+may import `components-panel.ts`** — it imports every part source, so a module importing it back
+forms a cycle that runs the panel before `Ic` exists and crashes startup. Everything else talks to
+it through the import-free `catalog-events.ts`: `notifyArmedPartChanged()` after changing what's
+armed (refreshes the highlight), `notifyCatalogChanged()` after custom ICs change. To add a part:
+add a definition to the relevant system's definitions file with a `category` — nothing else. To
+add a category: one line in `catalog-categories.ts` (empty categories are hidden).
+
 **Two parallel component systems** — don't conflate them:
 - `src/features/standard-components/` — flexible-lead parts (resistor, capacitor, LED, diode…)
   defined by `ComponentDefinition` in `component-definitions.ts`. Placed by picking a start and
@@ -67,7 +83,12 @@ components → advanced components → IC labels → in-progress placement previ
   single anchor dot + rotation; pin/shaded-hole/body-outline offsets (in grid units, relative to
   the anchor) are rotated at render/placement time (`rotate-offset.ts`).
 - IC chips (`src/features/ic.ts`, `ic-editor-modal.ts`) are a third, older placement concept
-  (multi-pin chip with a user-editable pin-label catalog), separate from both of the above.
+  (dual-row multi-pin part with labelled pins), separate from both of the above. It backs both
+  DIP ICs and dual-row dev boards (Modules › Dev Boards); built-ins are data in
+  `ic-definitions.ts` (`dualRowPins()` builds DIP numbering from two top-to-bottom rows). Custom
+  ones come from the editor modal (IC or Module type → ICs › Custom / Modules › Custom) and persist
+  in localStorage `custom_ics`. Project saves carry only custom ICs, and loading *merges* them into
+  the catalog — never replace `Ic.IC_CONTAINER` wholesale, or built-ins added later go missing.
 
 **Undo/redo** (`src/features/project/undo-redo.ts` + `src/state/HistoryState.ts`): every mutation
 that should be undoable pushes an `IChange` (`src/interfaces/change.interface.ts` — tagged union

@@ -410,25 +410,6 @@ body {
   margin-top: 0.5rem;
 }
 
-/* IC add button in section title */
-.ic-add-btn {
-  padding: 0.15rem 0.45rem;
-  font-size: 0.85rem;
-  line-height: 1;
-  background: linear-gradient(135deg, #0891b2, #0e7490);
-  border: 1px solid #06b6d4;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  margin-left: auto;
-}
-
-.ic-add-btn:hover {
-  background: linear-gradient(135deg, #0e7490, #155e75);
-  transform: translateY(-1px);
-}
-
 /* Button Styling */
 button, .btn {
   font-family: inherit;
@@ -533,7 +514,7 @@ button.btn-success:hover {
 }
 
 /* Inputs */
-input[type="number"], input[type="text"] {
+input[type="number"], input[type="text"], input[type="search"], select {
   background-color: #1f2937;
   border: 1px solid var(--border-light);
   color: var(--text-main);
@@ -544,7 +525,7 @@ input[type="number"], input[type="text"] {
   transition: border-color 0.15s ease;
 }
 
-input[type="number"]:focus, input[type="text"]:focus {
+input[type="number"]:focus, input[type="text"]:focus, input[type="search"]:focus, select:focus {
   border-color: var(--accent-blue);
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
 }
@@ -664,20 +645,187 @@ kbd {
   white-space: nowrap;
 }
 
-/* IC container styling */
-#ic-items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+/* Components catalog (features/catalog/components-panel.ts): search box + category tree */
+/* The expanded tree can outgrow the generic .section-body height cap */
+.catalog-section-body:not(.collapsed) {
+  max-height: none;
 }
 
-/* Shared catalog button container styling (Standard Components, etc.) */
-.catalog-items {
+.catalog-search {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0.5rem;
+}
+
+.catalog-tree[hidden], .catalog-results[hidden] {
+  display: none;
+}
+
+.catalog-tree, .catalog-results {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* Tree/result rows reset the global button look: flat, full width, left aligned */
+button.catalog-row {
+  --depth: 0;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  padding: 0.35rem 0.5rem 0.35rem calc(0.5rem + var(--depth) * 0.9rem);
+  font-size: 0.8rem;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-main);
+}
+
+button.catalog-row:hover {
+  background: var(--bg-hover);
+  border-color: transparent;
+  transform: none;
+}
+
+button.catalog-row.active-mode {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border-color: #38bdf8;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+button.catalog-category-row {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.catalog-chevron {
+  font-size: 0.7rem;
+  width: 0.7rem;
+  transition: transform 0.15s ease;
+}
+
+.catalog-category.collapsed > .catalog-category-row .catalog-chevron {
+  transform: rotate(-90deg);
+}
+
+.catalog-category.collapsed > .catalog-children {
+  display: none;
+}
+
+.catalog-children {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.catalog-icon {
+  width: 22px;
+  height: 14px;
+  flex-shrink: 0;
+  object-fit: contain;
+  font-size: 0.8rem;
+  line-height: 14px;
+  text-align: center;
+}
+
+.catalog-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.catalog-count {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  padding: 0 0.4rem;
+}
+
+button.catalog-action {
+  color: var(--accent-cyan);
+}
+
+@keyframes catalog-flash {
+  from { background: rgba(56, 189, 248, 0.35); }
+  to { background: transparent; }
+}
+
+button.catalog-row.catalog-flash {
+  animation: catalog-flash 1.5s ease-out;
+}
+
+/* Item row = the arm button, plus a delete button for custom parts */
+.catalog-item {
+  display: flex;
+  align-items: center;
+}
+
+.catalog-item > .catalog-item-btn {
+  flex: 1;
+  min-width: 0;
+}
+
+button.catalog-edit-btn {
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background: transparent;
+  border-color: transparent;
+  color: #38bdf8;
+}
+
+button.catalog-edit-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: transparent;
+  transform: none;
+}
+
+button.catalog-delete-btn {
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  background: transparent;
+  border-color: transparent;
+  color: #f87171;
+}
+
+button.catalog-delete-btn:hover {
+  background: rgba(220, 38, 38, 0.2);
+  border-color: transparent;
+  transform: none;
+}
+
+.catalog-result-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.catalog-breadcrumb {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button.catalog-row.catalog-result-active:not(.active-mode) {
+  background: var(--bg-hover);
+  border-color: var(--border-light);
+}
+
+.catalog-empty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  padding: 0.35rem 0.5rem;
 }
 
 /* Tool Mode & Gauge Selector Active States */
