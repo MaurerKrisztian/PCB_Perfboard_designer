@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page not found | Perfboard Designer</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0b1220" />
+    <!--
+      GitHub Pages serves this file for every missing URL, at whatever depth was requested
+      (e.g. /some/old/link), so unlike the other pages it can't use relative paths. Everything is
+      inline, and the few links are root-based, which is right for perfboarddesigner.com.
+      It lives in the publicDir (assets/) so Vite copies it untouched.
+    -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+    <style>
+      :root {
+        --bg: #0b1220;
+        --surface: #111827;
+        --border-strong: #374151;
+        --text: #e5e7eb;
+        --text-muted: #94a3b8;
+        --accent-cyan: #06b6d4;
+        --accent-blue: #3b82f6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scrollbar-width: thin;
+        scrollbar-color: #334155 var(--bg);
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, Arial, sans-serif;
+        line-height: 1.6;
+      }
+
+      header {
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid #1f2937;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        text-decoration: none;
+      }
+
+      .brand-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+        box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+      }
+
+      .brand-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        letter-spacing: -0.02em;
+        background: linear-gradient(to right, #ffffff, #93c5fd);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.75rem;
+        padding: 3rem 1rem;
+        text-align: center;
+      }
+
+      .board {
+        width: 100%;
+        max-width: 420px;
+        height: auto;
+        filter: drop-shadow(0 18px 40px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 30px rgba(6, 182, 212, 0.12));
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: #67e8f9;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0.4rem 0 0.5rem;
+        font-size: clamp(1.7rem, 4vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      .lead {
+        max-width: 46ch;
+        margin: 0 auto;
+        color: var(--text-muted);
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+
+      .button {
+        display: inline-block;
+        padding: 0.75rem 1.3rem;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+        color: #ffffff;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+        transition: filter 0.15s, transform 0.15s;
+      }
+
+      .button:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+      }
+
+      .button-ghost {
+        background: transparent;
+        border: 1px solid var(--border-strong);
+        color: var(--text);
+        box-shadow: none;
+      }
+
+      .button-ghost:hover {
+        background: var(--surface);
+        filter: none;
+      }
+
+      .report {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.85rem;
+      }
+
+      .report a {
+        color: #60a5fa;
+      }
+    </style>
+</head>
+
+<body>
+  <header>
+    <a class="brand" href="/" aria-label="Perfboard Designer home">
+      <span class="brand-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+          <path d="M8 6h8M6 8v8M18 8v8M8 18h8" />
+        </svg>
+      </span>
+      <span class="brand-title">Perfboard Designer</span>
+    </a>
+  </header>
+
+  <main>
+    <!-- A small perfboard whose jumper wires spell "404". Holes are 24 units apart. -->
+    <svg class="board" viewBox="0 0 336 192" role="img" aria-label="A perfboard with wires spelling 404">
+      <defs>
+        <g id="pad">
+          <circle r="5.2" fill="#b7733b" />
+          <circle r="3" fill="#0a170b" />
+        </g>
+      </defs>
+      <rect width="336" height="192" rx="12" fill="#046307" />
+      <g id="pads"></g>
+      <g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+        <!-- 4 -->
+        <polyline points="48,48 48,96 96,96" stroke="#ef4444" />
+        <polyline points="96,48 96,144" stroke="#ef4444" />
+        <!-- 0 -->
+        <polygon points="144,48 192,48 192,144 144,144" stroke="#facc15" />
+        <!-- 4 -->
+        <polyline points="240,48 240,96 288,96" stroke="#3b82f6" />
+        <polyline points="288,48 288,144" stroke="#3b82f6" />
+      </g>
+      <!-- Solder blobs where each wire ends in a hole -->
+      <g fill="#cbd5e1">
+        <circle cx="48" cy="48" r="5" /><circle cx="96" cy="96" r="5" />
+        <circle cx="96" cy="48" r="5" /><circle cx="96" cy="144" r="5" />
+        <circle cx="240" cy="48" r="5" /><circle cx="288" cy="96" r="5" />
+        <circle cx="288" cy="48" r="5" /><circle cx="288" cy="144" r="5" />
+      </g>
+    </svg>
+
+    <div>
+      <p class="eyebrow">Error 404</p>
+      <h1>This trace leads nowhere</h1>
+      <p class="lead">The page you're looking for doesn't exist or has moved. Your boards are safe, though.</p>
+    </div>
+
+    <div class="actions">
+      <a class="button" href="/app/">Open the designer →</a>
+      <a class="button button-ghost" href="/">Go to the homepage</a>
+    </div>
+
+    <p class="report">
+      Followed a broken link? <a href="https://github.com/MaurerKrisztian/perfboard-designer/issues" target="_blank" rel="noopener">Let us know</a>.
+    </p>
+  </main>
+
+  <script>
+    // Fill the 13 x 7 hole grid (drawn under the wires).
+    (function () {
+      var pads = document.getElementById("pads");
+      var ns = "http://www.w3.org/2000/svg";
+      for (var row = 0; row < 7; row++) {
+        for (var col = 0; col < 13; col++) {
+          var use = document.createElementNS(ns, "use");
+          use.setAttribute("href", "#pad");
+          use.setAttribute("x", String(24 + col * 24));
+          use.setAttribute("y", String(24 + row * 24));
+          pads.appendChild(use);
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
