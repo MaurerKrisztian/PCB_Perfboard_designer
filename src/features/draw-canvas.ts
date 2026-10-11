@@ -1,5 +1,4 @@
 import {resetCanvas} from "./reset-canvas";
-import {GridConfig} from "../state/GridConfig";
 import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
 import {IcState} from "../state/IcState";
@@ -15,24 +14,55 @@ import {getAdvancedComponentDefinition} from "./advanced-components/advanced-com
 import {drawAdvancedComponentBody} from "./advanced-components/advanced-component-render";
 import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
 import {drawComponentValueLabels} from "./component-value-labels";
+import {DEFAULT_DOT_COLOR, drawMarkedPad, drawPad, PAD_RADIUS} from "./board-appearance";
+import {GridConfig} from "../state/GridConfig";
 
-function drawDot(dot: IDot){
-  Canvas.ctx.beginPath();
-  Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius, 0, Math.PI*2);
-  Canvas.ctx.fillStyle = dot.color || "#a4a0a0";
-  Canvas.ctx.fill();
+// How strongly a hole shows through an IC body sitting on top of it.
+const COVERED_PAD_OPACITY = 0.1;
+
+const holeKey = (x: number, y: number) => `${x},${y}`;
+
+// Holes under an IC's body, but not its pins. IC bodies are drawn before the dots, so without this
+// the holes would be painted on top of the chip as if it were see-through.
+function holesUnderIcBodies(): Set<string> {
+  const covered = new Set<string>();
+  const step = GridConfig.dotSpace;
+  for (const ic of IcState.placedIcs) {
+    if (!ic.topLeftDot) continue;
+    const pins = new Set(ic.getRealPinPositions().map(p => holeKey(p.x, p.y)));
+    const {x: left, y: top} = ic.topLeftDot;
+    for (let x = left; x <= left + step * (ic.widthPin - 1); x += step) {
+      for (let y = top; y <= top + step * (ic.heightPin - 1); y += step) {
+        if (!pins.has(holeKey(x, y))) covered.add(holeKey(x, y));
+      }
+    }
+  }
+  return covered;
+}
+
+function drawDot(dot: IDot, underIc = false){
+  if (underIc) {
+    Canvas.ctx.save();
+    Canvas.ctx.globalAlpha = COVERED_PAD_OPACITY;
+  }
+  if (dot.color && dot.color.toLowerCase() !== DEFAULT_DOT_COLOR) {
+    drawMarkedPad(dot.x, dot.y, dot.color);
+  } else {
+    drawPad(dot.x, dot.y);
+  }
+  if (underIc) Canvas.ctx.restore();
 
   if (dot === DotState.selectedDot) {
     // Outer glowing selection ring
     Canvas.ctx.beginPath();
-    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 4, 0, Math.PI * 2);
+    Canvas.ctx.arc(dot.x, dot.y, PAD_RADIUS + 4, 0, Math.PI * 2);
     Canvas.ctx.strokeStyle = "#38bdf8";
     Canvas.ctx.lineWidth = 3;
     Canvas.ctx.stroke();
 
     // Inner ring marker
     Canvas.ctx.beginPath();
-    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 1, 0, Math.PI * 2);
+    Canvas.ctx.arc(dot.x, dot.y, PAD_RADIUS + 1, 0, Math.PI * 2);
     Canvas.ctx.strokeStyle = "#ffffff";
     Canvas.ctx.lineWidth = 1.5;
     Canvas.ctx.stroke();
@@ -40,14 +70,14 @@ function drawDot(dot: IDot){
              || dot === AdvancedComponentState.pendingAnchorDot) {
     // Pending placement start pad highlight
     Canvas.ctx.beginPath();
-    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 4, 0, Math.PI * 2);
+    Canvas.ctx.arc(dot.x, dot.y, PAD_RADIUS + 4, 0, Math.PI * 2);
     Canvas.ctx.strokeStyle = "#22c55e";
     Canvas.ctx.lineWidth = 3;
     Canvas.ctx.stroke();
   } else if (dot === DotState.hoverDot) {
     Canvas.ctx.beginPath();
-    Canvas.ctx.arc(dot.x, dot.y, GridConfig.dotRadius + 3, 0, Math.PI * 2);
-    Canvas.ctx.strokeStyle = "#94a3b8";
+    Canvas.ctx.arc(dot.x, dot.y, PAD_RADIUS + 3, 0, Math.PI * 2);
+    Canvas.ctx.strokeStyle = "#e2e8f0";
     Canvas.ctx.lineWidth = 2;
     Canvas.ctx.stroke();
   }
@@ -59,9 +89,9 @@ function drawDot(dot: IDot){
     Canvas.ctx.textAlign = "center";
     Canvas.ctx.fillStyle = dot.color || "#38bdf8";
     if (dot === DotState.hoverDot) {
-      Canvas.ctx.fillText(dot.description, dot.x, dot.y + GridConfig.dotRadius + 12);
+      Canvas.ctx.fillText(dot.description, dot.x, dot.y + PAD_RADIUS + 11);
     } else {
-      Canvas.ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + GridConfig.dotRadius + 12);
+      Canvas.ctx.fillText(dot.description.substring(0, 5), dot.x, dot.y + PAD_RADIUS + 11);
     }
   }
 }
@@ -237,9 +267,11 @@ export function redrawCanvas() {
   for (const ic of IcState.placedIcs) {
     ic.drawBody();
   }
-  // 2. Draw grid dots
+  // 2. Draw grid dots (faded where an IC body covers them)
+  const underIcs = holesUnderIcBodies();
   for (let i = 0; i < DotState.dots.length; i++) {
-    drawDot(DotState.dots[i]);
+    const dot = DotState.dots[i];
+    drawDot(dot, underIcs.has(holeKey(dot.x, dot.y)));
   }
   // 3. Draw wires
   for (let i = 0; i < LineState.lines.length; i++) {
