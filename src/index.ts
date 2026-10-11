@@ -20,6 +20,7 @@ import "./features/wire";
 import "./features/context-menu-actions";
 import "./features/color-picker";
 import "./features/view-controls";
+import "./features/open-3d-view";
 import {resetCanvas} from "./features/reset-canvas";
 import {createDotGrid, heightInput, widthInput} from "./features/project/resize-grid";
 import {redrawCanvas} from "./features/draw-canvas";
