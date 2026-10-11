@@ -11,23 +11,33 @@ import {ShortcutRegistry} from "./shortcut-keys";
 import {ToolState} from "../state/ToolState";
 import {DragState} from "../state/DragState";
 import {updateDrag} from "./component-drag";
+import {ViewState} from "../state/ViewState";
 
-function isOverPlacedPart(x: number, y: number): boolean {
+export function isOverPlacedPart(x: number, y: number): boolean {
   return IcState.placedIcs.some(ic => ic.containsPoint(x, y))
     || StandardComponentState.placedComponents.some(c => c.containsPoint(x, y))
     || AdvancedComponentState.placedComponents.some(c => c.containsPoint(x, y));
+}
+
+// Select mode with nothing armed for placement: placed parts can be dragged, and a drag on bare
+// board pans it.
+export function canPickUpParts(): boolean {
+  return ToolState.activeToolMode === 'select'
+    && !ToolState.armedWire
+    && !IcState.selectedIc
+    && !StandardComponentState.armedDefinitionId
+    && !AdvancedComponentState.armedDefinitionId;
 }
 
 // Hint that a placed part can be picked up. Left alone while the cursor reads 'grabbing', which
 // means a drag or a board pan owns it right now.
 function updateDragCursor(x: number, y: number) {
   if (Canvas.c.style.cursor === 'grabbing') return;
-  const canDrag = ToolState.activeToolMode === 'select'
-    && !ToolState.armedWire
-    && !IcState.selectedIc
-    && !StandardComponentState.armedDefinitionId
-    && !AdvancedComponentState.armedDefinitionId;
-  Canvas.c.style.cursor = canDrag && isOverPlacedPart(x, y) ? 'move' : 'crosshair';
+  if (ViewState.spacePanHeld) {
+    Canvas.c.style.cursor = 'grab';
+    return;
+  }
+  Canvas.c.style.cursor = canPickUpParts() && isOverPlacedPart(x, y) ? 'move' : 'crosshair';
 }
 
 function findHoveredComponentValue(x: number, y: number): string | undefined {
