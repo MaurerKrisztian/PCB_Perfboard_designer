@@ -1,6 +1,6 @@
 # ⚡ PCB Perfboard Designer
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo%20App-brightgreen?style=for-the-badge&logo=github)](https://maurerkrisztian.github.io/PCB_Perfboard_designer/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo%20App-brightgreen?style=for-the-badge&logo=github)](https://perfboarddesigner.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![HTML5 Canvas](https://img.shields.io/badge/HTML5-Canvas-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
