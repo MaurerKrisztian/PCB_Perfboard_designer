@@ -19,6 +19,14 @@ const EDIT_TITLE = '✎ Edit Custom IC / Component';
 // Catalog entry being edited; undefined when creating a new IC.
 let editingIc: Ic | undefined;
 
+// Smallest usable IC: 2 columns so the body has width, 2 pins per side.
+const IC_DIM_MIN = 2;
+
+function readIcDimension(el: HTMLInputElement | null): number {
+  const parsed = parseInt(el?.value ?? '', 10);
+  return Math.max(IC_DIM_MIN, Number.isNaN(parsed) ? 4 : parsed);
+}
+
 function readPinLabels(totalPins: number): Record<number, string> {
   const labels: Record<number, string> = {};
   for (let i = 1; i <= totalPins; i++) {
@@ -34,7 +42,7 @@ function renderPinInputs(labels?: Record<number, string>) {
   if (!pinLabelsContainer || !heightInputEl) return;
   // Keep labels already typed when the pin count changes.
   const existing = labels ?? readPinLabels(pinLabelsContainer.querySelectorAll('input').length);
-  const h = parseInt(heightInputEl.value || "4");
+  const h = readIcDimension(heightInputEl);
   const totalPins = h * 2;
   if (totalPinsCount) totalPinsCount.innerText = String(totalPins);
   let html = '';
@@ -91,10 +99,17 @@ cancelModalBtn?.addEventListener('click', () => {
 
 heightInputEl?.addEventListener('input', () => renderPinInputs());
 
+// Correct out-of-range values in the field itself once the user leaves it.
+for (const el of [widthInputEl, heightInputEl]) {
+  el?.addEventListener('change', () => {
+    el.value = String(readIcDimension(el));
+  });
+}
+
 saveIcBtn?.addEventListener('click', () => {
   const name = nameInputEl?.value.trim() || 'Custom IC';
-  const width = parseInt(widthInputEl?.value || '4');
-  const height = parseInt(heightInputEl?.value || '4');
+  const width = readIcDimension(widthInputEl);
+  const height = readIcDimension(heightInputEl);
   const pinDescriptions = readPinLabels(height * 2);
 
   if (editingIc) {
