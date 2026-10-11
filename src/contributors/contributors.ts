@@ -6,7 +6,7 @@ import "./contributors.css";
 // misses anyone who committed with an email linked to a different account.
 
 const OWNER = "MaurerKrisztian";
-const REPO = "PCB_Perfboard_designer";
+const REPO = "perfboard-designer";
 const REPO_URL = `https://github.com/${OWNER}/${REPO}`;
 
 interface Person {

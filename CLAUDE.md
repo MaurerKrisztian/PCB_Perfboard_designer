@@ -29,7 +29,7 @@ tests changes manually in the browser.
 **Pages** (Vite multi-page build, inputs listed in `vite.config.ts`). Served at
 https://perfboarddesigner.com (GitHub Pages custom domain, kept across deploys by `assets/CNAME`).
 Keep all in-site URLs relative — never `/...` — so it also works under the github.io subfolder
-`/PCB_Perfboard_designer/`. Absolute URLs belong only in SEO tags (canonical, og:*, sitemap).
+`/perfboard-designer/`. Absolute URLs belong only in SEO tags (canonical, og:*, sitemap).
 - `index.html` — static, JS-free SEO landing page (styles in `src/landing/`).
 - `app/index.html` — the editor itself (everything below). Static assets in `assets/` (the Vite
   publicDir) are served from the site root, so from the editor they're `../icons/...` etc.

@@ -44,8 +44,8 @@ Ensure you have [Node.js](https://nodejs.org/) (v16+) installed.
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/maurerkrisztian/PCB_Perfboard_designer.git
-   cd PCB_Perfboard_designer
+   git clone https://github.com/MaurerKrisztian/perfboard-designer.git
+   cd perfboard-designer
    ```
 
 2. **Install Dependencies**:

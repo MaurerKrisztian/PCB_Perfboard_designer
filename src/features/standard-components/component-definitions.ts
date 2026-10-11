@@ -27,7 +27,7 @@ export function getComponentBodySize(def: ComponentDefinition): number {
 
 // Relative to the editor page (app/index.html), which sits one level below the site root
 // where the publicDir icons are served. Relative rather than "/icons/...", so the site works
-// both at perfboarddesigner.com and under the GitHub Pages subfolder /PCB_Perfboard_designer/.
+// both at perfboarddesigner.com and under the GitHub Pages subfolder /perfboard-designer/.
 export const COMPONENT_ICON_DIR = "../icons/components/";
 
 export function getIconPath(def: ComponentDefinition): string {
