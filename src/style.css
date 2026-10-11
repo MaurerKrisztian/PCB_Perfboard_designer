@@ -839,7 +839,7 @@ body.fullscreen-active .right-sidebar {
   border: 1px solid #374151;
   border-radius: 12px;
   width: 100%;
-  max-width: 520px;
+  max-width: 640px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -907,35 +907,88 @@ body.fullscreen-active .right-sidebar {
 
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: end;
   gap: 1rem;
 }
 
+.form-row input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Pin labels drawn as a DIP chip: left pins | body | right pins */
 .pin-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 0.25rem;
+  grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1fr);
+  column-gap: 0.5rem;
+  row-gap: 0.4rem;
+  padding: 0.25rem 0;
+}
+
+.pin-grid-body {
+  grid-column: 2;
+  position: relative;
+  background-color: #0b0f19;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+}
+
+/* Pin 1 notch */
+.pin-grid-body::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  width: 18px;
+  height: 9px;
+  transform: translateX(-50%);
+  background-color: #111827;
+  border: 1px solid #4b5563;
+  border-top: none;
+  border-radius: 0 0 9px 9px;
 }
 
 .pin-input-item {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  min-width: 0;
 }
 
-.pin-input-item span {
+.pin-input-item.pin-left {
+  grid-column: 1;
+}
+
+.pin-input-item.pin-right {
+  grid-column: 3;
+  flex-direction: row-reverse;
+}
+
+.pin-num {
+  flex-shrink: 0;
+  min-width: 1.75rem;
   font-size: 0.75rem;
-  color: #60a5fa;
-  width: 42px;
   font-weight: 600;
+  color: #60a5fa;
+  font-variant-numeric: tabular-nums;
+}
+
+.pin-left .pin-num {
+  text-align: right;
 }
 
 .pin-input-item input {
   flex: 1;
-  padding: 0.3rem 0.5rem;
-  font-size: 0.8rem;
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 480px) {
+  .pin-grid {
+    grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr);
+  }
 }
 

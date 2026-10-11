@@ -45,12 +45,16 @@ function renderPinInputs(labels?: Record<number, string>) {
   const h = readIcDimension(heightInputEl);
   const totalPins = h * 2;
   if (totalPinsCount) totalPinsCount.innerText = String(totalPins);
-  let html = '';
+  // Laid out like the chip on the board (DIP order): pins 1..h run down the left side,
+  // h+1..2h run back up the right side. DOM order stays 1..2h so Tab follows pin order.
+  let html = `<div class="pin-grid-body" style="grid-row: 1 / span ${h}"></div>`;
   for (let i = 1; i <= totalPins; i++) {
+    const isLeft = i <= h;
+    const row = isLeft ? i : totalPins - i + 1;
     html += `
-      <div class="pin-input-item">
-        <span>Pin ${i}:</span>
-        <input type="text" id="pinInput_${i}" placeholder="Label ${i}">
+      <div class="pin-input-item ${isLeft ? 'pin-left' : 'pin-right'}" style="grid-row: ${row}">
+        <span class="pin-num">${i}</span>
+        <input type="text" id="pinInput_${i}" placeholder="Pin ${i}">
       </div>
     `;
   }
