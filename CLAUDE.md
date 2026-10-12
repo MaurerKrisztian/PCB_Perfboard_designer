@@ -81,6 +81,13 @@ the full board (dots, lines, placed ICs/standard/advanced components, canvas siz
 `load-from-local-storage.ts` do the same against `localStorage` for auto-persisted in-browser
 state. Coordinates in saved data are canvas pixel coordinates, not grid indices.
 
+**3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the
+editor on purpose. It only consumes project-file JSON (the `IProjectSave` shape), parsed by its own
+`project-data.ts`, and never imports editor state classes — only the pure data modules (component
+definitions, value parsing/color codes, `rotateOffset`). The editor side is just
+`src/features/open-3d-view.ts`, which snapshots `getSaveJson()` and lazy-imports the viewer, so
+three.js stays out of the main bundle. Scene units are mm (50px grid = 2.54mm pitch).
+
 **Canvas coordinates**: mouse events are mapped to canvas drawing-space coordinates via
 `Canvas.toDrawingCoordinates(e)`, which accounts for CSS scaling of the canvas element (its
 rendered size vs. its `width`/`height` attributes) — always go through this helper rather than
