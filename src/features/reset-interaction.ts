@@ -5,7 +5,7 @@ import {StandardComponentState} from "../state/StandardComponentState";
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {HistoryState} from "../state/HistoryState";
 import {cancelDrag} from "./component-drag";
-import {clearPartSelection} from "./placed-parts";
+import {PartState} from "../state/PartState";
 import {disarmWire} from "./wire";
 import {updateSelectionStatus} from "./selection-status";
 
@@ -14,7 +14,7 @@ export function resetInteraction() {
   cancelDrag();
   DotState.selectedDot = undefined;
   LineState.selectedLine = undefined;
-  clearPartSelection();
+  PartState.selected = undefined;
   IcState.selectedIc = undefined;
   StandardComponentState.armedDefinitionId = undefined;
   StandardComponentState.pendingStartDot = undefined;

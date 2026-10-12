@@ -1,11 +1,9 @@
 import {LineState} from "../../state/LineState";
 import {DotState} from "../../state/DotState";
 import {GridConfig} from "../../state/GridConfig";
-import {IcState} from "../../state/IcState";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
+import {PartState} from "../../state/PartState";
 import {IDot} from "../../interfaces/dot.interface";
-import {IDragTarget} from "../../interfaces/drag-target.interface";
+import type {Part} from "../../interfaces/placed-part.interface";
 import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
@@ -14,7 +12,6 @@ import {getCurrentZoom, fitToScreen} from "../view-controls";
 import {GRID_PRESETS} from "./grid-presets";
 import {DEFAULT_DOT_COLOR} from "../board-appearance";
 import {buildDotIndex, dotPositionKey} from "../dot-lookup";
-import {getAnchorDots, getOccupiedPositions} from "../component-drag";
 import {resetForNewBoard} from "../reset-interaction";
 
 export const widthInput = Utils.getSafeHtmlElement<HTMLInputElement>('dotMatrixWidth')
@@ -50,21 +47,15 @@ function resizeBoard(cols: number, rows: number): boolean {
 
   // Same rule as dragging: a part fits when every hole it covers lands on the new board. Holes it
   // already overhung the old board with are exempt, since placement never required a part to fit.
-  const partFits = (part: IDragTarget) =>
-    getAnchorDots(part).every(fitsNewBoard)
-    && getOccupiedPositions(part).every(p => !oldDots.has(dotPositionKey(p.x, p.y)) || fitsNewBoard(p));
+  const partFits = (part: Part) =>
+    part.getAnchorDots().every(fitsNewBoard)
+    && part.getOccupiedPositions().every(p => !oldDots.has(dotPositionKey(p.x, p.y)) || fitsNewBoard(p));
 
   const keptLines = LineState.lines.filter(line => fitsNewBoard(line.start) && fitsNewBoard(line.end));
-  const keptIcs = IcState.placedIcs.filter(ic => partFits({kind: "ic", ic}));
-  const keptStandard = StandardComponentState.placedComponents
-    .filter(component => partFits({kind: "standard-component", component}));
-  const keptAdvanced = AdvancedComponentState.placedComponents
-    .filter(component => partFits({kind: "advanced-component", component}));
+  const keptParts = PartState.parts.filter(partFits);
 
   const droppedWires = LineState.lines.length - keptLines.length;
-  const droppedParts = IcState.placedIcs.length - keptIcs.length
-    + StandardComponentState.placedComponents.length - keptStandard.length
-    + AdvancedComponentState.placedComponents.length - keptAdvanced.length;
+  const droppedParts = PartState.parts.length - keptParts.length;
   if (droppedWires + droppedParts > 0) {
     const what = [
       droppedWires ? `${droppedWires} wire${droppedWires === 1 ? "" : "s"}` : "",
@@ -79,9 +70,7 @@ function resizeBoard(cols: number, rows: number): boolean {
 
   resetForNewBoard();
   LineState.lines = keptLines;
-  IcState.placedIcs = keptIcs;
-  StandardComponentState.placedComponents = keptStandard;
-  AdvancedComponentState.placedComponents = keptAdvanced;
+  PartState.parts = keptParts;
   createDotGrid(cols, rows, oldDots);
   redrawCanvas();
   fitToScreen(true);

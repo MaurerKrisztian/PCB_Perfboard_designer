@@ -1,14 +1,11 @@
 import {DotState} from "../../state/DotState";
 import {LineState} from "../../state/LineState";
-import {IcState} from "../../state/IcState";
+import {PartState} from "../../state/PartState";
 import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
 import {IProjectSave} from "../../interfaces/project-save.interface";
+import type {Part} from "../../interfaces/placed-part.interface";
 import {Ic} from "../ic";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
-import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 
 const saveBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProjectBtn');
 saveBtn.addEventListener('click', function() {
@@ -25,44 +22,10 @@ saveBtn.addEventListener('click', function() {
 });
 
 
-export function serializePlacedIc(ic: Ic) {
-  return {
-    id: ic.id,
-    widthPin: ic.widthPin,
-    heightPin: ic.heightPin,
-    pinDescription: ic.pinDescription || {},
-    name: ic.name,
-    isCustom: !!ic.isCustom,
-    rotationAngle: ic.rotationAngle || 0,
-    topLeftDotX: ic.topLeftDot ? ic.topLeftDot.x : null,
-    topLeftDotY: ic.topLeftDot ? ic.topLeftDot.y : null,
-  };
-}
-
-export function serializePlacedStandardComponent(component: PlacedStandardComponent) {
-  return {
-    id: component.id,
-    definitionId: component.definitionId,
-    value: component.value,
-    color: component.color,
-    startDotX: component.startDot.x,
-    startDotY: component.startDot.y,
-    endDotX: component.endDot.x,
-    endDotY: component.endDot.y,
-  };
-}
-
-export function serializePlacedAdvancedComponent(component: PlacedAdvancedComponent) {
-  return {
-    id: component.id,
-    definitionId: component.definitionId,
-    value: component.value,
-    rotationAngle: component.rotationAngle,
-    anchorDotX: component.anchorDot.x,
-    anchorDotY: component.anchorDot.y,
-    rows: component.rows,
-    cols: component.cols,
-  };
+// The file keeps one array per kind of part. PartState.parts is grouped by kind in the same
+// order, so each array comes out in the order it was loaded and drawn.
+function serializeParts(kind: Part["kind"]) {
+  return PartState.parts.filter(part => part.kind === kind).map(part => part.serialize());
 }
 
 export function getSaveJson(): IProjectSave {
@@ -71,8 +34,8 @@ export function getSaveJson(): IProjectSave {
     lines: LineState.lines,
     canvas: { width: Canvas.gridWidth, height: Canvas.gridHeight },
     ICs: Ic.IC_CONTAINER || [],
-    placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic)),
-    placedStandardComponents: StandardComponentState.placedComponents.map(c => serializePlacedStandardComponent(c)),
-    placedAdvancedComponents: AdvancedComponentState.placedComponents.map(c => serializePlacedAdvancedComponent(c))
+    placedIcs: serializeParts("ic"),
+    placedStandardComponents: serializeParts("standard-component"),
+    placedAdvancedComponents: serializeParts("advanced-component")
   };
 }

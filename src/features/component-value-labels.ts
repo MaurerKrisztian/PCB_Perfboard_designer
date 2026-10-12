@@ -1,7 +1,8 @@
 import {Canvas} from "../state/Canvas";
 import {ViewState} from "../state/ViewState";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {PartState} from "../state/PartState";
+import type {PlacedStandardComponent} from "./standard-components/placed-standard-component";
+import type {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
 import {GridConfig} from "../state/GridConfig";
 import {IDot} from "../interfaces/dot.interface";
 import {getComponentBodySize} from "./standard-components/component-definitions";
@@ -53,44 +54,42 @@ function drawLabel(text: string, placements: LabelPlacement[]) {
   Canvas.ctx.fillText(text, box.x, box.y + h / 2);
 }
 
-function drawStandardComponentLabels() {
-  for (const component of StandardComponentState.placedComponents) {
-    const text = getLabelText(component.definitionId, component.value);
-    const def = component.getDefinition();
-    if (!text || !def) continue;
+function drawStandardComponentLabel(component: PlacedStandardComponent) {
+  const text = getLabelText(component.definitionId, component.value);
+  const def = component.getDefinition();
+  if (!text || !def) return;
 
-    const {startDot, endDot} = component;
-    const dx = endDot.x - startDot.x;
-    const dy = endDot.y - startDot.y;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    if (length === 0) continue;
+  const {startDot, endDot} = component;
+  const dx = endDot.x - startDot.x;
+  const dy = endDot.y - startDot.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  if (length === 0) return;
 
-    // The visible artwork is a rectangle (full body length, artworkHalfThickness across)
-    // turned to the part's angle. Clear its axis-aligned extent in the label's direction so
-    // the text hugs straight parts while diagonal ones don't get a corner poking into it.
-    const bodySize = getComponentBodySize(def);
-    const halfLength = bodySize / 2;
-    const halfThickness = bodySize * (def.artworkHalfThickness ?? 50) / 100;
-    const cos = Math.abs(dx) / length;
-    const sin = Math.abs(dy) / length;
-    const midX = (startDot.x + endDot.x) / 2;
-    const midY = (startDot.y + endDot.y) / 2;
+  // The visible artwork is a rectangle (full body length, artworkHalfThickness across)
+  // turned to the part's angle. Clear its axis-aligned extent in the label's direction so
+  // the text hugs straight parts while diagonal ones don't get a corner poking into it.
+  const bodySize = getComponentBodySize(def);
+  const halfLength = bodySize / 2;
+  const halfThickness = bodySize * (def.artworkHalfThickness ?? 50) / 100;
+  const cos = Math.abs(dx) / length;
+  const sin = Math.abs(dy) / length;
+  const midX = (startDot.x + endDot.x) / 2;
+  const midY = (startDot.y + endDot.y) / 2;
 
-    if (sin > cos) {
-      // Mostly vertical: label to the right of the body, or the left if that's off the board.
-      const extentX = cos * halfLength + sin * halfThickness;
-      drawLabel(text, [
-        (_w, h) => ({x: midX + extentX + LABEL_GAP, y: midY - h / 2}),
-        (w, h) => ({x: midX - extentX - LABEL_GAP - w, y: midY - h / 2}),
-      ]);
-    } else {
-      // Mostly horizontal: label above the body, or below if that's off the board.
-      const extentY = sin * halfLength + cos * halfThickness;
-      drawLabel(text, [
-        (w, h) => ({x: midX - w / 2, y: midY - extentY - LABEL_GAP - h}),
-        (w) => ({x: midX - w / 2, y: midY + extentY + LABEL_GAP}),
-      ]);
-    }
+  if (sin > cos) {
+    // Mostly vertical: label to the right of the body, or the left if that's off the board.
+    const extentX = cos * halfLength + sin * halfThickness;
+    drawLabel(text, [
+      (_w, h) => ({x: midX + extentX + LABEL_GAP, y: midY - h / 2}),
+      (w, h) => ({x: midX - extentX - LABEL_GAP - w, y: midY - h / 2}),
+    ]);
+  } else {
+    // Mostly horizontal: label above the body, or below if that's off the board.
+    const extentY = sin * halfLength + cos * halfThickness;
+    drawLabel(text, [
+      (w, h) => ({x: midX - w / 2, y: midY - extentY - LABEL_GAP - h}),
+      (w) => ({x: midX - w / 2, y: midY + extentY + LABEL_GAP}),
+    ]);
   }
 }
 
@@ -111,24 +110,22 @@ function drawOnBodyLabel(text: string, anchor: IDot, offset: PinOffset, rotation
   Canvas.ctx.restore();
 }
 
-function drawAdvancedComponentLabels() {
-  // Below the body, since pin numbers sit above the pins by default; above only when the
-  // part is on the bottom edge of the board.
-  for (const component of AdvancedComponentState.placedComponents) {
-    const text = getLabelText(component.definitionId, component.value);
-    const def = component.getDefinition();
-    if (!text || !def) continue;
-    if (def.valueLabelOffset) {
-      drawOnBodyLabel(text, component.anchorDot, def.valueLabelOffset, component.rotationAngle);
-      continue;
-    }
-    const rect = component.getBodyRect();
-    const centerX = rect.x + rect.w / 2;
-    drawLabel(text, [
-      (w) => ({x: centerX - w / 2, y: rect.y + rect.h + LABEL_GAP}),
-      (w, h) => ({x: centerX - w / 2, y: rect.y - LABEL_GAP - h}),
-    ]);
+// Below the body, since pin numbers sit above the pins by default; above only when the
+// part is on the bottom edge of the board.
+function drawAdvancedComponentLabel(component: PlacedAdvancedComponent) {
+  const text = getLabelText(component.definitionId, component.value);
+  const def = component.getDefinition();
+  if (!text || !def) return;
+  if (def.valueLabelOffset) {
+    drawOnBodyLabel(text, component.anchorDot, def.valueLabelOffset, component.rotationAngle);
+    return;
   }
+  const rect = component.getBodyRect();
+  const centerX = rect.x + rect.w / 2;
+  drawLabel(text, [
+    (w) => ({x: centerX - w / 2, y: rect.y + rect.h + LABEL_GAP}),
+    (w, h) => ({x: centerX - w / 2, y: rect.y - LABEL_GAP - h}),
+  ]);
 }
 
 export function drawComponentValueLabels() {
@@ -144,7 +141,9 @@ export function drawComponentValueLabels() {
   // Placements are computed as top-left boxes, drawn vertically centered in their box.
   Canvas.ctx.textAlign = "left";
   Canvas.ctx.textBaseline = "middle";
-  drawStandardComponentLabels();
-  drawAdvancedComponentLabels();
+  for (const part of PartState.parts) {
+    if (part.kind === "standard-component") drawStandardComponentLabel(part);
+    else if (part.kind === "advanced-component") drawAdvancedComponentLabel(part);
+  }
   Canvas.ctx.restore();
 }

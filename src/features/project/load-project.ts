@@ -1,15 +1,14 @@
 import {Utils} from "../../utils/utils";
 import {DotState} from "../../state/DotState";
 import {LineState} from "../../state/LineState";
-import {IcState} from "../../state/IcState";
+import {PartState} from "../../state/PartState";
+import type {Part} from "../../interfaces/placed-part.interface";
 import {redrawCanvas} from "../draw-canvas";
 import {Canvas} from "../../state/Canvas";
 import {IProjectSave} from "../../interfaces/project-save.interface";
 import {Ic} from "../ic";
 import {unserialize} from "../../utils/serialization";
-import {StandardComponentState} from "../../state/StandardComponentState";
 import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 import {applyCanvasResolution} from "../canvas-sizing";
 import {getCurrentZoom} from "../view-controls";
@@ -117,24 +116,12 @@ export function loadProject(project: IProjectSave){
     Ic.IC_CONTAINER = project.ICs.map(ic => unserialize(ic, Ic));
     Ic.showICs();
   }
-  if (project.placedIcs) {
-    IcState.placedIcs = project.placedIcs.map(data => deserializePlacedIc(data)).filter(ic => ic !== null) as Ic[];
-  } else {
-    IcState.placedIcs = [];
-  }
-  if (project.placedStandardComponents) {
-    StandardComponentState.placedComponents = project.placedStandardComponents
-      .map(data => deserializePlacedStandardComponent(data))
-      .filter(c => c !== null) as PlacedStandardComponent[];
-  } else {
-    StandardComponentState.placedComponents = [];
-  }
-  if (project.placedAdvancedComponents) {
-    AdvancedComponentState.placedComponents = project.placedAdvancedComponents
-      .map(data => deserializePlacedAdvancedComponent(data))
-      .filter(c => c !== null) as PlacedAdvancedComponent[];
-  } else {
-    AdvancedComponentState.placedComponents = [];
-  }
+  // Kind by kind, in the grouped order PartState.parts keeps.
+  const parts: (Part | null)[] = [
+    ...(project.placedIcs ?? []).map(data => deserializePlacedIc(data)),
+    ...(project.placedStandardComponents ?? []).map(data => deserializePlacedStandardComponent(data)),
+    ...(project.placedAdvancedComponents ?? []).map(data => deserializePlacedAdvancedComponent(data)),
+  ];
+  PartState.parts = parts.filter((part): part is Part => part !== null);
   redrawCanvas();
 }

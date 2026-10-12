@@ -2,6 +2,8 @@ import {resetCanvas} from "./reset-canvas";
 import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
 import {IcState} from "../state/IcState";
+import {PartState} from "../state/PartState";
+import {PlacedPart} from "../interfaces/placed-part.interface";
 import {Canvas} from "../state/Canvas";
 import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
@@ -27,8 +29,8 @@ const holeKey = (x: number, y: number) => `${x},${y}`;
 function holesUnderIcBodies(): Set<string> {
   const covered = new Set<string>();
   const step = GridConfig.dotSpace;
-  for (const ic of IcState.placedIcs) {
-    if (!ic.topLeftDot) continue;
+  for (const ic of PartState.parts) {
+    if (ic.kind !== "ic" || !ic.topLeftDot) continue;
     const pins = new Set(ic.getRealPinPositions().map(p => holeKey(p.x, p.y)));
     const {x: left, y: top} = ic.topLeftDot;
     for (let x = left; x <= left + step * (ic.widthPin - 1); x += step) {
@@ -263,9 +265,10 @@ function drawWirePlacementPreview() {
 
 export function redrawCanvas() {
   resetCanvas();
+  const selected = PartState.selected;
   // 1. Draw IC chip bodies
-  for (const ic of IcState.placedIcs) {
-    ic.drawBody();
+  for (const part of PartState.parts) {
+    if (part.layer === "under-board") part.draw(part === selected);
   }
   // 2. Draw grid dots (faded where an IC body covers them)
   const underIcs = holesUnderIcBodies();
@@ -277,20 +280,14 @@ export function redrawCanvas() {
   for (let i = 0; i < LineState.lines.length; i++) {
     drawLine(LineState.lines[i]);
   }
-  // 4. Draw Standard Component bodies (above wires/dots, IC chip bodies stay underneath)
-  for (const component of StandardComponentState.placedComponents) {
-    component.draw();
+  // 4. Draw standard, then advanced (fixed-pin) component bodies, above wires/dots
+  for (const part of PartState.parts) {
+    if (part.layer === "over-wires") part.draw(part === selected);
   }
-  // 5. Draw Advanced (fixed-pin) Component bodies
-  for (const component of AdvancedComponentState.placedComponents) {
-    component.draw();
-  }
-  // 6. Draw silkscreen-style component value labels (when toggled on)
+  // 5. Draw silkscreen-style component value labels (when toggled on)
   drawComponentValueLabels();
-  // 7. Draw IC text badges on top of everything
-  for (const ic of IcState.placedIcs) {
-    ic.drawLabel();
-  }
+  // 6. Draw IC text badges on top of everything
+  PartState.parts.forEach((part: PlacedPart) => part.drawOverlay?.(part === selected));
   drawIcPlacementPreview();
   drawStandardComponentPlacementPreview();
   drawAdvancedComponentPlacementPreview();

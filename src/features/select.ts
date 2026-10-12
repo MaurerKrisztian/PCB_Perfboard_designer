@@ -16,7 +16,8 @@ import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-com
 import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
 import {updateSelectionStatus} from "./selection-status";
 import {beginDrag, endDrag} from "./component-drag";
-import {clearPartSelection, findPartAt, removePart, selectPart} from "./placed-parts";
+import {findPartAt, placePart, removePart} from "./placed-parts";
+import {PartState} from "../state/PartState";
 import {resetInteraction} from "./reset-interaction";
 import {findDotAt} from "./dot-lookup";
 import {mergeNewWire} from "./wire-merge";
@@ -47,7 +48,7 @@ function startPan(clientX: number, clientY: number) {
 // What a plain click on bare board does: drop any part selection, then select the hole or wire
 // under the pointer.
 function clickBareBoard(e: MouseEvent) {
-  clearPartSelection();
+  PartState.selected = undefined;
   setSelection(e);
   redrawCanvas();
 }
@@ -88,10 +89,8 @@ Canvas.c.addEventListener('mousedown', function(e) {
     if (IcState.selectedIc && DotState.hoverDot) {
       const newInstance = IcState.selectedIc.clone();
       newInstance.updatePosition(DotState.hoverDot.x, DotState.hoverDot.y);
-      IcState.placedIcs.push(newInstance);
-      IcState.selectedPlacedIc = newInstance;
+      placePart(newInstance);
       IcState.selectedIc = undefined;
-      HistoryState.record({type: 'add', kind: 'ic', ic: newInstance});
       redrawCanvas();
       return;
     }
@@ -109,9 +108,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
           StandardComponentState.pendingStartDot,
           DotState.hoverDot
         );
-        StandardComponentState.placedComponents.push(instance);
-        StandardComponentState.selectedPlacedComponent = instance;
-        HistoryState.record({type: 'add', kind: 'standard-component', component: instance});
+        placePart(instance);
       }
       StandardComponentState.pendingStartDot = undefined;
       redrawCanvas();
@@ -149,9 +146,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
           );
           block.rows = rows;
           block.cols = cols;
-          AdvancedComponentState.placedComponents.push(block);
-          AdvancedComponentState.selectedPlacedComponent = block;
-          HistoryState.record({type: 'add', kind: 'advanced-component', component: block});
+          placePart(block);
         }
         // Stays armed for repeated placement, matching the standard component/wire flow.
         AdvancedComponentState.pendingAnchorDot = undefined;
@@ -163,9 +158,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
         DotState.hoverDot,
         AdvancedComponentState.armedRotation
       );
-      AdvancedComponentState.placedComponents.push(instance);
-      AdvancedComponentState.selectedPlacedComponent = instance;
-      HistoryState.record({type: 'add', kind: 'advanced-component', component: instance});
+      placePart(instance);
       redrawCanvas();
       return;
     }
@@ -217,7 +210,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
       // A hit on a placed part selects it and picks it up for dragging.
       const part = findPartAt(x, y);
       if (part) {
-        selectPart(part);
+        PartState.selected = part;
         beginDrag(part, x, y);
         DotState.selectedDot = undefined;
         LineState.selectedLine = undefined;
@@ -225,7 +218,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
         return;
       }
       // Missed every part: drop the part selection and fall through to dot/line selection.
-      clearPartSelection();
+      PartState.selected = undefined;
     }
 
     setSelection(e);
@@ -301,7 +294,7 @@ Canvas.c.addEventListener('contextmenu', function(e) {
 
   const part = findPartAt(x, y);
   if (part) {
-    selectPart(part);
+    PartState.selected = part;
     DotState.selectedDot = undefined;
     LineState.selectedLine = undefined;
     redrawCanvas();
@@ -310,7 +303,7 @@ Canvas.c.addEventListener('contextmenu', function(e) {
   }
 
   // The menu now acts on a wire or pad, so a part selected earlier mustn't be what Delete hits.
-  clearPartSelection();
+  PartState.selected = undefined;
   selectLine(e);
   if (!LineState.selectedLine) {
     DotState.selectedDot = DotState.hoverDot;
@@ -468,7 +461,7 @@ function setSelection(event: MouseEvent) {
       LineState.selectedLine = line;
       DotState.selectedDot = undefined;
       // Clear stale component selections when selecting a wire
-      clearPartSelection();
+      PartState.selected = undefined;
       redrawCanvas();
       return;
     }

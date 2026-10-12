@@ -1,5 +1,6 @@
 import {ToolState} from "../state/ToolState";
 import {IcState} from "../state/IcState";
+import {PartState} from "../state/PartState";
 import {LineState} from "../state/LineState";
 import {DotState} from "../state/DotState";
 import {StandardComponentState} from "../state/StandardComponentState";
@@ -33,15 +34,15 @@ export function updateSelectionStatus() {
   updateAdvancedComponentButtonHighlight();
   if (!statusEl) return;
   const modeLabel = ToolState.activeToolMode.toUpperCase();
-  if (IcState.selectedPlacedIc) {
-    setStatus(statusEl, `Placed IC Selected (${IcState.selectedPlacedIc.name}) [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
-  } else if (AdvancedComponentState.selectedPlacedComponent) {
-    const selected = AdvancedComponentState.selectedPlacedComponent;
-    const def = selected.getDefinition();
-    const size = def?.gridSizable ? ` ${selected.rows}×${selected.cols}` : "";
+  const part = PartState.selected;
+  if (part?.kind === "ic") {
+    setStatus(statusEl, `Placed IC Selected (${part.name}) [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
+  } else if (part?.kind === "advanced-component") {
+    const def = part.getDefinition();
+    const size = def?.gridSizable ? ` ${part.rows}×${part.cols}` : "";
     setStatus(statusEl, `${def?.name ?? "Component"}${size} Selected [Drag to Move • R to Rotate • Del to Remove]`, SELECTED_PART_COLOR);
-  } else if (StandardComponentState.selectedPlacedComponent) {
-    const def = StandardComponentState.selectedPlacedComponent.getDefinition();
+  } else if (part?.kind === "standard-component") {
+    const def = part.getDefinition();
     setStatus(statusEl, `${def?.name ?? "Component"} Selected [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
   } else if (ToolState.armedWire) {
     setStatus(statusEl, ToolState.wireStartDot

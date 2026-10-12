@@ -1,8 +1,6 @@
 import {LineState} from "../state/LineState";
 import {DotState} from "../state/DotState";
-import {IcState} from "../state/IcState";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {PartState} from "../state/PartState";
 import {redrawCanvas} from "./draw-canvas";
 import {rotateSelectedIc} from "./ic";
 import {hideContextMenu, hideLedColorMenu, showLedColorMenu} from "./select";
@@ -19,7 +17,8 @@ document.getElementById('ctxRotateBtn')?.addEventListener('click', () => {
 });
 
 document.getElementById('ctxColorBtn')?.addEventListener('click', () => {
-  if (StandardComponentState.selectedPlacedComponent?.definitionId === "led") {
+  const part = PartState.selected;
+  if (part?.kind === "standard-component" && part.definitionId === "led") {
     showLedColorMenu();
     return;
   }
@@ -51,7 +50,7 @@ document.getElementById('ctxValueBtn')?.addEventListener('click', () => {
 
 document.getElementById('ctxDeleteBtn')?.addEventListener('click', () => {
   hideContextMenu();
-  if (LineState.selectedLine || IcState.selectedPlacedIc || StandardComponentState.selectedPlacedComponent || AdvancedComponentState.selectedPlacedComponent) {
+  if (LineState.selectedLine || PartState.selected) {
     deleteLine();
   } else if (DotState.selectedDot && DotState.selectedDot.description) {
     DotState.selectedDot.description = undefined;

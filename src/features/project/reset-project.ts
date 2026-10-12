@@ -1,8 +1,6 @@
 import {Utils} from "../../utils/utils";
 import {LineState} from "../../state/LineState";
-import {IcState} from "../../state/IcState";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
+import {PartState} from "../../state/PartState";
 import {createDotGrid, heightInput, widthInput} from "./resize-grid";
 import {redrawCanvas} from "../draw-canvas";
 import {resetForNewBoard} from "../reset-interaction";
@@ -12,9 +10,7 @@ import {resetForNewBoard} from "../reset-interaction";
 Utils.getSafeHtmlElement<HTMLButtonElement>('resetBtn').addEventListener('click', function() {
   resetForNewBoard();
   LineState.lines = [];
-  IcState.placedIcs = [];
-  StandardComponentState.placedComponents = [];
-  AdvancedComponentState.placedComponents = [];
+  PartState.parts = [];
   localStorage.removeItem('save');
   createDotGrid(parseInt(widthInput.value || "10"), parseInt(heightInput.value || "10"));
   redrawCanvas()

@@ -31,10 +31,8 @@ const TILE_BODY_COLOR = "#1f1f26";
 const TILE_PAD_COLOR = "#e8d296";
 const TILE_PAD_RADIUS_RATIO = 0.13;
 
-export interface Point {
-  x: number;
-  y: number;
-}
+import type {Point} from "../../interfaces/point.interface";
+export type {Point};
 
 export interface DrawAdvancedComponentOptions {
   selected?: boolean;

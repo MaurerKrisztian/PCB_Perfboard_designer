@@ -9,10 +9,17 @@ import {StandardComponentState} from "../state/StandardComponentState";
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {disarmWire} from "./wire";
 import {findNearestDot} from "./dot-lookup";
-import {findPartAt, selectPart} from "./placed-parts";
+import {findPartAt} from "./placed-parts";
+import {PartState} from "../state/PartState";
+import {GridConfig} from "../state/GridConfig";
+import {isRotatable, PlacedPart} from "../interfaces/placed-part.interface";
+import {Point} from "../interfaces/point.interface";
 
 
-export class Ic{
+// Both a catalog entry (IC_CONTAINER, the clone armed for placement) and a chip placed on the
+// board; only the latter has a topLeftDot. Catalog entries are saved by JSON.stringify-ing them
+// whole, so anything added here as an instance field ends up in project files.
+export class Ic implements PlacedPart {
   static IC_CONTAINER: Ic[] = [];
 
   public id = Math.random() * 100;
@@ -29,6 +36,10 @@ export class Ic{
   ) {
     this.isCustom = isCustom;
   }
+
+  // Getters rather than fields so they stay out of the saved catalog (see above).
+  get kind(): "ic" { return "ic"; }
+  get layer(): "under-board" { return "under-board"; }
 
   static add(ic: Ic, saveToStorage: boolean = false){
     this.IC_CONTAINER.push(ic);
@@ -119,10 +130,9 @@ export class Ic{
     this.topLeftDot = findNearestDot(x, y) ?? null;
   }
 
-  drawBody(){
+  drawBody(isSelected: boolean){
     if (!this.topLeftDot) return;
     Canvas.ctx.beginPath();
-    const isSelected = this === IcState.selectedPlacedIc;
     
     Canvas.ctx.fillStyle = isSelected ? "rgba(30,58,138,0.9)" : "rgba(17,24,39,0.85)";
     Canvas.ctx.strokeStyle = isSelected ? "#38bdf8" : "#475569";
@@ -297,9 +307,8 @@ export class Ic{
     Canvas.ctx.restore();
   }
 
-  drawLabel(){
+  drawLabel(isSelected: boolean){
     if (!this.topLeftDot) return;
-    const isSelected = this === IcState.selectedPlacedIc;
     const w = 50 * (this.widthPin - 1);
     const h = 50 * (this.heightPin - 1);
     const centerX = this.topLeftDot.x + (w / 2);
@@ -333,9 +342,53 @@ export class Ic{
     this.drawPinLabels();
   }
 
-  draw(){
-    this.drawBody();
-    this.drawLabel();
+  // The body goes under the holes; the name badge and pin labels go on top of everything.
+  draw(selected: boolean){
+    this.drawBody(selected);
+  }
+
+  drawOverlay(selected: boolean){
+    this.drawLabel(selected);
+  }
+
+  getPinPositions(): Point[] {
+    return this.getRealPinPositions();
+  }
+
+  getOccupiedPositions(): Point[] {
+    const topLeft = this.topLeftDot;
+    if (!topLeft) return [];
+    // The grid is regular, so the footprint's four corners standing on dots implies the rest do.
+    const w = GridConfig.dotSpace * (this.widthPin - 1);
+    const h = GridConfig.dotSpace * (this.heightPin - 1);
+    return [
+      {x: topLeft.x, y: topLeft.y},
+      {x: topLeft.x + w, y: topLeft.y},
+      {x: topLeft.x, y: topLeft.y + h},
+      {x: topLeft.x + w, y: topLeft.y + h},
+    ];
+  }
+
+  getAnchorDots(): IDot[] {
+    return this.topLeftDot ? [this.topLeftDot] : [];
+  }
+
+  setAnchorDots(dots: IDot[]) {
+    if (dots[0]) this.topLeftDot = dots[0];
+  }
+
+  serialize() {
+    return {
+      id: this.id,
+      widthPin: this.widthPin,
+      heightPin: this.heightPin,
+      pinDescription: this.pinDescription || {},
+      name: this.name,
+      isCustom: !!this.isCustom,
+      rotationAngle: this.rotationAngle || 0,
+      topLeftDotX: this.topLeftDot ? this.topLeftDot.x : null,
+      topLeftDotY: this.topLeftDot ? this.topLeftDot.y : null,
+    };
   }
 
   containsPoint(x: number, y: number): boolean {
@@ -474,13 +527,9 @@ export function selectIc(id: number | string){
 }
 
 export function rotateSelectedIc() {
-  if (IcState.selectedPlacedIc) {
-    IcState.selectedPlacedIc.rotate();
-    redrawCanvas();
-    return;
-  }
-  if (AdvancedComponentState.selectedPlacedComponent) {
-    AdvancedComponentState.selectedPlacedComponent.rotate();
+  const selected = PartState.selected;
+  if (selected && isRotatable(selected)) {
+    selected.rotate();
     redrawCanvas();
     return;
   }
@@ -496,14 +545,10 @@ export function rotateSelectedIc() {
   }
   if (DotState.hoverDot) {
     // Topmost rotatable part under the cursor; standard components have no rotation.
-    const hovered = findPartAt(DotState.hoverDot.x, DotState.hoverDot.y, p => p.kind !== "standard-component");
-    if (hovered?.kind === "ic") {
-      hovered.ic.rotate();
-    } else if (hovered?.kind === "advanced-component") {
-      hovered.component.rotate();
-    }
-    if (hovered) {
-      selectPart(hovered);
+    const hovered = findPartAt(DotState.hoverDot.x, DotState.hoverDot.y, isRotatable);
+    if (hovered && isRotatable(hovered)) {
+      hovered.rotate();
+      PartState.selected = hovered;
       redrawCanvas();
     }
   }

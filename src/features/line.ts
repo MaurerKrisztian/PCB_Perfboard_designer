@@ -4,7 +4,8 @@ import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {changeSelectedDotColor} from "./dot";
-import {getSelectedPart, removePart} from "./placed-parts";
+import {removePart} from "./placed-parts";
+import {PartState} from "../state/PartState";
 
 export function setLineColor(color: string){
   if (LineState.selectedLine){
@@ -15,7 +16,7 @@ export function setLineColor(color: string){
 
 // Deletes whatever is selected: a placed part, else a wire, else a pad's color and note.
 export function deleteLine(){
-  const part = getSelectedPart();
+  const part = PartState.selected;
   if (part && removePart(part)) {
     redrawCanvas();
     return;
