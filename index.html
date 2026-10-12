@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Perfboard Designer – Free Online Perfboard Layout Tool</title>
-    <meta name="description" content="Plan perfboard circuits in your browser: place resistors, ICs, LEDs and wires on a hole grid, then save or export your layout. Free and open source." />
+    <meta name="description" content="Plan perfboard circuits in your browser: place resistors, ICs, LEDs and wires on a hole grid, preview it in 3D, then save or export your layout. Free and open source." />
     <link rel="canonical" href="https://perfboarddesigner.com/" />
     <meta name="theme-color" content="#0b1220" />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -32,7 +32,7 @@
       "@type": "WebApplication",
       "name": "Perfboard Designer",
       "url": "https://perfboarddesigner.com/",
-      "description": "A free, open-source browser tool for planning perfboard (protoboard) circuit layouts: place components and wires on a hole grid, then save, load or export the design.",
+      "description": "A free, open-source browser tool for planning perfboard (protoboard) circuit layouts: place components and wires on a hole grid, preview the board in 3D, then save, load or export the design.",
       "applicationCategory": "DesignApplication",
       "operatingSystem": "Any (web browser)",
       "browserRequirements": "Requires a modern web browser with JavaScript enabled",
@@ -61,6 +61,7 @@
     </a>
     <nav class="site-nav" aria-label="Main">
       <a href="#features">Features</a>
+      <a href="#3d-view">3D view</a>
       <a href="#how-it-works">How it works</a>
       <a href="#faq">FAQ</a>
       <a href="contributors/">Contributors</a>
@@ -85,11 +86,18 @@
         </div>
         <p class="hero-note">Runs in your browser. Nothing to install, nothing uploaded.</p>
       </div>
-      <figure class="hero-shot">
-        <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
-        <img src="images/hero-board.webp" width="1440" height="960" fetchpriority="high"
-             alt="A perfboard layout in Perfboard Designer: an NE555 blinker with resistors, capacitors and LEDs, a 74HC14, an Arduino Nano, a MOSFET driver and colored jumper wires" />
-      </figure>
+      <div class="hero-media">
+        <figure class="hero-shot">
+          <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span><span class="shot-label">3D view</span></div>
+          <img src="images/hero-3d.webp" width="1440" height="792" fetchpriority="high"
+               alt="A perfboard rendered in Perfboard Designer's 3D view: an Arduino Nano, NE555 timer, 74HC14, 74HC595, IRLZ44N MOSFET, potentiometer, LEDs, resistors and colored jumper wires" />
+        </figure>
+        <figure class="hero-shot hero-inset">
+          <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span><span class="shot-label">Layout</span></div>
+          <img src="images/hero-board.webp" width="1440" height="960"
+               alt="The same board as a 2D layout in the Perfboard Designer editor, with components and wires on the hole grid" />
+        </figure>
+      </div>
     </section>
 
     <section id="features" class="section">
@@ -127,6 +135,28 @@
           <p>Undo and redo, keyboard shortcuts, notes on any hole, and part values shown right on the board.</p>
         </article>
       </div>
+    </section>
+
+    <section id="3d-view" class="section showcase">
+      <div class="showcase-text">
+        <p class="eyebrow">New</p>
+        <h2>See your board in 3D</h2>
+        <p>
+          One click on <strong>3D View</strong> turns your layout into a 3D model of the finished
+          board: resistors with their color bands, ICs with labeled pins, LEDs, capacitors,
+          transistors, pots, headers and every jumper wire, sitting on a perfboard sized to match yours.
+        </p>
+        <ul class="showcase-list">
+          <li>Drag to orbit and scroll to zoom, or jump to an angled, top or bottom view.</li>
+          <li>Check the solder side to see where wires and leads meet the copper.</li>
+          <li>Save a screenshot of the render to share or keep next to your build.</li>
+        </ul>
+      </div>
+      <figure class="hero-shot">
+        <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+        <img src="images/board-3d-detail.webp" width="1000" height="660" loading="lazy" decoding="async"
+             alt="Close-up of the 3D view: a 10kΩ potentiometer, a 74HC595 with labeled pins, an Arduino Nano, a 74HC14, a BC547 transistor, LEDs and jumper wires" />
+      </figure>
     </section>
 
     <section id="how-it-works" class="section">
