@@ -3,7 +3,8 @@ import {
   Mesh, MeshBasicMaterial, MeshStandardMaterial, RingGeometry, Shape, Vector2, Vector3,
 } from "three";
 import {BOARD_BOTTOM_Y, BOARD_THICKNESS, SceneKit} from "./scene-kit";
-import {ViewerDot, ViewerWire} from "./project-data";
+import {ViewerDot} from "./project-data";
+import {WirePath} from "./wire-paths";
 
 const BOARD_COLOR = "#0e5a27";
 const COPPER_COLOR = "#c98a4f";
@@ -92,23 +93,27 @@ export function buildSolderJoints(kit: SceneKit): InstancedMesh | null {
   return instanced(geometry as unknown as CircleGeometry, material, holes.map(h => new Vector3(h.x, BOARD_BOTTOM_Y - SURFACE_LIFT, h.z)));
 }
 
-/** Insulated jumper wires lying on the top face, each end diving into its hole as bare
- *  tinned copper. Thickness follows the editor's thin/normal/thick gauges. */
-export function buildWires(kit: SceneKit, wires: ViewerWire[]): Group {
+/** Insulated jumper wires lying on the top face. Each wire is one continuous insulated run, so
+ *  its bends are just insulation; only its two free ends dive into their holes as bare tinned
+ *  copper and get soldered. Thickness follows the editor's thin/normal/thick gauges. */
+export function buildWires(kit: SceneKit, paths: WirePath[]): Group {
   const {frame} = kit;
   const group = new Group();
   const conductor = kit.standard("wire-conductor", {color: "#d0d4d8", metalness: 1, roughness: 0.3});
-  for (const wire of wires) {
-    if (wire.x1 === wire.x2 && wire.y1 === wire.y2) continue;
-    const radius = 0.25 + wire.width * 0.09;
-    const insulation = kit.standard(`wire:${wire.color}`, {color: wire.color, roughness: 0.45});
-    const a = frame.point(wire.x1, wire.y1, radius);
-    const b = frame.point(wire.x2, wire.y2, radius);
-    const run = kit.rod(a, b, radius, insulation);
-    if (run) group.add(run);
-    for (const [end, px, py] of [[a, wire.x1, wire.y1], [b, wire.x2, wire.y2]] as [Vector3, number, number][]) {
-      group.add(kit.ball(end, radius, insulation));
-      const stub = kit.rod(end, frame.point(px, py, BOARD_BOTTOM_Y - 1.1), radius * 0.45, conductor);
+  for (const path of paths) {
+    const radius = 0.25 + path.width * 0.09;
+    const insulation = kit.standard(`wire:${path.color}`, {color: path.color, roughness: 0.45});
+    const points = path.points.map(p => frame.point(p.x, p.y, radius));
+    group.add(kit.bentWire(points, radius, insulation));
+    if (path.closed) {
+      // A loop has no free ends; round off the one corner bentWire leaves out.
+      group.add(kit.ball(points[0], radius, insulation));
+      continue;
+    }
+    const ends = [path.points[0], path.points[path.points.length - 1]];
+    for (const {x: px, y: py} of ends) {
+      group.add(kit.ball(frame.point(px, py, radius), radius, insulation));
+      const stub = kit.rod(frame.point(px, py, radius), frame.point(px, py, BOARD_BOTTOM_Y - 1.1), radius * 0.45, conductor);
       if (stub) group.add(stub);
       kit.solder(px, py);
     }

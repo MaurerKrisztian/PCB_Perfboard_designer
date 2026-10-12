@@ -5,6 +5,7 @@ import {buildBoard, buildSolderJoints, buildWires} from "./build-board";
 import {buildStandardPart} from "./build-standard-parts";
 import {buildAdvancedPart} from "./build-advanced-parts";
 import {buildIc} from "./build-ics";
+import {chainWires} from "./wire-paths";
 
 export interface BuiltBoard {
   root: Group;
@@ -21,14 +22,19 @@ export function buildBoardScene(project: ViewerProject): BuiltBoard {
   const root = new Group();
 
   root.add(buildBoard(kit, project.dots));
-  root.add(buildWires(kit, project.wires));
 
-  let partCount = 0;
+  // Parts go first: each one registers the holes it is soldered into, so the wires can tell
+  // which holes a component lead already ends in before they register their own.
   const parts = [
     ...project.ics.map(ic => buildIc(kit, ic)),
     ...project.standardParts.map(part => buildStandardPart(kit, part)),
     ...project.advancedParts.map(part => buildAdvancedPart(kit, part)),
   ];
+  const componentHoles = new Set(kit.solderedHoles.keys());
+  const wires = chainWires(project.wires, componentHoles);
+  root.add(buildWires(kit, wires));
+
+  let partCount = 0;
   for (const part of parts) {
     if (!part) continue;
     part.traverse(child => {
@@ -44,5 +50,5 @@ export function buildBoardScene(project: ViewerProject): BuiltBoard {
   const joints = buildSolderJoints(kit);
   if (joints) root.add(joints);
 
-  return {root, frame, partCount, wireCount: project.wires.length};
+  return {root, frame, partCount, wireCount: wires.length};
 }

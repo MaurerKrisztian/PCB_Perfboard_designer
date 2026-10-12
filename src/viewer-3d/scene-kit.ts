@@ -2,6 +2,7 @@ import {
   BoxGeometry, CanvasTexture, CylinderGeometry, Group, Material, Mesh, MeshStandardMaterial,
   MeshStandardMaterialParameters, PlaneGeometry, Quaternion, SphereGeometry, SRGBColorSpace, Vector3,
 } from "three";
+import {holeKey} from "./wire-paths";
 
 // The editor saves positions as canvas pixels with one hole every 50px (GridConfig.dotSpace).
 // The 3D scene works in millimetres so parts can use real package dimensions, with the
@@ -72,7 +73,7 @@ export class SceneKit {
 
   /** Marks a hole as having something soldered into it (drawn as a joint on the underside). */
   solder(px: number, py: number) {
-    this.solderedHoles.set(`${Math.round(px)},${Math.round(py)}`, {x: this.frame.x(px), z: this.frame.z(py)});
+    this.solderedHoles.set(holeKey(px, py), {x: this.frame.x(px), z: this.frame.z(py)});
   }
 
   rod(a: Vector3, b: Vector3, radius: number, material: Material): Mesh | null {
