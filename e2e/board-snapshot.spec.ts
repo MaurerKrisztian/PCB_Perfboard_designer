@@ -15,7 +15,7 @@ for (const file of fixtures) {
   test(`${name} board renders as expected`, async ({page}) => {
     const project = JSON.parse(fs.readFileSync(path.join(fixturesDir, file), "utf-8"));
 
-    await page.goto("/");
+    await page.goto("/app/");
     await page.setInputFiles("#loadProjectBtn", path.join(fixturesDir, file));
 
     const canvas = page.locator("#myCanvas");

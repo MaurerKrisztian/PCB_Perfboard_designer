@@ -8,7 +8,7 @@ test("app starts without errors and renders the canvas", async ({page}) => {
     if (m.type() === "error") errors.push(`console.error: ${m.text()}`);
   });
 
-  await page.goto("/");
+  await page.goto("/app/");
   const canvas = page.locator("#myCanvas");
   await expect(canvas).toBeVisible();
 

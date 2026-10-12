@@ -29,7 +29,7 @@ npm run e2e:update   # re-baseline snapshot images — see rules below
 
 Small suite in `e2e/`: a smoke test (fails on any console/page error at startup) and canvas
 snapshot tests that load a saved project from `e2e/fixtures/` through the real Load input and
-compare against baseline PNGs in `e2e/__snapshots__/`. First-time setup: `npx playwright install chromium`.
+compare against baseline PNGs in `e2e/__snapshots__/`. First-time setup: `npx playwright install chromium`. The tests open the editor at `/app/` (the root is the landing page).
 
 - Run `npm run e2e` after any change that affects rendering, startup, or project load/save.
 - **A failing snapshot is not automatically a test problem.** Decide whether the visual change
