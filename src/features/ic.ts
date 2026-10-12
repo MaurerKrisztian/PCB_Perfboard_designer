@@ -12,6 +12,9 @@ import {findPartAt} from "./placed-parts";
 import {GridConfig} from "../state/GridConfig";
 import {isRotatable, PlacedPart} from "../interfaces/placed-part.interface";
 import {Point} from "../interfaces/point.interface";
+import {SavedCustomIc, SavedIc} from "../project-file/project-file";
+import {toGridPos} from "../project-file/grid";
+import {readCustomIcs} from "../project-file/read-project-file";
 
 
 // Both a catalog entry (IC_CONTAINER, the clone armed for placement) and a chip placed on the
@@ -84,41 +87,44 @@ export class Ic implements PlacedPart {
     return span;
   }
 
+  // The catalog's custom ICs, in the shape localStorage and project files store them.
+  static customIcEntries(): SavedCustomIc[] {
+    return Ic.IC_CONTAINER.filter(ic => ic.isCustom).map(ic => ({
+      id: ic.id,
+      name: ic.name,
+      widthPin: ic.widthPin,
+      heightPin: ic.heightPin,
+      pinDescription: ic.pinDescription,
+    }));
+  }
+
   static saveCustomIcsToLocalStorage() {
     try {
-      const customIcs = Ic.IC_CONTAINER.filter(ic => ic.isCustom).map(ic => ({
-        id: ic.id,
-        name: ic.name,
-        widthPin: ic.widthPin,
-        heightPin: ic.heightPin,
-        pinDescription: ic.pinDescription,
-        isCustom: true
-      }));
-      localStorage.setItem('custom_ics', JSON.stringify(customIcs));
+      localStorage.setItem('custom_ics', JSON.stringify(Ic.customIcEntries()));
     } catch (e) {
       console.error("Failed to save custom ICs to localStorage", e);
     }
+  }
+
+  // Adds custom ICs to the catalog, skipping any whose id it already has. Returns how many were new.
+  static addCustomIcs(entries: SavedCustomIc[]): number {
+    let added = 0;
+    for (const data of entries) {
+      if (data.id !== undefined && Ic.IC_CONTAINER.some(ic => String(ic.id) === String(data.id))) continue;
+      const newIc = new Ic(data.widthPin, data.heightPin, {...data.pinDescription}, data.name, true);
+      if (data.id !== undefined) newIc.id = data.id;
+      Ic.IC_CONTAINER.push(newIc);
+      added++;
+    }
+    Ic.showICs();
+    return added;
   }
 
   static loadCustomIcsFromLocalStorage() {
     try {
       const stored = localStorage.getItem('custom_ics');
       if (!stored) return;
-      const customIcs = JSON.parse(stored) as Array<{
-        id: number;
-        name: string;
-        widthPin: number;
-        heightPin: number;
-        pinDescription: Record<number, string>;
-      }>;
-      for (const data of customIcs) {
-        if (!Ic.IC_CONTAINER.some(ic => String(ic.id) === String(data.id))) {
-          const newIc = new Ic(data.widthPin, data.heightPin, data.pinDescription || {}, data.name, true);
-          newIc.id = data.id;
-          Ic.IC_CONTAINER.push(newIc);
-        }
-      }
-      this.showICs();
+      Ic.addCustomIcs(readCustomIcs(JSON.parse(stored)));
     } catch (e) {
       console.error("Failed to load custom ICs from localStorage", e);
     }
@@ -375,17 +381,15 @@ export class Ic implements PlacedPart {
     if (dots[0]) this.topLeftDot = dots[0];
   }
 
-  serialize() {
+  // Only called for placed chips, which always have a topLeftDot.
+  serialize(): SavedIc {
     return {
-      id: this.id,
+      name: this.name,
       widthPin: this.widthPin,
       heightPin: this.heightPin,
+      rotation: (this.rotationAngle || 0) as Rotation,
       pinDescription: this.pinDescription || {},
-      name: this.name,
-      isCustom: !!this.isCustom,
-      rotationAngle: this.rotationAngle || 0,
-      topLeftDotX: this.topLeftDot ? this.topLeftDot.x : null,
-      topLeftDotY: this.topLeftDot ? this.topLeftDot.y : null,
+      at: toGridPos(this.topLeftDot ?? {x: 0, y: 0}),
     };
   }
 

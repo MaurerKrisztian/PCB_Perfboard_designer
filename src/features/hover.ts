@@ -10,6 +10,7 @@ import {DragState} from "../state/DragState";
 import {updateDrag} from "./component-drag";
 import {ViewState} from "../state/ViewState";
 import {findPartAt} from "./placed-parts";
+import {DEFAULT_DOT_COLOR} from "./board-appearance";
 import {PartState} from "../state/PartState";
 import {SelectionState} from "../state/SelectionState";
 
@@ -91,19 +92,16 @@ Canvas.c.addEventListener('mousemove', function(e) {
 });
 
 
+// Moves the selected pad's color and note onto the hovered pad. The pads themselves stay put:
+// wires and parts are pinned to these dot objects, so replacing them would cut those links.
 ShortcutRegistry.add({key: "m", description: "Move the point. select a point, then move the mouse pointer to another point, then press 'm'", event: ()=>{
-    if (!DotState.hoverDot || !SelectionState.dot){
-      return;
-    }
-
-    DotState.dots =  DotState.dots.map((d)=>{
-     if (d.x == DotState?.hoverDot?.x && d.y == DotState.hoverDot?.y){
-       return { ...SelectionState.dot, x: d.x, y: d.y};
-     }
-      if (d.x == SelectionState.dot?.x && d.y == SelectionState.dot?.y){
-        return { description: undefined, color: undefined, x: d.x, y: d.y};
-      }
-     return d
-    });
-    SelectionState.clear("dot");
-  }})
+  const from = SelectionState.dot;
+  const to = DotState.hoverDot;
+  if (!from || !to || from === to) return;
+  to.color = from.color;
+  to.description = from.description;
+  from.color = DEFAULT_DOT_COLOR;
+  from.description = undefined;
+  SelectionState.clear("dot");
+  redrawCanvas();
+}})

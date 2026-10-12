@@ -1,6 +1,8 @@
 import {IDot} from "../../interfaces/dot.interface";
 import {Point} from "../../interfaces/point.interface";
 import {PlacedPart} from "../../interfaces/placed-part.interface";
+import {SavedStandardComponent} from "../../project-file/project-file";
+import {toGridPos} from "../../project-file/grid";
 import {ComponentDefinition, getComponentDefinition} from "./component-definitions";
 import {drawStandardComponentBody, getStandardComponentSpan} from "./standard-component-render";
 
@@ -55,16 +57,13 @@ export class PlacedStandardComponent implements PlacedPart {
     if (dots[1]) this.endDot = dots[1];
   }
 
-  serialize() {
+  serialize(): SavedStandardComponent {
     return {
-      id: this.id,
       definitionId: this.definitionId,
-      value: this.value,
-      color: this.color,
-      startDotX: this.startDot.x,
-      startDotY: this.startDot.y,
-      endDotX: this.endDot.x,
-      endDotY: this.endDot.y,
+      from: toGridPos(this.startDot),
+      to: toGridPos(this.endDot),
+      ...(this.value ? {value: this.value} : {}),
+      ...(this.color ? {color: this.color} : {}),
     };
   }
 

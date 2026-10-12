@@ -1,17 +1,13 @@
-import {redrawCanvas} from "../draw-canvas";
-import {IProjectSave} from "../../interfaces/project-save.interface";
 import {loadProject} from "./load-project";
-window.addEventListener('DOMContentLoaded', () => {
-  if(localStorage.getItem('save') !== null) {
-    try {
-      console.log("loaad...")
-      const save: IProjectSave = JSON.parse(localStorage.getItem('save') as any) as IProjectSave
-      loadProject(save);
-      redrawCanvas();
-    }catch (e){
-      console.error(e)
-      console.log("Cant load save from local storage.")
-    }
 
+// Restores the board last stored with "Save progress" (any file version).
+window.addEventListener('DOMContentLoaded', () => {
+  const stored = localStorage.getItem('save');
+  if (stored === null) return;
+  try {
+    const {skipped} = loadProject(JSON.parse(stored));
+    if (skipped > 0) console.warn(`Saved board: ${skipped} item(s) couldn't be read and were left out.`);
+  } catch (e) {
+    console.error("Can't load the saved board from local storage.", e);
   }
 });

@@ -1,5 +1,7 @@
 import {IDot} from "../../interfaces/dot.interface";
 import {PlacedPart} from "../../interfaces/placed-part.interface";
+import {SavedAdvancedComponent} from "../../project-file/project-file";
+import {toGridPos} from "../../project-file/grid";
 import {GridConfig} from "../../state/GridConfig";
 import {AdvancedComponentDefinition, getAdvancedComponentDefinition, PIN_TILE_HALF, PinOffset} from "./advanced-component-definitions";
 import {drawAdvancedComponentBody, getBoundingRect, PIN_PAD, Point} from "./advanced-component-render";
@@ -132,16 +134,14 @@ export class PlacedAdvancedComponent implements PlacedPart {
     if (dots[0]) this.anchorDot = dots[0];
   }
 
-  serialize() {
+  serialize(): SavedAdvancedComponent {
     return {
-      id: this.id,
       definitionId: this.definitionId,
-      value: this.value,
-      rotationAngle: this.rotationAngle,
-      anchorDotX: this.anchorDot.x,
-      anchorDotY: this.anchorDot.y,
+      at: toGridPos(this.anchorDot),
+      rotation: this.rotationAngle,
       rows: this.rows,
       cols: this.cols,
+      ...(this.value ? {value: this.value} : {}),
     };
   }
 

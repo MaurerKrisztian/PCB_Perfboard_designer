@@ -99,16 +99,24 @@ that should be undoable calls `HistoryState.record(change)` with an `IChange`
 of a part. `undo`/`redo` replay these and call `redrawCanvas()`. History is cleared whenever the
 board is replaced (load, reset, resize) via `resetForNewBoard()`.
 
-**Persistence**: `src/features/project/save-project.ts` / `load-project.ts` serialize/deserialize
-the full board (dots, lines, placed ICs/standard/advanced components, canvas size — shape in
-`src/interfaces/project-save.interface.ts`) to/from JSON project files. `save-progress.ts` /
-`load-from-local-storage.ts` do the same against `localStorage` for auto-persisted in-browser
-state. Coordinates in saved data are canvas pixel coordinates, not grid indices.
+**Persistence**: the project file format lives in `src/project-file/` — pure code (no DOM, no
+editor state) shared by the editor and the 3D viewer. `project-file.ts` defines the current format
+(version 2: grid `[col, row]` positions, only marked pads, per-kind part arrays, the user's custom
+ICs); `read-project-file.ts` reads any version (files without `version` are v1: pixel
+coordinates, every hole, the whole IC catalog) into that shape, validating everything and
+throwing `ProjectFileError` for non-projects before the board is touched; bad entries are skipped
+and counted. `save-project.ts`'s `getSaveJson()` always writes the current version (each part's
+`serialize()` returns its entry); `load-project.ts`'s `loadProject(raw)` reads and then rebuilds
+the board, pinning wires and parts to the shared dot objects, and merges (never replaces) custom
+ICs into the catalog. `save-progress.ts` / `load-from-local-storage.ts` do the same against
+`localStorage`. A format change means a new version number plus an upgrade path in the reader —
+old files must keep opening. `examples/*.json` are v1 files and double as compatibility fixtures.
 
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the
-editor on purpose. It only consumes project-file JSON (the `IProjectSave` shape), parsed by its own
-`project-data.ts`, and never imports editor state classes — only the pure data modules (component
-definitions, value parsing/color codes, `rotateOffset`). The editor side is just
+editor on purpose. It only consumes project-file JSON, read by the shared `src/project-file/`
+reader and laid out in pixels by its own `project-data.ts`, and never imports editor state classes
+— only pure data modules (the project-file reader, component definitions, value parsing/color
+codes, `rotateOffset`). The editor side is just
 `src/features/open-3d-view.ts`, which snapshots `getSaveJson()` and lazy-imports the viewer, so
 three.js stays out of the main bundle. Scene units are mm (50px grid = 2.54mm pitch).
 
