@@ -41,11 +41,15 @@ export function setSelectedComponentValue() {
     return;
   }
 
-  let input = prompt(`Enter a value (${VALUE_EXAMPLES[unit]}):`, component.value || "");
+  const definition = component.getDefinition();
+  const freeForm = !!definition && "freeFormValue" in definition && !!definition.freeFormValue;
+  const example = freeForm ? `${VALUE_EXAMPLES[unit]}, B10K` : VALUE_EXAMPLES[unit];
+
+  let input = prompt(`Enter a value (${example}):`, component.value || "");
   while (input !== null && input.trim()) {
     const parsed = parseComponentValue(input, unit);
-    if (parsed !== undefined) {
-      component.value = formatComponentValue(parsed, unit);
+    if (parsed !== undefined || freeForm) {
+      component.value = parsed !== undefined ? formatComponentValue(parsed, unit) : input.trim();
       redrawCanvas();
       return;
     }
