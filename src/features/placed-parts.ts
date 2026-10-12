@@ -2,6 +2,7 @@ import type {Part} from "../interfaces/placed-part.interface";
 import {PartState} from "../state/PartState";
 import {HistoryState} from "../state/HistoryState";
 import {SelectionState} from "../state/SelectionState";
+import {BoardRefs, refPrefixFor} from "../project-file/part-refs";
 
 // Stacking group of each kind within PartState.parts.
 const KIND_ORDER: Record<Part["kind"], number> = {"ic": 0, "standard-component": 1, "advanced-component": 2};
@@ -24,8 +25,14 @@ export function takeOffBoard(part: Part): boolean {
   return true;
 }
 
+function giveRef(part: Part) {
+  const refs = new BoardRefs(PartState.parts.map(p => p.ref));
+  part.ref = refs.claimNext(refPrefixFor(part));
+}
+
 // Places a new part as one undoable step, and selects it.
 export function placePart(part: Part) {
+  giveRef(part);
   addToBoard(part);
   SelectionState.current = {kind: "part", part};
   HistoryState.record({type: "add", kind: "part", part});

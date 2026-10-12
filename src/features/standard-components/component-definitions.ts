@@ -6,6 +6,8 @@ export interface ComponentDefinition {
   id: string;
   category: string;
   name: string;
+  // Letters of a placed part's reference designator: "R" makes R1, R2...
+  refPrefix: string;
   iconPath?: string;
   fallbackLabel: string;
   unit?: ComponentUnit;
@@ -35,12 +37,12 @@ export function getIconPath(def: ComponentDefinition): string {
 }
 
 export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
-  {id: "resistor", category: "Passive", name: "Resistor", fallbackLabel: "R", unit: "Ω", artworkHalfThickness: 17},
-  {id: "ceramic-capacitor", category: "Passive", name: "Ceramic Capacitor", fallbackLabel: "C", unit: "F", artworkHalfThickness: 38},
-  {id: "electrolytic-capacitor", category: "Passive", name: "Electrolytic Capacitor", fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44},
-  {id: "inductor", category: "Passive", name: "Inductor", fallbackLabel: "L", unit: "H", artworkHalfThickness: 17},
-  {id: "led", category: "Semiconductor", name: "LED", fallbackLabel: "LED"},
-  {id: "diode", category: "Semiconductor", name: "Diode", fallbackLabel: "D", artworkHalfThickness: 18},
+  {id: "resistor", refPrefix: "R", category: "Passive", name: "Resistor", fallbackLabel: "R", unit: "Ω", artworkHalfThickness: 17},
+  {id: "ceramic-capacitor", refPrefix: "C", category: "Passive", name: "Ceramic Capacitor", fallbackLabel: "C", unit: "F", artworkHalfThickness: 38},
+  {id: "electrolytic-capacitor", refPrefix: "C", category: "Passive", name: "Electrolytic Capacitor", fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44},
+  {id: "inductor", refPrefix: "L", category: "Passive", name: "Inductor", fallbackLabel: "L", unit: "H", artworkHalfThickness: 17},
+  {id: "led", refPrefix: "D", category: "Semiconductor", name: "LED", fallbackLabel: "LED"},
+  {id: "diode", refPrefix: "D", category: "Semiconductor", name: "Diode", fallbackLabel: "D", artworkHalfThickness: 18},
 ];
 
 export function getComponentDefinition(id: string): ComponentDefinition | undefined {

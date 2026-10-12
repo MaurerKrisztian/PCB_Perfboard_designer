@@ -5,6 +5,7 @@ import {Utils} from "../../utils/utils";
 import {ShortcutRegistry} from "../shortcut-keys";
 import {IChange} from "../../interfaces/change.interface";
 import {addToBoard, takeOffBoard} from "../placed-parts";
+import {setBoardSetup} from "../board-type";
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('backBtn').addEventListener('click', function() {
 undo();
@@ -14,6 +15,16 @@ undo();
 // was before it. A move isn't expressible as an add or a remove, hence the direction rather than
 // the change's own type driving this.
 function applyChange(change: IChange, direction: "apply" | "revert") {
+  if (change.kind === "board") {
+    setBoardSetup(direction === "apply" ? change.to : change.from);
+    return;
+  }
+
+  if (change.kind === "cut") {
+    change.dot.cut = direction === "apply" ? change.cut : !change.cut;
+    return;
+  }
+
   if (change.type === "move") {
     change.part.setAnchorDots(direction === "apply" ? change.to : change.from);
     return;

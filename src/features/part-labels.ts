@@ -9,8 +9,9 @@ import {getComponentBodySize} from "./standard-components/component-definitions"
 import {PinOffset} from "./advanced-components/advanced-component-definitions";
 import {rotateOffset} from "./advanced-components/rotate-offset";
 
-// Silkscreen-style value labels: upright white text with a dark halo (same trick as the
-// advanced components' pin numbers) so they stay readable over dots, wires and bodies.
+// Silkscreen-style part labels, each part's ref and value ("R1 10kΩ"): upright white text with a
+// dark halo (same trick as the advanced components' pin numbers) so they stay readable over dots,
+// wires and bodies. ICs show their ref on their own name badge instead (Ic.drawLabel).
 const LABEL_FONT_SIZE = 14;
 const LABEL_FONT = `700 ${LABEL_FONT_SIZE}px monospace, sans-serif`;
 // Keeps the halo stroke from being shaved off by the board edge.
@@ -21,11 +22,11 @@ const LABEL_HALO_WIDTH = 3;
 const LABEL_GAP = 3;
 
 // LEDs store their color name as the value, which the body tint already shows.
-const SKIPPED_DEFINITION_IDS = ["led"];
+const VALUE_HIDDEN_DEFINITION_IDS = ["led"];
 
-function getLabelText(definitionId: string, value?: string): string | undefined {
-  if (SKIPPED_DEFINITION_IDS.indexOf(definitionId) !== -1) return undefined;
-  const text = value?.trim();
+function getLabelText(part: PlacedStandardComponent | PlacedAdvancedComponent): string | undefined {
+  const value = VALUE_HIDDEN_DEFINITION_IDS.indexOf(part.definitionId) === -1 ? part.value?.trim() : undefined;
+  const text = [part.ref, value].filter(Boolean).join(" ");
   return text ? text : undefined;
 }
 
@@ -55,7 +56,7 @@ function drawLabel(text: string, placements: LabelPlacement[]) {
 }
 
 function drawStandardComponentLabel(component: PlacedStandardComponent) {
-  const text = getLabelText(component.definitionId, component.value);
+  const text = getLabelText(component);
   const def = component.getDefinition();
   if (!text || !def) return;
 
@@ -113,7 +114,7 @@ function drawOnBodyLabel(text: string, anchor: IDot, offset: PinOffset, rotation
 // Below the body, since pin numbers sit above the pins by default; above only when the
 // part is on the bottom edge of the board.
 function drawAdvancedComponentLabel(component: PlacedAdvancedComponent) {
-  const text = getLabelText(component.definitionId, component.value);
+  const text = getLabelText(component);
   const def = component.getDefinition();
   if (!text || !def) return;
   if (def.valueLabelOffset) {
@@ -128,8 +129,8 @@ function drawAdvancedComponentLabel(component: PlacedAdvancedComponent) {
   ]);
 }
 
-export function drawComponentValueLabels() {
-  if (!ViewState.showComponentValues) return;
+export function drawPartLabels() {
+  if (!ViewState.showPartLabels) return;
 
   Canvas.ctx.save();
   Canvas.ctx.setLineDash([]);

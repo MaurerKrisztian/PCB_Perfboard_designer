@@ -16,7 +16,4 @@ export class GridConfig {
   static dotClickPriorityRadius = GridConfig.dotRadius + 3;
 
   static lineSelectTolerance = 5;
-
-  // Board color; the pads drawn on it are in board-appearance.ts.
-  static canvasBackgroundColor = "#046307"
 }

@@ -1,18 +1,26 @@
 import {
   CircleGeometry, Color, DoubleSide, ExtrudeGeometry, Group, InstancedMesh, LatheGeometry, Matrix4,
-  Mesh, MeshBasicMaterial, MeshStandardMaterial, RingGeometry, Shape, Vector2, Vector3,
+  Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, RingGeometry, Shape, Vector2, Vector3,
 } from "three";
-import {BOARD_BOTTOM_Y, BOARD_THICKNESS, SceneKit} from "./scene-kit";
-import {ViewerDot} from "./project-data";
+import {BOARD_BOTTOM_Y, BOARD_THICKNESS, BoardFrame, PITCH, SceneKit} from "./scene-kit";
+import {CUT_GAP_PITCH, STRIP_WIDTH_PITCH} from "../project-file/stripboard-geometry";
+import {ViewerBoard, ViewerDot, ViewerProject} from "./project-data";
 import {WirePath} from "./wire-paths";
 
-const BOARD_COLOR = "#0e5a27";
+const PERFBOARD_COLOR = "#0e5a27";
+// Stripboards are usually SRBP (paper-based), a warm brown.
+const STRIPBOARD_COLOR = "#7a5230";
 const COPPER_COLOR = "#c98a4f";
 // The editor's untouched dot color; any other color means the user marked that hole.
 const DEFAULT_DOT_COLOR = "#a4a0a0";
 const HOLE_RADIUS = 0.5;
 const PAD_RADIUS = 0.95;
 const CORNER_RADIUS = 1.2;
+// A stripboard's strips and the gap at each cut, the same sizes the editor draws (in mm here).
+// Strips stop just short of the board's rounded edges.
+const STRIP_WIDTH = STRIP_WIDTH_PITCH * PITCH;
+const CUT_GAP = CUT_GAP_PITCH * PITCH;
+const STRIP_END_INSET = 0.4;
 // Lifts pads/holes off the faces they sit on so they don't z-fight with the board.
 const SURFACE_LIFT = 0.015;
 
@@ -39,37 +47,99 @@ function instanced(geometry: CircleGeometry | RingGeometry, material: MeshBasicM
   return mesh;
 }
 
-/** The perfboard itself: a rounded FR-4 slab with a copper pad and a hole at every grid dot,
- *  on both faces. */
-export function buildBoard(kit: SceneKit, dots: ViewerDot[]): Group {
-  const {frame} = kit;
-  const group = new Group();
-
-  const slabGeometry = new ExtrudeGeometry(roundedRect(frame.width, frame.depth, CORNER_RADIUS), {depth: BOARD_THICKNESS, bevelEnabled: false, curveSegments: 6});
+function buildSlab(frame: BoardFrame, color: string): Mesh {
+  const geometry = new ExtrudeGeometry(roundedRect(frame.width, frame.depth, CORNER_RADIUS), {depth: BOARD_THICKNESS, bevelEnabled: false, curveSegments: 6});
   // The shape is drawn in XY and extruded along +z; lay it flat with the top face at y=0.
-  slabGeometry.rotateX(Math.PI / 2);
-  const slab = new Mesh(slabGeometry, new MeshStandardMaterial({color: BOARD_COLOR, roughness: 0.78}));
+  geometry.rotateX(Math.PI / 2);
+  const slab = new Mesh(geometry, new MeshStandardMaterial({color, roughness: 0.78}));
   slab.receiveShadow = true;
-  group.add(slab);
+  return slab;
+}
 
-  const topPositions = dots.map(dot => frame.point(dot.x, dot.y, SURFACE_LIFT));
-  const bottomPositions = dots.map(dot => frame.point(dot.x, dot.y, BOARD_BOTTOM_Y - SURFACE_LIFT));
+/** Copper rings around holes (in their marked color, if marked) and the holes themselves, on both
+ *  faces. A perfboard has a pad at every hole; a stripboard only rings the holes the user marked,
+ *  its copper being the strips. */
+function buildPadsAndHoles(frame: BoardFrame, dots: ViewerDot[], padEveryHole: boolean): Group {
+  const group = new Group();
+  const markColor = (dot: ViewerDot) =>
+    dot.color && dot.color.toLowerCase() !== DEFAULT_DOT_COLOR ? dot.color : undefined;
+  const padded = padEveryHole ? dots : dots.filter(dot => markColor(dot));
 
   const padMaterial = new MeshStandardMaterial({color: "#ffffff", metalness: 1, roughness: 0.38, side: DoubleSide});
   const holeMaterial = new MeshBasicMaterial({color: "#040604", side: DoubleSide});
   const padGeometry = new RingGeometry(HOLE_RADIUS, PAD_RADIUS, 24).rotateX(-Math.PI / 2);
   const holeGeometry = new CircleGeometry(HOLE_RADIUS, 16).rotateX(-Math.PI / 2);
+  const padColors = padded.map(dot => new Color(markColor(dot) ?? COPPER_COLOR));
 
-  const padColors = dots.map(dot =>
-    new Color(dot.color && dot.color.toLowerCase() !== DEFAULT_DOT_COLOR ? dot.color : COPPER_COLOR)
-  );
-  for (const positions of [topPositions, bottomPositions]) {
-    const pads = instanced(padGeometry, padMaterial, positions);
-    padColors.forEach((color, i) => pads.setColorAt(i, color));
-    group.add(pads);
+  for (const faceY of [SURFACE_LIFT, BOARD_BOTTOM_Y - SURFACE_LIFT]) {
+    if (padded.length > 0) {
+      const pads = instanced(padGeometry, padMaterial, padded.map(dot => frame.point(dot.x, dot.y, faceY)));
+      padColors.forEach((color, i) => pads.setColorAt(i, color));
+      group.add(pads);
+    }
     // Holes sit a hair above their pads' plane so the black disc always wins the depth test.
-    const holes = instanced(holeGeometry, holeMaterial, positions.map(p => p.clone().setY(p.y + Math.sign(p.y || 1) * 0.002)));
-    group.add(holes);
+    const holeY = faceY + Math.sign(faceY || 1) * 0.002;
+    group.add(instanced(holeGeometry, holeMaterial, dots.map(dot => frame.point(dot.x, dot.y, holeY))));
+  }
+  return group;
+}
+
+// The stretches of copper along one strip, as [from, to] in mm along it: the whole strip, minus a
+// gap at each cut.
+function stripRuns(start: number, end: number, cuts: number[]): [number, number][] {
+  const runs: [number, number][] = [];
+  let from = start;
+  for (const cut of [...cuts].sort((a, b) => a - b)) {
+    if (cut - CUT_GAP / 2 > from) runs.push([from, cut - CUT_GAP / 2]);
+    from = Math.max(from, cut + CUT_GAP / 2);
+  }
+  if (end > from) runs.push([from, end]);
+  return runs;
+}
+
+/** A stripboard's copper strips, on its bottom face: one per row (or column) of holes. */
+function buildStrips(frame: BoardFrame, board: Extract<ViewerBoard, {type: "stripboard"}>, dots: ViewerDot[]): Group {
+  const group = new Group();
+  const material = new MeshStandardMaterial({color: COPPER_COLOR, metalness: 1, roughness: 0.38, side: DoubleSide});
+  const y = BOARD_BOTTOM_Y - SURFACE_LIFT;
+  const horizontal = board.strips === "horizontal";
+  // Each strip runs through one line of holes: a row's y, or a column's x (in canvas pixels).
+  const lines = Array.from(new Set(dots.map(dot => horizontal ? dot.y : dot.x)));
+  const halfLength = (horizontal ? frame.width : frame.depth) / 2 - STRIP_END_INSET;
+
+  for (const line of lines) {
+    const cuts = board.cuts
+      .filter(cut => (horizontal ? cut.y : cut.x) === line)
+      .map(cut => horizontal ? frame.x(cut.x) : frame.z(cut.y));
+    for (const [from, to] of stripRuns(-halfLength, halfLength, cuts)) {
+      const length = to - from;
+      const geometry = horizontal ? new PlaneGeometry(length, STRIP_WIDTH) : new PlaneGeometry(STRIP_WIDTH, length);
+      // PlaneGeometry stands in XY; lay it flat, facing down.
+      geometry.rotateX(Math.PI / 2);
+      const strip = new Mesh(geometry, material);
+      const middle = (from + to) / 2;
+      strip.position.set(horizontal ? middle : frame.x(line), y, horizontal ? frame.z(line) : middle);
+      strip.receiveShadow = true;
+      group.add(strip);
+    }
+  }
+  return group;
+}
+
+/** The board itself: a rounded slab with a hole at every grid dot, and its copper. A perfboard
+ *  has a pad around every hole, on both faces; a stripboard has bare SRBP on top and copper
+ *  strips underneath, broken at each cut. */
+export function buildBoard(kit: SceneKit, project: ViewerProject): Group {
+  const {frame} = kit;
+  const {board, dots} = project;
+  const group = new Group();
+  if (board.type === "stripboard") {
+    group.add(buildSlab(frame, STRIPBOARD_COLOR));
+    group.add(buildStrips(frame, board, dots));
+    group.add(buildPadsAndHoles(frame, dots, false));
+  } else {
+    group.add(buildSlab(frame, PERFBOARD_COLOR));
+    group.add(buildPadsAndHoles(frame, dots, true));
   }
   return group;
 }

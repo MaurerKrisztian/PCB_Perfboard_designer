@@ -6,9 +6,10 @@ import {Canvas} from "../../state/Canvas";
 import {Ic} from "../ic";
 import type {PlacedStandardComponent} from "../standard-components/placed-standard-component";
 import type {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
-import {PROJECT_FILE_VERSION, ProjectFile, SavedPad, SavedWire} from "../../project-file/project-file";
+import {PROJECT_FILE_VERSION, ProjectFile, SavedBoard, SavedPad, SavedWire} from "../../project-file/project-file";
 import {holesAlong, toGridPos} from "../../project-file/grid";
-import {DEFAULT_DOT_COLOR} from "../board-appearance";
+import {DEFAULT_DOT_COLOR} from "../board-looks/board-look";
+import {BoardState} from "../../state/BoardState";
 
 const saveBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProjectBtn');
 saveBtn.addEventListener('click', function() {
@@ -24,6 +25,16 @@ saveBtn.addEventListener('click', function() {
   downloadAnchorNode.remove();
 });
 
+
+// A stripboard lists its cuts. A perfboard has none to list: cuts made while the board was a
+// stripboard stay on the dots, but they mean nothing on a perfboard, so they aren't saved.
+function savedBoard(): SavedBoard {
+  const cols = holesAlong(Canvas.gridWidth);
+  const rows = holesAlong(Canvas.gridHeight);
+  if (!BoardState.isStripboard) return {type: "perfboard", cols, rows};
+  const cuts = DotState.dots.filter(dot => dot.cut).map(toGridPos);
+  return {type: "stripboard", cols, rows, strips: BoardState.setup.strips, cuts};
+}
 
 // Marked holes only: a color other than the default, or a note.
 function savedPads(): SavedPad[] {
@@ -51,7 +62,7 @@ export function getSaveJson(): ProjectFile {
   const parts = PartState.parts;
   return {
     version: PROJECT_FILE_VERSION,
-    board: {cols: holesAlong(Canvas.gridWidth), rows: holesAlong(Canvas.gridHeight)},
+    board: savedBoard(),
     pads: savedPads(),
     wires: savedWires(),
     placedIcs: parts.filter((p): p is Ic => p.kind === "ic").map(p => p.serialize()),

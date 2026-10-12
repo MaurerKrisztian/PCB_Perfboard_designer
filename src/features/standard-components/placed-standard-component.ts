@@ -17,7 +17,7 @@ const LEAD_HIT_HALF_WIDTH = 8;
 const END_HIT_PAD = 6;
 
 export class PlacedStandardComponent implements PlacedPart {
-  public id: number = Math.random() * 100;
+  public ref = "";
   public value?: string;
   public color?: string;
 
@@ -59,6 +59,7 @@ export class PlacedStandardComponent implements PlacedPart {
 
   serialize(): SavedStandardComponent {
     return {
+      ref: this.ref,
       definitionId: this.definitionId,
       from: toGridPos(this.startDot),
       to: toGridPos(this.endDot),

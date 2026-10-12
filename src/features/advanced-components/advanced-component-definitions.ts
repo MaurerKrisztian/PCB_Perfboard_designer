@@ -13,6 +13,8 @@ export interface AdvancedComponentDefinition {
   id: string;
   category: string;
   name: string;
+  // Letters of a placed part's reference designator: "Q" makes Q1, Q2...
+  refPrefix: string;
   iconPath?: string;
   fallbackLabel: string;
   pinOffsets: PinOffset[];
@@ -125,24 +127,24 @@ const POT_ICON_CENTER: PinOffset = {dx: 2, dy: 0.5};
 
 export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
-    id: "transistor", category: "Semiconductor", name: "Transistor", fallbackLabel: "Q",
+    id: "transistor", refPrefix: "Q", category: "Semiconductor", name: "Transistor", fallbackLabel: "Q",
     pinOffsets: INLINE_3_PINS,
     bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: TRANSISTOR_PIN_LABEL_OFFSET
   },
   {
-    id: "mosfet", category: "Semiconductor", name: "MOSFET", fallbackLabel: "MOS",
+    id: "mosfet", refPrefix: "Q", category: "Semiconductor", name: "MOSFET", fallbackLabel: "MOS",
     pinOffsets: INLINE_3_PINS,
     bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
   },
   {
-    id: "potentiometer", category: "Passive", name: "Potentiometer", fallbackLabel: "POT",
+    id: "potentiometer", refPrefix: "RV", category: "Passive", name: "Potentiometer", fallbackLabel: "POT",
     pinOffsets: WIDE_INLINE_3_PINS, shadedOffsets: WIDE_INLINE_3_SHADED, bodyOutline: POT_BODY_OUTLINE,
     iconOffset: POT_ICON_CENTER, iconFillsBody: true, unit: "Ω", freeFormValue: true
   },
   {
-    id: "header-pins", category: "Connector", name: "Header Pins", fallbackLabel: "HDR",
+    id: "header-pins", refPrefix: "J", category: "Connector", name: "Header Pins", fallbackLabel: "HDR",
     // Only the 1x1 default lives here - the real lattice is the placed instance's rows/cols.
     pinOffsets: [{dx: 0, dy: 0}],
     gridSizable: true, perPinIcon: true

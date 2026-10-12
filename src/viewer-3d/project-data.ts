@@ -4,6 +4,7 @@
 
 import {GRID_PITCH_PX, GridPos, gridToPx} from "../project-file/grid";
 import {readProjectFile} from "../project-file/read-project-file";
+import {StripDirection} from "../project-file/project-file";
 
 export type Rotation = 0 | 90 | 180 | 270;
 
@@ -12,6 +13,10 @@ export interface ViewerDot {
   y: number;
   color?: string;
 }
+
+export type ViewerBoard =
+  | {type: "perfboard"}
+  | {type: "stripboard"; strips: StripDirection; cuts: {x: number; y: number}[]};
 
 export interface ViewerWire {
   x1: number;
@@ -55,6 +60,7 @@ export interface ViewerAdvancedPart {
 export interface ViewerProject {
   canvasWidth: number;
   canvasHeight: number;
+  board: ViewerBoard;
   dots: ViewerDot[];
   wires: ViewerWire[];
   ics: ViewerIc[];
@@ -73,6 +79,9 @@ const px = ([col, row]: GridPos) => ({x: gridToPx(col), y: gridToPx(row)});
 export function readProject(raw: unknown): ViewerProject {
   const {project} = readProjectFile(raw);
   const {cols, rows} = project.board;
+  const board: ViewerBoard = project.board.type === "stripboard"
+    ? {type: "stripboard", strips: project.board.strips, cuts: project.board.cuts.map(px)}
+    : {type: "perfboard"};
 
   const padColors = new Map(project.pads.filter(pad => pad.color).map(pad => [`${pad.at[0]},${pad.at[1]}`, pad.color]));
   const dots: ViewerDot[] = [];
@@ -123,6 +132,6 @@ export function readProject(raw: unknown): ViewerProject {
 
   return {
     canvasWidth: cols * GRID_PITCH_PX, canvasHeight: rows * GRID_PITCH_PX,
-    dots, wires, ics, standardParts, advancedParts,
+    board, dots, wires, ics, standardParts, advancedParts,
   };
 }

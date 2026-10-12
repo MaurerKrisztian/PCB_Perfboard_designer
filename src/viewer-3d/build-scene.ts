@@ -14,14 +14,14 @@ export interface BuiltBoard {
   wireCount: number;
 }
 
-/** Builds the whole board - perfboard, wires, every placed part and the solder joints under
- *  it - from a parsed project file. */
+/** Builds the whole board - perf- or stripboard, wires, every placed part and the solder joints
+ *  under it - from a parsed project file. */
 export function buildBoardScene(project: ViewerProject): BuiltBoard {
   const frame = new BoardFrame(project.canvasWidth, project.canvasHeight);
   const kit = new SceneKit(frame);
   const root = new Group();
 
-  root.add(buildBoard(kit, project.dots));
+  root.add(buildBoard(kit, project));
 
   // Parts go first: each one registers the holes it is soldered into, so the wires can tell
   // which holes a component lead already ends in before they register their own.

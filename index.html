@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Perfboard Designer – Free Online Perfboard Layout Tool</title>
-    <meta name="description" content="Plan perfboard circuits in your browser: place resistors, ICs, LEDs and wires on a hole grid, preview it in 3D, then save or export your layout. Free and open source." />
+    <title>Perfboard Designer – Free Perfboard &amp; Stripboard Layout Tool</title>
+    <meta name="description" content="Plan perfboard and stripboard (Veroboard) circuits in your browser: place parts and wires, cut strips, preview the board in 3D, then save or export. Free and open source." />
     <link rel="canonical" href="https://perfboarddesigner.com/" />
     <meta name="theme-color" content="#0b1220" />
     <link rel="icon" type="image/png" href="favicon.png" />
@@ -12,8 +12,8 @@
     <!-- Link previews (Facebook, LinkedIn, Discord, Slack, X...) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Perfboard Designer" />
-    <meta property="og:title" content="Perfboard Designer – Free Online Perfboard Layout Tool" />
-    <meta property="og:description" content="Plan perfboard circuits in your browser before you solder. Free, open source, no sign-up." />
+    <meta property="og:title" content="Perfboard Designer – Free Perfboard &amp; Stripboard Layout Tool" />
+    <meta property="og:description" content="Plan perfboard and stripboard circuits in your browser before you solder. Free, open source, no sign-up." />
     <meta property="og:url" content="https://perfboarddesigner.com/" />
     <meta property="og:image" content="https://perfboarddesigner.com/images/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
@@ -32,7 +32,16 @@
       "@type": "WebApplication",
       "name": "Perfboard Designer",
       "url": "https://perfboarddesigner.com/",
-      "description": "A free, open-source browser tool for planning perfboard (protoboard) circuit layouts: place components and wires on a hole grid, preview the board in 3D, then save, load or export the design.",
+      "description": "A free, open-source browser tool for planning perfboard (protoboard) and stripboard (Veroboard) circuit layouts: place components and wires on a hole grid, cut stripboard strips, preview the board in 3D, then save, load or export the design.",
+      "keywords": "perfboard layout, stripboard layout, Veroboard layout, protoboard, circuit layout tool, perfboard designer, stripboard designer",
+      "featureList": [
+        "Perfboard and stripboard (Veroboard) layouts",
+        "Cut stripboard strips at any hole",
+        "Resistors, capacitors, LEDs, diodes, transistors, MOSFETs, potentiometers and header pins",
+        "ICs and custom chips with labeled pins",
+        "3D preview of the finished board, including the copper side",
+        "Save, load and PNG export"
+      ],
       "applicationCategory": "DesignApplication",
       "operatingSystem": "Any (web browser)",
       "browserRequirements": "Requires a modern web browser with JavaScript enabled",
@@ -61,6 +70,7 @@
     </a>
     <nav class="site-nav" aria-label="Main">
       <a href="#features">Features</a>
+      <a href="#stripboard">Stripboard</a>
       <a href="#3d-view">3D view</a>
       <a href="#how-it-works">How it works</a>
       <a href="#faq">FAQ</a>
@@ -74,11 +84,12 @@
     <section class="hero">
       <div class="hero-text">
         <p class="eyebrow">Free · Open source · No sign-up</p>
-        <h1>Plan your perfboard circuit before you solder</h1>
+        <h1>Plan your perfboard or stripboard circuit before you solder</h1>
         <p class="lead">
-          Perfboard Designer is an online layout tool for perfboard (protoboard) projects. Place
-          resistors, capacitors, LEDs, transistors, ICs and wires on a virtual hole grid, see how
-          everything fits, and catch mistakes before they cost you a desoldering session.
+          Perfboard Designer is an online layout tool for perfboard (protoboard) and stripboard
+          (Veroboard) projects. Place resistors, capacitors, LEDs, transistors, ICs and wires on a
+          virtual hole grid, cut the strips where you need them, see how everything fits, and catch
+          mistakes before they cost you a desoldering session.
         </p>
         <div class="hero-actions">
           <a class="button" href="app/">Open the designer →</a>
@@ -101,7 +112,7 @@
     </section>
 
     <section id="features" class="section">
-      <h2>Everything you need to lay out a perfboard</h2>
+      <h2>Everything you need to lay out a perfboard or stripboard</h2>
       <p class="section-lead">Made for makers, students and hobbyists who want a plan before picking up the soldering iron.</p>
       <div class="feature-grid">
         <article class="feature">
@@ -121,8 +132,8 @@
         </article>
         <article class="feature">
           <span class="feature-icon" aria-hidden="true">📐</span>
-          <h3>Any board size</h3>
-          <p>Start from a preset or set your own grid size to match the board on your bench, then zoom, pan and go fullscreen while you work.</p>
+          <h3>Perfboard or stripboard, any size</h3>
+          <p>Lay out on a perfboard or a stripboard, start from a preset or set your own grid size to match the board on your bench, then zoom, pan and go fullscreen while you work.</p>
         </article>
         <article class="feature">
           <span class="feature-icon" aria-hidden="true">💾</span>
@@ -132,8 +143,39 @@
         <article class="feature">
           <span class="feature-icon" aria-hidden="true">⌨️</span>
           <h3>Fast to work with</h3>
-          <p>Undo and redo, keyboard shortcuts, notes on any hole, and part values shown right on the board.</p>
+          <p>Undo and redo, keyboard shortcuts, notes on any hole, and part names and values (R1 10k) shown right on the board.</p>
         </article>
+      </div>
+    </section>
+
+    <section id="stripboard" class="section showcase showcase-reverse">
+      <div class="showcase-text">
+        <p class="eyebrow">New · Stripboard</p>
+        <h2>Lay out stripboard (Veroboard) circuits too</h2>
+        <p>
+          Switch any layout between <strong>Perfboard</strong> and <strong>Stripboard</strong> with
+          one click. On a stripboard the copper strips run along every row, so parts on the same strip
+          are already connected. Use the <strong>Cut</strong> tool to break a strip at a hole, for
+          example under a DIP chip so its two rows of pins don't short.
+        </p>
+        <ul class="showcase-list">
+          <li>Horizontal or vertical strips, on a board of any size.</li>
+          <li>Cut a strip at any hole, and click again to mend it.</li>
+          <li>Turn the 3D view over to check the copper strips and cuts on the solder side.</li>
+          <li>Switch back to perfboard at any time: your parts and wires stay put.</li>
+        </ul>
+      </div>
+      <div class="showcase-media">
+        <figure class="hero-shot">
+          <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span><span class="shot-label">Stripboard layout</span></div>
+          <img src="images/stripboard-layout.webp" width="1440" height="864" loading="lazy" decoding="async"
+               alt="An NE555 LED blinker laid out on a stripboard in Perfboard Designer: copper strips, strip cuts under the chip so its pin rows don't short, resistors R1 to R3, capacitors C1 and C2, LED D1 and wire links" />
+        </figure>
+        <figure class="hero-shot showcase-inset">
+          <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span><span class="shot-label">Copper side</span></div>
+          <img src="images/stripboard-copper-side.webp" width="1000" height="621" loading="lazy" decoding="async"
+               alt="The copper side of the same stripboard in the 3D view: copper strips, the cuts under the chip, and a solder joint on every lead" />
+        </figure>
       </div>
     </section>
 
@@ -144,7 +186,8 @@
         <p>
           One click on <strong>3D View</strong> turns your layout into a 3D model of the finished
           board: resistors with their color bands, ICs with labeled pins, LEDs, capacitors,
-          transistors, pots, headers and every jumper wire, sitting on a perfboard sized to match yours.
+          transistors, pots, headers and every jumper wire, sitting on a perfboard or stripboard sized
+          to match yours.
         </p>
         <ul class="showcase-list">
           <li>Drag to orbit and scroll to zoom, or jump to an angled, top or bottom view.</li>
@@ -164,7 +207,7 @@
       <ol class="steps">
         <li>
           <h3>Pick your board</h3>
-          <p>Choose a preset or enter the number of holes across and down to match your perfboard.</p>
+          <p>Choose perfboard or stripboard, then a preset or the number of holes across and down to match the board on your bench.</p>
         </li>
         <li>
           <h3>Place parts and wires</h3>
@@ -194,6 +237,10 @@
         <details>
           <summary>Where are my designs saved?</summary>
           <p>On your own device. "Save Progress" keeps your work in this browser, and "Save Project" downloads a project file you can reopen or share later. Nothing is uploaded to a server.</p>
+        </details>
+        <details>
+          <summary>Does it work for stripboard (Veroboard)?</summary>
+          <p>Yes. Switch the board to Stripboard and copper strips run along every row or column. Use the Cut tool to cut a strip at any hole; the cuts are saved with your project and shown on the copper side of the 3D view.</p>
         </details>
         <details>
           <summary>Can I add a chip that isn't in the list?</summary>

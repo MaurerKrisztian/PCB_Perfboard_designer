@@ -1,0 +1,42 @@
+{
+  "version": 3,
+  "board": {
+    "type": "stripboard",
+    "cols": 20,
+    "rows": 12,
+    "strips": "horizontal",
+    "cuts": [[9, 4], [9, 5], [9, 6], [9, 7], [8, 9]]
+  },
+  "pads": [],
+  "wires": [
+    {"from": [12, 0], "to": [12, 4], "color": "#ef4444", "width": 4},
+    {"from": [3, 0], "to": [3, 7], "color": "#ef4444", "width": 4},
+    {"from": [1, 4], "to": [1, 11], "color": "#1f2937", "width": 4},
+    {"from": [6, 5], "to": [6, 8], "color": "#facc15", "width": 4},
+    {"from": [13, 6], "to": [13, 8], "color": "#facc15", "width": 4}
+  ],
+  "placedIcs": [
+    {
+      "ref": "U1",
+      "name": "NE555 Timer",
+      "widthPin": 4,
+      "heightPin": 4,
+      "rotation": 0,
+      "pinDescription": {"1": "GND", "2": "TRIG", "3": "OUT", "4": "RESET", "5": "CTRL", "6": "THRESH", "7": "DISCH", "8": "VCC"},
+      "at": [8, 4]
+    }
+  ],
+  "placedStandardComponents": [
+    {"ref": "R1", "definitionId": "resistor", "from": [16, 0], "to": [16, 5], "value": "1k"},
+    {"ref": "R2", "definitionId": "resistor", "from": [15, 5], "to": [15, 8], "value": "47k"},
+    {"ref": "R3", "definitionId": "resistor", "from": [5, 6], "to": [5, 9], "value": "470"},
+    {"ref": "C1", "definitionId": "electrolytic-capacitor", "from": [9, 8], "to": [9, 11], "value": "10u"},
+    {"ref": "C2", "definitionId": "ceramic-capacitor", "from": [17, 7], "to": [17, 11], "value": "10n"},
+    {"ref": "D1", "definitionId": "led", "from": [7, 9], "to": [7, 11], "color": "red"}
+  ],
+  "placedAdvancedComponents": [
+    {"ref": "J1", "definitionId": "header-pins", "at": [0, 0], "rotation": 0, "rows": 1, "cols": 1, "value": "+9V"},
+    {"ref": "J2", "definitionId": "header-pins", "at": [0, 11], "rotation": 0, "rows": 1, "cols": 1, "value": "GND"}
+  ],
+  "customIcs": []
+}

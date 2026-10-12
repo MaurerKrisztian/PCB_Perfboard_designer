@@ -11,10 +11,12 @@ export interface PlacedPart {
   // ICs are drawn before the holes, so the holes show through their bodies; components are drawn
   // above the wires.
   readonly layer: "under-board" | "over-wires";
-  id: number;
+  // Reference designator (R1, U2...), unique on the board. Empty until placePart, or loading a
+  // project, gives it one (see project-file/part-refs.ts).
+  ref: string;
   containsPoint(x: number, y: number): boolean;
   draw(selected: boolean): void;
-  // Drawn after everything else on the board, on top of all parts and value labels.
+  // Drawn after everything else on the board, on top of all parts and part labels.
   drawOverlay?(selected: boolean): void;
   // Holes a lead or pin goes into.
   getPinPositions(): Point[];

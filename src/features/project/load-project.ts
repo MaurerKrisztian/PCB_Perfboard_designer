@@ -12,6 +12,7 @@ import {createDotGrid, heightInput, widthInput} from "./resize-grid";
 import {buildDotIndex, dotPositionKey} from "../dot-lookup";
 import {GridPos, gridToPx} from "../../project-file/grid";
 import {ProjectFileError, readProjectFile} from "../../project-file/read-project-file";
+import {setBoardSetup} from "../board-type";
 
 const loadInput = Utils.getSafeHtmlElement<HTMLInputElement>('loadProjectBtn');
 const loadTrigger = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectTrigger');
@@ -52,10 +53,11 @@ export function loadProject(raw: unknown): {skipped: number} {
   const {project, skipped} = readProjectFile(raw);
 
   resetForNewBoard();
-  const {cols, rows} = project.board;
-  widthInput.value = String(cols);
-  heightInput.value = String(rows);
-  createDotGrid(cols, rows);
+  const {board} = project;
+  widthInput.value = String(board.cols);
+  heightInput.value = String(board.rows);
+  setBoardSetup({type: board.type, strips: board.type === "stripboard" ? board.strips : "horizontal"});
+  createDotGrid(board.cols, board.rows);
 
   // The reader only lets through positions on the board, so every lookup finds its dot. Wires and
   // parts are pinned to these shared dot objects, as when they're placed by hand.
@@ -67,24 +69,30 @@ export function loadProject(raw: unknown): {skipped: number} {
     if (pad.color) dot.color = pad.color;
     if (pad.note) dot.description = pad.note;
   }
+  if (board.type === "stripboard") {
+    for (const at of board.cuts) dotAt(at).cut = true;
+  }
 
   LineState.lines = project.wires.map(wire => ({start: dotAt(wire.from), end: dotAt(wire.to), color: wire.color, width: wire.width}));
 
   const parts: Part[] = [];
   for (const saved of project.placedIcs) {
     const ic = new Ic(saved.widthPin, saved.heightPin, {...saved.pinDescription}, saved.name);
+    ic.ref = saved.ref;
     ic.rotationAngle = saved.rotation;
     ic.topLeftDot = dotAt(saved.at);
     parts.push(ic);
   }
   for (const saved of project.placedStandardComponents) {
     const component = new PlacedStandardComponent(saved.definitionId, dotAt(saved.from), dotAt(saved.to));
+    component.ref = saved.ref;
     component.value = saved.value;
     component.color = saved.color;
     parts.push(component);
   }
   for (const saved of project.placedAdvancedComponents) {
     const component = new PlacedAdvancedComponent(saved.definitionId, dotAt(saved.at), saved.rotation);
+    component.ref = saved.ref;
     component.rows = saved.rows;
     component.cols = saved.cols;
     component.value = saved.value;
