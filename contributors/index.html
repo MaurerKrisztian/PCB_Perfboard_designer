@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="../favicon.png" />
+
+    <title>Contributors | Perfboard Designer</title>
+    <meta name="description" content="Meet the people behind Perfboard Designer, the free online perfboard layout tool: everyone who has written code, fixed bugs or shared ideas." />
+    <link rel="canonical" href="https://perfboarddesigner.com/contributors/" />
+    <!-- Link previews (Facebook, LinkedIn, Discord, Slack, X...) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Perfboard Designer" />
+    <meta property="og:title" content="Contributors | Perfboard Designer" />
+    <meta property="og:description" content="Thank you to everyone who builds and improves Perfboard Designer." />
+    <meta property="og:url" content="https://perfboarddesigner.com/contributors/" />
+    <meta property="og:image" content="https://perfboarddesigner.com/images/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A perfboard layout with an NE555 timer, LEDs, resistors and an Arduino Nano in Perfboard Designer" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+</head>
+
+<body>
+  <header class="page-header">
+    <a class="brand" href="../">
+      <span class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+          <path d="M8 6h8M6 8v8M18 8v8M8 18h8" />
+        </svg>
+      </span>
+      <span class="brand-title">Perfboard Designer</span>
+    </a>
+    <a class="back-link" href="../app/">Open the designer →</a>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <h1>Contributors</h1>
+      <p>
+        Perfboard Designer is built in the open. Thank you to everyone who has sent a fix, built a
+        feature or reported a bug. The project is better because of you.
+      </p>
+    </section>
+
+    <!-- Hand-written, unlike the lists below (those come live from GitHub). -->
+    <section class="spotlight" aria-labelledby="spotlightTitle">
+      <a class="spotlight-avatar" href="https://github.com/SantiagoDeIralaMut" target="_blank" rel="noopener">
+        <img src="https://github.com/SantiagoDeIralaMut.png?size=192" alt="" width="96" height="96" />
+      </a>
+      <div class="spotlight-body">
+        <span class="spotlight-badge">★ Special thanks</span>
+        <h2 id="spotlightTitle">
+          <a href="https://github.com/SantiagoDeIralaMut" target="_blank" rel="noopener">@SantiagoDeIralaMut</a>
+        </h2>
+        <p class="spotlight-role">Most active maintainer</p>
+        <p>
+          Santiago turned Perfboard Designer from dots and wires into a real component editor:
+          the performance overhaul, the whole component library, wire merging, value labels and a
+          steady stream of fixes. Thank you!
+        </p>
+        <ul class="spotlight-work">
+          <li>Performance &amp; code reorganization</li>
+          <li>Resistors, capacitors, LEDs &amp; diodes</li>
+          <li>Transistors, MOSFETs, pots &amp; header pins</li>
+          <li>Wire merging &amp; value labels</li>
+          <li>IC rotation &amp; size fixes</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="group">
+      <h2>Code</h2>
+      <p class="group-note">Merged pull requests.</p>
+      <div id="codeContributors" class="card-grid"></div>
+    </section>
+
+    <section class="group">
+      <h2>Bug reports &amp; ideas</h2>
+      <p class="group-note">Issues that found problems or suggested improvements.</p>
+      <div id="issueReporters" class="card-grid"></div>
+    </section>
+
+    <p id="maintainer" class="maintainer"></p>
+
+    <section class="cta">
+      <h2>Want to see your name here?</h2>
+      <p>Found a bug or have an idea? Open an issue or send a pull request.</p>
+      <a id="repoLink" class="cta-button" target="_blank" rel="noopener">Contribute on GitHub</a>
+    </section>
+
+    <p id="sourceNote" class="source-note"></p>
+  </main>
+
+  <script type="module" src="/src/contributors/contributors.ts"></script>
+</body>
+</html>

@@ -11,7 +11,7 @@ laying out components and wires on a virtual perfboard grid. Built with Vite.
 
 ```bash
 npm install          # install deps
-npm run start        # dev server (vite) — served at http://localhost:3000, per vite.config.ts
+npm run start        # dev server (vite) — http://localhost:3000 (landing), /app/ is the editor
 npm run build         # production build to dist/
 npm run serve         # preview the production build
 npm run lint          # eslint ./src --ext .ts
@@ -26,7 +26,20 @@ tests changes manually in the browser.
 
 ## Architecture
 
-Vanilla TS, no framework, no state-management library. `src/index.ts` is the entrypoint: it imports
+**Pages** (Vite multi-page build, inputs listed in `vite.config.ts`). Served at
+https://perfboarddesigner.com (GitHub Pages custom domain, kept across deploys by `assets/CNAME`).
+Keep all in-site URLs relative — never `/...` — so it also works under the github.io subfolder
+`/perfboard-designer/`. Absolute URLs belong only in SEO tags (canonical, og:*, sitemap).
+- `index.html` — static, JS-free SEO landing page (styles in `src/landing/`).
+- `app/index.html` — the editor itself (everything below). Static assets in `assets/` (the Vite
+  publicDir) are served from the site root, so from the editor they're `../icons/...` etc.
+- `contributors/index.html` — standalone page (`src/contributors/`) listing contributors live from
+  the GitHub API; imports nothing from the editor.
+- `assets/404.html` — GitHub Pages' not-found page, copied as-is (not a Vite input). It's served at
+  whatever missing URL was requested, so it's fully self-contained (inline CSS/SVG) and is the one
+  page that uses root-based links (`/app/`, `/`).
+
+Vanilla TS, no framework, no state-management library. `src/index.ts` is the editor's entrypoint: it imports
 every feature module for side effects (each attaches its own DOM event listeners), then calls
 `createDotGrid`, `resetCanvas`, and `redrawCanvas` once at startup. Adding a new feature means
 creating a module under `src/features/` and importing it in `index.ts`.
