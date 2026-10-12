@@ -1,58 +1,68 @@
-import {ToolState} from "../state/ToolState";
-import {IcState} from "../state/IcState";
-import {LineState} from "../state/LineState";
-import {DotState} from "../state/DotState";
-import {StandardComponentState} from "../state/StandardComponentState";
+import {isPlacementTool, ToolState} from "../state/ToolState";
+import {SelectionState} from "../state/SelectionState";
 import {updateStandardComponentButtonHighlight} from "./standard-components/standard-components-panel";
-import {getComponentDefinition} from "./standard-components/component-definitions";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {updateAdvancedComponentButtonHighlight} from "./advanced-components/advanced-components-panel";
-import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
+import {behaviorOf} from "./tools";
+
+const SWATCH_STYLE = "display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;";
+const SELECTED_PART_COLOR = "#38bdf8";
+
+// Built with DOM calls rather than innerHTML: IC names and wire/pad colors come from project
+// files, so they must never be parsed as markup.
+function setStatus(statusEl: HTMLElement, text: string, swatchColor?: string) {
+  if (!swatchColor) {
+    const label = document.createElement("span");
+    label.textContent = text;
+    statusEl.replaceChildren(label);
+    return;
+  }
+  const swatch = document.createElement("span");
+  swatch.style.cssText = SWATCH_STYLE;
+  swatch.style.background = swatchColor;
+  statusEl.replaceChildren(swatch, document.createTextNode(` ${text}`));
+}
+
+// Toolbar highlights follow the active tool rather than being toggled by each control: the mode
+// button for a mode, the wire button for the wire tool, the catalog entry for an armed part.
+function syncToolHighlights() {
+  const kind = ToolState.active.kind;
+  document.getElementById('wireArmBtn')?.classList.toggle('active-mode', kind === "wire");
+  document.querySelectorAll('#toolModeSelector .tool-mode-btn').forEach(btn => {
+    btn.classList.toggle('active-mode', btn.getAttribute('data-mode') === kind);
+  });
+  updateStandardComponentButtonHighlight();
+  updateAdvancedComponentButtonHighlight();
+}
 
 export function updateSelectionStatus() {
   const statusEl = document.getElementById('activeSelectionStatus');
-  updateStandardComponentButtonHighlight();
-  updateAdvancedComponentButtonHighlight();
+  syncToolHighlights();
   if (!statusEl) return;
-  const modeLabel = ToolState.activeToolMode.toUpperCase();
-  if (IcState.selectedPlacedIc) {
-    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> Placed IC Selected (${IcState.selectedPlacedIc.name}) [Drag to Move • Del to Remove]`;
-  } else if (AdvancedComponentState.selectedPlacedComponent) {
-    const selected = AdvancedComponentState.selectedPlacedComponent;
-    const def = selected.getDefinition();
-    const size = def?.gridSizable ? ` ${selected.rows}×${selected.cols}` : "";
-    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> ${def?.name ?? "Component"}${size} Selected [Drag to Move • R to Rotate • Del to Remove]`;
-  } else if (StandardComponentState.selectedPlacedComponent) {
-    const def = StandardComponentState.selectedPlacedComponent.getDefinition();
-    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#38bdf8;margin-right:4px;"></span> ${def?.name ?? "Component"} Selected [Drag to Move • Del to Remove]`;
-  } else if (ToolState.armedWire) {
-    statusEl.innerHTML = ToolState.wireStartDot
-      ? `<span>Wiring Run [Click next pad • Same pad or Esc to end run]</span>`
-      : `<span>Wire Tool Armed [Click start pad]</span>`;
-  } else if (StandardComponentState.armedDefinitionId) {
-    const def = getComponentDefinition(StandardComponentState.armedDefinitionId);
-    const name = def?.name ?? "Component";
-    statusEl.innerHTML = StandardComponentState.pendingStartDot
-      ? `<span>Placing ${name} [Click end pad]</span>`
-      : `<span>${name} Armed [Click start pad]</span>`;
-  } else if (AdvancedComponentState.armedDefinitionId) {
-    const def = getAdvancedComponentDefinition(AdvancedComponentState.armedDefinitionId);
-    const name = def?.name ?? "Component";
-    if (def?.gridSizable) {
-      statusEl.innerHTML = AdvancedComponentState.pendingAnchorDot
-        ? `<span>Placing ${name} [Click opposite corner]</span>`
-        : `<span>${name} Armed [Click first corner]</span>`;
+  const tool = ToolState.active;
+  const toolText = behaviorOf(tool).statusText(tool);
+  const modeLabel = tool.kind.toUpperCase();
+  const selection = SelectionState.current;
+  // A selected part outranks a placement tool, which outranks a selected wire or pad.
+  if (selection?.kind === "part") {
+    const part = selection.part;
+    if (part.kind === "ic") {
+      setStatus(statusEl, `Placed IC Selected (${part.name}) [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
+    } else if (part.kind === "advanced-component") {
+      const def = part.getDefinition();
+      const size = def?.gridSizable ? ` ${part.rows}×${part.cols}` : "";
+      setStatus(statusEl, `${def?.name ?? "Component"}${size} Selected [Drag to Move • R to Rotate • Del to Remove]`, SELECTED_PART_COLOR);
     } else {
-      statusEl.innerHTML = `<span>${name} Armed [Click pad to place • R to rotate]</span>`;
+      const def = part.getDefinition();
+      setStatus(statusEl, `${def?.name ?? "Component"} Selected [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
     }
-  } else if (IcState.selectedIc) {
-    statusEl.innerHTML = `<span>IC Ready: ${IcState.selectedIc.name} [Click Pad to Place]</span>`;
-  } else if (LineState.selectedLine) {
-    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${LineState.selectedLine.color || '#777676'};margin-right:4px;"></span> Line Selected (${LineState.selectedLine.width || 4}px) [Mode: ${modeLabel}]`;
-  } else if (DotState.selectedDot) {
-    statusEl.innerHTML = `<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${DotState.selectedDot.color || '#a4a0a0'};margin-right:4px;"></span> Pad Selected (${DotState.selectedDot.x}, ${DotState.selectedDot.y}) [Mode: ${modeLabel}]`;
+  } else if (isPlacementTool(tool)) {
+    setStatus(statusEl, toolText);
+  } else if (selection?.kind === "line") {
+    setStatus(statusEl, `Line Selected (${selection.line.width || 4}px) [Mode: ${modeLabel}]`, selection.line.color || '#777676');
+  } else if (selection?.kind === "dot") {
+    setStatus(statusEl, `Pad Selected (${selection.dot.x}, ${selection.dot.y}) [Mode: ${modeLabel}]`, selection.dot.color || '#a4a0a0');
   } else {
-    statusEl.innerHTML = `<span>Tool: ${modeLabel} Mode</span>`;
+    setStatus(statusEl, toolText);
   }
 }
 

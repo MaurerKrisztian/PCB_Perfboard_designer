@@ -1,12 +1,11 @@
 import {ILine} from "../interfaces/line.interface";
 import {IDot} from "../interfaces/dot.interface";
 import {LineState} from "../state/LineState";
-import {IcState} from "../state/IcState";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {Point} from "../interfaces/point.interface";
+import {PartState} from "../state/PartState";
 import {Utils} from "../utils/utils";
 
-function dotsEqual(a: IDot, b: IDot): boolean {
+function dotsEqual(a: Point, b: Point): boolean {
   return a.x === b.x && a.y === b.y;
 }
 
@@ -17,16 +16,7 @@ function sameColor(a?: string, b?: string): boolean {
 // True when a component lead terminates on this dot. A wire ending there has to stay its own
 // segment - folding it into a neighbor would make the pin's connection un-splittable later.
 function isPinDot(dot: IDot): boolean {
-  for (const ic of IcState.placedIcs) {
-    if (ic.getRealPinPositions().some(p => p.x === dot.x && p.y === dot.y)) return true;
-  }
-  for (const component of StandardComponentState.placedComponents) {
-    if (dotsEqual(component.startDot, dot) || dotsEqual(component.endDot, dot)) return true;
-  }
-  for (const component of AdvancedComponentState.placedComponents) {
-    if (component.getPinPositions().some(p => p.x === dot.x && p.y === dot.y)) return true;
-  }
-  return false;
+  return PartState.parts.some(part => part.getPinPositions().some(p => dotsEqual(p, dot)));
 }
 
 // Folds `newLine` into any same-color wire(s) it forms a straight line with at its endpoints

@@ -1,17 +1,26 @@
 import {Canvas} from "../state/Canvas";
 import {DotState} from "../state/DotState";
-import {IcState} from "../state/IcState";
 import {IDot} from "../interfaces/dot.interface";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
-import {disarmWire} from "./wire";
+import {Rotation, ToolState} from "../state/ToolState";
+import {SelectionState} from "../state/SelectionState";
+import {setActiveTool} from "./active-tool";
 import {findNearestDot} from "./dot-lookup";
+import {findPartAt} from "./placed-parts";
+import {GridConfig} from "../state/GridConfig";
+import {isRotatable, PlacedPart} from "../interfaces/placed-part.interface";
+import {Point} from "../interfaces/point.interface";
+import {SavedCustomIc, SavedIc} from "../project-file/project-file";
+import {toGridPos} from "../project-file/grid";
+import {readCustomIcs} from "../project-file/read-project-file";
 
 
-export class Ic{
+// Both a catalog entry (IC_CONTAINER, the clone armed for placement) and a chip placed on the
+// board; only the latter has a topLeftDot. Catalog entries are saved by JSON.stringify-ing them
+// whole, so anything added here as an instance field ends up in project files.
+export class Ic implements PlacedPart {
   static IC_CONTAINER: Ic[] = [];
 
   public id = Math.random() * 100;
@@ -29,6 +38,10 @@ export class Ic{
     this.isCustom = isCustom;
   }
 
+  // Getters rather than fields so they stay out of the saved catalog (see above).
+  get kind(): "ic" { return "ic"; }
+  get layer(): "under-board" { return "under-board"; }
+
   static add(ic: Ic, saveToStorage: boolean = false){
     this.IC_CONTAINER.push(ic);
     if (saveToStorage) {
@@ -37,53 +50,81 @@ export class Ic{
     this.showICs();
   }
 
+  // Opens the custom IC editor for a catalog entry. Set by ic-editor-modal, which imports this
+  // module, so importing it back here would be a cycle.
+  static onEditCustomIc?: (ic: Ic) => void;
+
+  // Built with DOM calls rather than an HTML string: names and ids come from project files and
+  // localStorage, so they must never be parsed as markup.
   static showICs(){
-    Utils.getSafeHtmlElement("ic-items").innerHTML = Ic.IC_CONTAINER.map((item)=>{
-      const editBtn = item.isCustom
-        ? `<span onclick="event.stopPropagation(); editCustomIc('${item.id}')" title="Edit custom component" style="margin-left:6px;cursor:pointer;color:#38bdf8;font-weight:bold;">✎</span>`
-        : '';
-      const deleteBtn = item.isCustom
-        ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>`
-        : '';
-      return `<button class="btn btn-accent" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick='selectIc("${item.id}")'>📦 ${item.name}${editBtn}${deleteBtn}</button>`;
-    }).join(" ");
+    const container = Utils.getSafeHtmlElement("ic-items");
+    container.replaceChildren();
+    Ic.IC_CONTAINER.forEach((item, i) => {
+      const btn = document.createElement("button");
+      btn.className = "btn btn-accent";
+      btn.style.cssText = "padding:0.3rem 0.6rem; font-size:0.75rem;";
+      btn.textContent = `📦 ${item.name}`;
+      btn.addEventListener("click", () => selectIc(item.id));
+      if (item.isCustom) {
+        btn.appendChild(Ic.catalogAction("✎", "Edit custom component", "#38bdf8", () => Ic.onEditCustomIc?.(item)));
+        btn.appendChild(Ic.catalogAction("✕", "Delete custom component", "#f87171", () => deleteCustomIc(item.id)));
+      }
+      // Matches the whitespace the old space-joined markup left between buttons.
+      if (i > 0) container.appendChild(document.createTextNode(" "));
+      container.appendChild(btn);
+    });
+  }
+
+  private static catalogAction(icon: string, title: string, color: string, onClick: () => void): HTMLSpanElement {
+    const span = document.createElement("span");
+    span.textContent = icon;
+    span.title = title;
+    span.style.cssText = `margin-left:6px;cursor:pointer;color:${color};font-weight:bold;`;
+    span.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onClick();
+    });
+    return span;
+  }
+
+  // The catalog's custom ICs, in the shape localStorage and project files store them.
+  static customIcEntries(): SavedCustomIc[] {
+    return Ic.IC_CONTAINER.filter(ic => ic.isCustom).map(ic => ({
+      id: ic.id,
+      name: ic.name,
+      widthPin: ic.widthPin,
+      heightPin: ic.heightPin,
+      pinDescription: ic.pinDescription,
+    }));
   }
 
   static saveCustomIcsToLocalStorage() {
     try {
-      const customIcs = Ic.IC_CONTAINER.filter(ic => ic.isCustom).map(ic => ({
-        id: ic.id,
-        name: ic.name,
-        widthPin: ic.widthPin,
-        heightPin: ic.heightPin,
-        pinDescription: ic.pinDescription,
-        isCustom: true
-      }));
-      localStorage.setItem('custom_ics', JSON.stringify(customIcs));
+      localStorage.setItem('custom_ics', JSON.stringify(Ic.customIcEntries()));
     } catch (e) {
       console.error("Failed to save custom ICs to localStorage", e);
     }
+  }
+
+  // Adds custom ICs to the catalog, skipping any whose id it already has. Returns how many were new.
+  static addCustomIcs(entries: SavedCustomIc[]): number {
+    let added = 0;
+    for (const data of entries) {
+      if (data.id !== undefined && Ic.IC_CONTAINER.some(ic => String(ic.id) === String(data.id))) continue;
+      const newIc = new Ic(data.widthPin, data.heightPin, {...data.pinDescription}, data.name, true);
+      if (data.id !== undefined) newIc.id = data.id;
+      Ic.IC_CONTAINER.push(newIc);
+      added++;
+    }
+    Ic.showICs();
+    return added;
   }
 
   static loadCustomIcsFromLocalStorage() {
     try {
       const stored = localStorage.getItem('custom_ics');
       if (!stored) return;
-      const customIcs = JSON.parse(stored) as Array<{
-        id: number;
-        name: string;
-        widthPin: number;
-        heightPin: number;
-        pinDescription: Record<number, string>;
-      }>;
-      for (const data of customIcs) {
-        if (!Ic.IC_CONTAINER.some(ic => String(ic.id) === String(data.id))) {
-          const newIc = new Ic(data.widthPin, data.heightPin, data.pinDescription || {}, data.name, true);
-          newIc.id = data.id;
-          Ic.IC_CONTAINER.push(newIc);
-        }
-      }
-      this.showICs();
+      Ic.addCustomIcs(readCustomIcs(JSON.parse(stored)));
     } catch (e) {
       console.error("Failed to load custom ICs from localStorage", e);
     }
@@ -93,10 +134,9 @@ export class Ic{
     this.topLeftDot = findNearestDot(x, y) ?? null;
   }
 
-  drawBody(){
+  drawBody(isSelected: boolean){
     if (!this.topLeftDot) return;
     Canvas.ctx.beginPath();
-    const isSelected = this === IcState.selectedPlacedIc;
     
     Canvas.ctx.fillStyle = isSelected ? "rgba(30,58,138,0.9)" : "rgba(17,24,39,0.85)";
     Canvas.ctx.strokeStyle = isSelected ? "#38bdf8" : "#475569";
@@ -271,9 +311,8 @@ export class Ic{
     Canvas.ctx.restore();
   }
 
-  drawLabel(){
+  drawLabel(isSelected: boolean){
     if (!this.topLeftDot) return;
-    const isSelected = this === IcState.selectedPlacedIc;
     const w = 50 * (this.widthPin - 1);
     const h = 50 * (this.heightPin - 1);
     const centerX = this.topLeftDot.x + (w / 2);
@@ -307,9 +346,51 @@ export class Ic{
     this.drawPinLabels();
   }
 
-  draw(){
-    this.drawBody();
-    this.drawLabel();
+  // The body goes under the holes; the name badge and pin labels go on top of everything.
+  draw(selected: boolean){
+    this.drawBody(selected);
+  }
+
+  drawOverlay(selected: boolean){
+    this.drawLabel(selected);
+  }
+
+  getPinPositions(): Point[] {
+    return this.getRealPinPositions();
+  }
+
+  getOccupiedPositions(): Point[] {
+    const topLeft = this.topLeftDot;
+    if (!topLeft) return [];
+    // The grid is regular, so the footprint's four corners standing on dots implies the rest do.
+    const w = GridConfig.dotSpace * (this.widthPin - 1);
+    const h = GridConfig.dotSpace * (this.heightPin - 1);
+    return [
+      {x: topLeft.x, y: topLeft.y},
+      {x: topLeft.x + w, y: topLeft.y},
+      {x: topLeft.x, y: topLeft.y + h},
+      {x: topLeft.x + w, y: topLeft.y + h},
+    ];
+  }
+
+  getAnchorDots(): IDot[] {
+    return this.topLeftDot ? [this.topLeftDot] : [];
+  }
+
+  setAnchorDots(dots: IDot[]) {
+    if (dots[0]) this.topLeftDot = dots[0];
+  }
+
+  // Only called for placed chips, which always have a topLeftDot.
+  serialize(): SavedIc {
+    return {
+      name: this.name,
+      widthPin: this.widthPin,
+      heightPin: this.heightPin,
+      rotation: (this.rotationAngle || 0) as Rotation,
+      pinDescription: this.pinDescription || {},
+      at: toGridPos(this.topLeftDot ?? {x: 0, y: 0}),
+    };
   }
 
   containsPoint(x: number, y: number): boolean {
@@ -439,49 +520,34 @@ export function selectIc(id: number | string){
     console.error(`Ic with id: ${id} not found`);
     return;
   }
-  IcState.selectedIc = ic.clone();
-  StandardComponentState.armedDefinitionId = undefined;
-  StandardComponentState.pendingStartDot = undefined;
-  AdvancedComponentState.armedDefinitionId = undefined;
-  AdvancedComponentState.pendingAnchorDot = undefined;
-  disarmWire();
+  setActiveTool({kind: "ic", template: ic.clone()});
 }
 
 export function rotateSelectedIc() {
-  if (IcState.selectedPlacedIc) {
-    IcState.selectedPlacedIc.rotate();
+  const selected = SelectionState.part;
+  if (selected && isRotatable(selected)) {
+    selected.rotate();
     redrawCanvas();
     return;
   }
-  if (AdvancedComponentState.selectedPlacedComponent) {
-    AdvancedComponentState.selectedPlacedComponent.rotate();
+  const active = ToolState.active;
+  if (active.kind === "ic") {
+    active.template.rotate();
     redrawCanvas();
     return;
   }
-  if (IcState.selectedIc) {
-    IcState.selectedIc.rotate();
-    redrawCanvas();
-    return;
-  }
-  if (AdvancedComponentState.armedDefinitionId) {
-    AdvancedComponentState.armedRotation = ((AdvancedComponentState.armedRotation + 90) % 360) as 0 | 90 | 180 | 270;
+  if (active.kind === "advanced-component") {
+    active.rotation = ((active.rotation + 90) % 360) as Rotation;
     redrawCanvas();
     return;
   }
   if (DotState.hoverDot) {
-    const hoveredIc = IcState.placedIcs.find(ic => ic.containsPoint(DotState.hoverDot!.x, DotState.hoverDot!.y));
-    if (hoveredIc) {
-      hoveredIc.rotate();
-      IcState.selectedPlacedIc = hoveredIc;
+    // Topmost rotatable part under the cursor; standard components have no rotation.
+    const hovered = findPartAt(DotState.hoverDot.x, DotState.hoverDot.y, isRotatable);
+    if (hovered && isRotatable(hovered)) {
+      hovered.rotate();
+      SelectionState.current = {kind: "part", part: hovered};
       redrawCanvas();
-      return;
-    }
-    const hoveredAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(DotState.hoverDot!.x, DotState.hoverDot!.y));
-    if (hoveredAdvancedComponent) {
-      hoveredAdvancedComponent.rotate();
-      AdvancedComponentState.selectedPlacedComponent = hoveredAdvancedComponent;
-      redrawCanvas();
-      return;
     }
   }
 }
@@ -491,7 +557,3 @@ ShortcutRegistry.add({
   description: "Rotate selected IC component.",
   event: rotateSelectedIc
 });
-
-(window as any).selectIc = selectIc;
-(window as any).deleteCustomIc = deleteCustomIc;
-(window as any).rotateSelectedIc = rotateSelectedIc;

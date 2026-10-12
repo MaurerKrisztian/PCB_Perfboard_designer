@@ -1,9 +1,6 @@
 import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
 import {GridConfig} from "../state/GridConfig";
-import {IcState} from "../state/IcState";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {Utils} from "../utils/utils";
@@ -12,21 +9,19 @@ import {ToolState} from "../state/ToolState";
 import {DragState} from "../state/DragState";
 import {updateDrag} from "./component-drag";
 import {ViewState} from "../state/ViewState";
+import {findPartAt} from "./placed-parts";
+import {DEFAULT_DOT_COLOR} from "./board-appearance";
+import {PartState} from "../state/PartState";
+import {SelectionState} from "../state/SelectionState";
 
 export function isOverPlacedPart(x: number, y: number): boolean {
-  return IcState.placedIcs.some(ic => ic.containsPoint(x, y))
-    || StandardComponentState.placedComponents.some(c => c.containsPoint(x, y))
-    || AdvancedComponentState.placedComponents.some(c => c.containsPoint(x, y));
+  return PartState.parts.some(part => part.containsPoint(x, y));
 }
 
 // Select mode with nothing armed for placement: placed parts can be dragged, and a drag on bare
 // board pans it.
 export function canPickUpParts(): boolean {
-  return ToolState.activeToolMode === 'select'
-    && !ToolState.armedWire
-    && !IcState.selectedIc
-    && !StandardComponentState.armedDefinitionId
-    && !AdvancedComponentState.armedDefinitionId;
+  return ToolState.active.kind === "select";
 }
 
 // Hint that a placed part can be picked up. Left alone while the cursor reads 'grabbing', which
@@ -41,17 +36,9 @@ function updateDragCursor(x: number, y: number) {
 }
 
 function findHoveredComponentValue(x: number, y: number): string | undefined {
-  for (const component of StandardComponentState.placedComponents) {
-    if (component.value && component.containsPoint(x, y)) {
-      return `${component.getDefinition()?.name}: ${component.value}`;
-    }
-  }
-  for (const component of AdvancedComponentState.placedComponents) {
-    if (component.value && component.containsPoint(x, y)) {
-      return `${component.getDefinition()?.name}: ${component.value}`;
-    }
-  }
-  return undefined;
+  const part = findPartAt(x, y, p => p.kind !== "ic" && !!p.value);
+  if (!part || part.kind === "ic") return undefined;
+  return `${part.getDefinition()?.name}: ${part.value}`;
 }
 
 Canvas.c.addEventListener('mousemove', function(e) {
@@ -105,19 +92,16 @@ Canvas.c.addEventListener('mousemove', function(e) {
 });
 
 
+// Moves the selected pad's color and note onto the hovered pad. The pads themselves stay put:
+// wires and parts are pinned to these dot objects, so replacing them would cut those links.
 ShortcutRegistry.add({key: "m", description: "Move the point. select a point, then move the mouse pointer to another point, then press 'm'", event: ()=>{
-    if (!DotState.hoverDot || !DotState.selectedDot){
-      return;
-    }
-
-    DotState.dots =  DotState.dots.map((d)=>{
-     if (d.x == DotState?.hoverDot?.x && d.y == DotState.hoverDot?.y){
-       return { ...DotState.selectedDot, x: d.x, y: d.y};
-     }
-      if (d.x == DotState?.selectedDot?.x && d.y == DotState.selectedDot?.y){
-        return { description: undefined, color: undefined, x: d.x, y: d.y};
-      }
-     return d
-    });
-    DotState.selectedDot = undefined
-  }})
+  const from = SelectionState.dot;
+  const to = DotState.hoverDot;
+  if (!from || !to || from === to) return;
+  to.color = from.color;
+  to.description = from.description;
+  from.color = DEFAULT_DOT_COLOR;
+  from.description = undefined;
+  SelectionState.clear("dot");
+  redrawCanvas();
+}})

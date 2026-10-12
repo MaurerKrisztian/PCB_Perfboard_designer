@@ -1,6 +1,9 @@
+import {GRID_PITCH_PX} from "../project-file/grid";
+
 export class GridConfig {
   static dotRadius = 5
-  static dotSpace = 50
+  // Hole pitch in drawing pixels. Shared with the project file format and the 3D viewer.
+  static dotSpace = GRID_PITCH_PX
 
   static extraSelectionRatio = 4;
   static dotSelectionRadius = GridConfig.dotRadius * GridConfig.extraSelectionRatio;

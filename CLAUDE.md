@@ -46,9 +46,23 @@ creating a module under `src/features/` and importing it in `index.ts`.
 
 **State** (`src/state/`): plain classes used as static/global singletons (no instances are ever
 created — `ClassName.staticField` is the "store"). E.g. `Canvas` (canvas element + 2D context +
-coordinate mapping), `GridConfig` (grid constants like dot spacing/radius), `ToolState` (active
-tool mode, armed wire, selected color/width), `DotState`, `LineState`, `IcState`,
-`StandardComponentState`, `AdvancedComponentState`, `HistoryState` (undo/redo stack).
+coordinate mapping), `GridConfig` (grid constants like dot spacing/radius), `DotState` /
+`LineState` (the grid and wires, plus hover), `PartState` (every placed part, see below),
+`HistoryState` (undo/redo stack). Two discriminated unions keep "only one at a time" true by
+construction: `SelectionState.current` (one selected pad, wire *or* part) and `ToolState.active`
+(what a click on the board does: a toolbar mode — select/eraser/note — or a placement tool —
+wire, IC, standard or advanced component — with its pending first click). Switch tools through
+`setActiveTool()` (`src/features/active-tool.ts`); `resetInteraction()` clears the selection and
+drops a placement tool back to Select. Toolbar/catalog highlights are derived from this state in
+`updateSelectionStatus()`.
+
+**Tools** (`src/features/tools/`): each `ActiveTool` kind has a `ToolBehavior` —
+`onPointerDown`, `drawPreview`, `statusText`, optional `stepBack` (Escape) — registered in
+`tools/index.ts` and looked up with `behaviorOf(tool)`. Tools only change state; the caller
+(`select.ts`, the board's input router, which also owns panning, the context menu and Escape)
+redraws and refreshes the status badge. Keep tool modules free of imports that lead back to
+`draw-canvas.ts` (it imports the registry to draw previews), which is why the note prompt lives in
+`dot-notes.ts` rather than `description.ts`.
 
 **Features** (`src/features/`): self-registering modules, each owning one concern (drawing,
 hover, selection, color picker, context menu, shortcuts, project save/load, etc.). They read/
@@ -68,23 +82,41 @@ components → advanced components → IC labels → in-progress placement previ
   the anchor) are rotated at render/placement time (`rotate-offset.ts`).
 - IC chips (`src/features/ic.ts`, `ic-editor-modal.ts`) are a third, older placement concept
   (multi-pin chip with a user-editable pin-label catalog), separate from both of the above.
+  `Ic` is both the catalog entry and the placed chip; catalog entries are saved by
+  `JSON.stringify`-ing them whole, so never add instance fields to `Ic` casually.
+
+All three placed-part classes implement `PlacedPart` (`src/interfaces/placed-part.interface.ts`):
+hit-testing, drawing, pin/occupied positions, anchor dots and `serialize()`. Board-level code
+(drag, delete, undo, save, resize) goes through that interface — narrow on `part.kind` only for
+kind-specific behavior. They live in one list, `PartState.parts`, kept grouped by kind (ICs →
+standard → advanced) so stacking and the per-kind arrays in the save file stay stable; add/remove
+via `src/features/placed-parts.ts` (`placePart`/`removePart` record history, `addToBoard`/
+`takeOffBoard` don't).
 
 **Undo/redo** (`src/features/project/undo-redo.ts` + `src/state/HistoryState.ts`): every mutation
-that should be undoable pushes an `IChange` (`src/interfaces/change.interface.ts` — tagged union
-over `line` / `ic` / `standard-component` / `advanced-component`, each with `type: "add" |
-"remove"`) onto `HistoryState.changes`, truncating any redo tail first. `undo`/`redo` just replay
-these adds/removes against the relevant state array and call `redrawCanvas()`.
+that should be undoable calls `HistoryState.record(change)` with an `IChange`
+(`src/interfaces/change.interface.ts`): `add`/`remove`/`merge` of a line, or `add`/`remove`/`move`
+of a part. `undo`/`redo` replay these and call `redrawCanvas()`. History is cleared whenever the
+board is replaced (load, reset, resize) via `resetForNewBoard()`.
 
-**Persistence**: `src/features/project/save-project.ts` / `load-project.ts` serialize/deserialize
-the full board (dots, lines, placed ICs/standard/advanced components, canvas size — shape in
-`src/interfaces/project-save.interface.ts`) to/from JSON project files. `save-progress.ts` /
-`load-from-local-storage.ts` do the same against `localStorage` for auto-persisted in-browser
-state. Coordinates in saved data are canvas pixel coordinates, not grid indices.
+**Persistence**: the project file format lives in `src/project-file/` — pure code (no DOM, no
+editor state) shared by the editor and the 3D viewer. `project-file.ts` defines the current format
+(version 2: grid `[col, row]` positions, only marked pads, per-kind part arrays, the user's custom
+ICs); `read-project-file.ts` reads any version (files without `version` are v1: pixel
+coordinates, every hole, the whole IC catalog) into that shape, validating everything and
+throwing `ProjectFileError` for non-projects before the board is touched; bad entries are skipped
+and counted. `save-project.ts`'s `getSaveJson()` always writes the current version (each part's
+`serialize()` returns its entry); `load-project.ts`'s `loadProject(raw)` reads and then rebuilds
+the board, pinning wires and parts to the shared dot objects, and merges (never replaces) custom
+ICs into the catalog. `save-progress.ts` / `load-from-local-storage.ts` do the same against
+`localStorage`. A format change means a new version number plus an upgrade path in the reader —
+old files must keep opening. `examples/*.json` are v1 files and double as compatibility fixtures.
 
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the
-editor on purpose. It only consumes project-file JSON (the `IProjectSave` shape), parsed by its own
-`project-data.ts`, and never imports editor state classes — only the pure data modules (component
-definitions, value parsing/color codes, `rotateOffset`). The editor side is just
+editor on purpose. It only consumes project-file JSON, read by the shared `src/project-file/`
+reader and laid out in pixels by its own `project-data.ts`, and never imports editor state classes
+— only pure data modules (the project-file reader, component definitions, value parsing/color
+codes, `rotateOffset`). The editor side is just
 `src/features/open-3d-view.ts`, which snapshots `getSaveJson()` and lazy-imports the viewer, so
 three.js stays out of the main bundle. Scene units are mm (50px grid = 2.54mm pitch).
 

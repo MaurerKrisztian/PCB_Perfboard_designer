@@ -1,78 +1,40 @@
 import {LineState} from "../state/LineState";
-import {IcState} from "../state/IcState";
 import {HistoryState} from "../state/HistoryState";
-import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {changeSelectedDotColor} from "./dot";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
+import {removePart} from "./placed-parts";
+import {SelectionState} from "../state/SelectionState";
 
 export function setLineColor(color: string){
-  if (LineState.selectedLine){
-    LineState.selectedLine.color = color;
+  if (SelectionState.line){
+    SelectionState.line.color = color;
     redrawCanvas();
   }
 }
 
+// Deletes whatever is selected: a placed part, else a wire, else a pad's color and note.
 export function deleteLine(){
-  if (IcState.selectedPlacedIc) {
-    const index = IcState.placedIcs.indexOf(IcState.selectedPlacedIc);
-    if (index > -1) {
-      const removedIc = IcState.selectedPlacedIc;
-      IcState.placedIcs.splice(index, 1);
-      IcState.selectedPlacedIc = undefined;
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'remove', kind: 'ic', ic: removedIc});
-      HistoryState.changeIndex++;
-      redrawCanvas();
-      return;
-    }
+  const part = SelectionState.part;
+  if (part && removePart(part)) {
+    redrawCanvas();
+    return;
   }
-  if (StandardComponentState.selectedPlacedComponent) {
-    const index = StandardComponentState.placedComponents.indexOf(StandardComponentState.selectedPlacedComponent);
-    if (index > -1) {
-      const removedComponent = StandardComponentState.selectedPlacedComponent;
-      StandardComponentState.placedComponents.splice(index, 1);
-      StandardComponentState.selectedPlacedComponent = undefined;
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'remove', kind: 'standard-component', component: removedComponent});
-      HistoryState.changeIndex++;
-      redrawCanvas();
-      return;
-    }
-  }
-  if (AdvancedComponentState.selectedPlacedComponent) {
-    const index = AdvancedComponentState.placedComponents.indexOf(AdvancedComponentState.selectedPlacedComponent);
-    if (index > -1) {
-      const removedComponent = AdvancedComponentState.selectedPlacedComponent;
-      AdvancedComponentState.placedComponents.splice(index, 1);
-      AdvancedComponentState.selectedPlacedComponent = undefined;
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'remove', kind: 'advanced-component', component: removedComponent});
-      HistoryState.changeIndex++;
-      redrawCanvas();
-      return;
-    }
-  }
-  if(LineState.selectedLine) {
-    const index = LineState.lines.indexOf(LineState.selectedLine);
+  if(SelectionState.line) {
+    const index = LineState.lines.indexOf(SelectionState.line);
     if(index > -1){
-      // Store change
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'remove', kind: 'line', line: LineState.selectedLine});
-      HistoryState.changeIndex++;
+      HistoryState.record({type: 'remove', kind: 'line', line: SelectionState.line});
       // Remove line
       LineState.lines.splice(index, 1);
-      LineState.selectedLine = undefined;
+      SelectionState.clear("line");
       redrawCanvas();
       return;
     }
   }
-  if (DotState.selectedDot) {
-    DotState.selectedDot.color = "#a4a0a0";
-    DotState.selectedDot.description = undefined;
-    DotState.selectedDot = undefined;
+  if (SelectionState.dot) {
+    SelectionState.dot.color = "#a4a0a0";
+    SelectionState.dot.description = undefined;
+    SelectionState.clear("dot");
     redrawCanvas();
   }
 }

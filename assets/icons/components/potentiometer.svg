@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 230 180" width="230" height="180" role="img" aria-label="Potentiometer, seen from above">
+  <!-- Panel pot lying on the board: the round housing runs along the top (the pin row sits
+       inside it), and the threaded bushing and knurled shaft stick out below. The viewBox is
+       the T-shaped footprint's bounding box (4.6 x 3.6 holes), so iconFillsBody maps it 1:1
+       and the corners beside the bushing stay transparent. -->
+  <defs>
+    <clipPath id="potHousing">
+      <rect x="2" y="2" width="226" height="76" rx="10"/>
+    </clipPath>
+    <clipPath id="potShaft">
+      <rect x="92" y="127" width="46" height="51" rx="4"/>
+    </clipPath>
+  </defs>
+  <!-- Bushing, tucked under the housing -->
+  <rect x="76" y="76" width="78" height="52" fill="#9aa5b1" stroke="#e2e8f0" stroke-width="3"/>
+  <path d="M77 92h76M77 104h76M77 116h76" fill="none" stroke="#78828d" stroke-width="2"/>
+  <!-- Shaft with knurling -->
+  <rect x="92" y="127" width="46" height="51" rx="4" fill="#c4ced8" stroke="#e2e8f0" stroke-width="3"/>
+  <g clip-path="url(#potShaft)" stroke="#78828d" stroke-width="2">
+    <path d="M99 128v50M106 128v50M113 128v50M120 128v50M127 128v50M134 128v50"/>
+  </g>
+  <!-- Housing -->
+  <rect x="2" y="2" width="226" height="76" rx="10" fill="#2a2e33" stroke="#e2e8f0" stroke-width="4"/>
+  <g clip-path="url(#potHousing)">
+    <rect x="2" y="2" width="226" height="16" fill="#9aa5b1"/>
+    <rect x="2" y="2" width="226" height="4" fill="#c4ced8"/>
+    <path d="M2 18h226" fill="none" stroke="#12151a" stroke-width="2"/>
+    <path d="M2 72h226" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-opacity="0.12"/>
+    <!-- Anti-rotation lug on the housing's edge -->
+    <rect x="196" y="2" width="16" height="16" fill="#78828d"/>
+  </g>
+  <!-- Retaining collar where the bushing leaves the housing -->
+  <rect x="68" y="76" width="94" height="10" rx="3" fill="#c4ced8" stroke="#e2e8f0" stroke-width="2"/>
+</svg>

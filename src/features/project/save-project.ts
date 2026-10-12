@@ -1,14 +1,14 @@
 import {DotState} from "../../state/DotState";
 import {LineState} from "../../state/LineState";
-import {IcState} from "../../state/IcState";
+import {PartState} from "../../state/PartState";
 import {Utils} from "../../utils/utils";
 import {Canvas} from "../../state/Canvas";
-import {IProjectSave} from "../../interfaces/project-save.interface";
 import {Ic} from "../ic";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
-import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
+import type {PlacedStandardComponent} from "../standard-components/placed-standard-component";
+import type {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
+import {PROJECT_FILE_VERSION, ProjectFile, SavedPad, SavedWire} from "../../project-file/project-file";
+import {holesAlong, toGridPos} from "../../project-file/grid";
+import {DEFAULT_DOT_COLOR} from "../board-appearance";
 
 const saveBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProjectBtn');
 saveBtn.addEventListener('click', function() {
@@ -25,54 +25,40 @@ saveBtn.addEventListener('click', function() {
 });
 
 
-export function serializePlacedIc(ic: Ic) {
-  return {
-    id: ic.id,
-    widthPin: ic.widthPin,
-    heightPin: ic.heightPin,
-    pinDescription: ic.pinDescription || {},
-    name: ic.name,
-    isCustom: !!ic.isCustom,
-    rotationAngle: ic.rotationAngle || 0,
-    topLeftDotX: ic.topLeftDot ? ic.topLeftDot.x : null,
-    topLeftDotY: ic.topLeftDot ? ic.topLeftDot.y : null,
-  };
+// Marked holes only: a color other than the default, or a note.
+function savedPads(): SavedPad[] {
+  const pads: SavedPad[] = [];
+  for (const dot of DotState.dots) {
+    const color = dot.color && dot.color.toLowerCase() !== DEFAULT_DOT_COLOR ? dot.color : undefined;
+    const note = dot.description?.trim() ? dot.description : undefined;
+    if (color || note) pads.push({at: toGridPos(dot), ...(color ? {color} : {}), ...(note ? {note} : {})});
+  }
+  return pads;
 }
 
-export function serializePlacedStandardComponent(component: PlacedStandardComponent) {
-  return {
-    id: component.id,
-    definitionId: component.definitionId,
-    value: component.value,
-    color: component.color,
-    startDotX: component.startDot.x,
-    startDotY: component.startDot.y,
-    endDotX: component.endDot.x,
-    endDotY: component.endDot.y,
-  };
+function savedWires(): SavedWire[] {
+  return LineState.lines.map(line => ({
+    from: toGridPos(line.start),
+    to: toGridPos(line.end),
+    ...(line.color ? {color: line.color} : {}),
+    ...(line.width ? {width: line.width} : {}),
+  }));
 }
 
-export function serializePlacedAdvancedComponent(component: PlacedAdvancedComponent) {
+// The file keeps one array per kind of part. PartState.parts is grouped by kind in the same
+// order, so each array comes out in the order it was loaded and drawn.
+export function getSaveJson(): ProjectFile {
+  const parts = PartState.parts;
   return {
-    id: component.id,
-    definitionId: component.definitionId,
-    value: component.value,
-    rotationAngle: component.rotationAngle,
-    anchorDotX: component.anchorDot.x,
-    anchorDotY: component.anchorDot.y,
-    rows: component.rows,
-    cols: component.cols,
-  };
-}
-
-export function getSaveJson(): IProjectSave {
-  return {
-    dots: DotState.dots,
-    lines: LineState.lines,
-    canvas: { width: Canvas.gridWidth, height: Canvas.gridHeight },
-    ICs: Ic.IC_CONTAINER || [],
-    placedIcs: IcState.placedIcs.map(ic => serializePlacedIc(ic)),
-    placedStandardComponents: StandardComponentState.placedComponents.map(c => serializePlacedStandardComponent(c)),
-    placedAdvancedComponents: AdvancedComponentState.placedComponents.map(c => serializePlacedAdvancedComponent(c))
+    version: PROJECT_FILE_VERSION,
+    board: {cols: holesAlong(Canvas.gridWidth), rows: holesAlong(Canvas.gridHeight)},
+    pads: savedPads(),
+    wires: savedWires(),
+    placedIcs: parts.filter((p): p is Ic => p.kind === "ic").map(p => p.serialize()),
+    placedStandardComponents: parts
+      .filter((p): p is PlacedStandardComponent => p.kind === "standard-component").map(p => p.serialize()),
+    placedAdvancedComponents: parts
+      .filter((p): p is PlacedAdvancedComponent => p.kind === "advanced-component").map(p => p.serialize()),
+    customIcs: Ic.customIcEntries(),
   };
 }

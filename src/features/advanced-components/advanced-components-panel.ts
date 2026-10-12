@@ -1,36 +1,22 @@
 import {Utils} from "../../utils/utils";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
-import {IcState} from "../../state/IcState";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {redrawCanvas} from "../draw-canvas";
-import {disarmWire} from "../wire";
+import {ToolState} from "../../state/ToolState";
+import {setActiveTool} from "../active-tool";
 import {ADVANCED_COMPONENT_DEFINITIONS, getAdvancedIconPath} from "./advanced-component-definitions";
 
 export function armAdvancedComponent(definitionId: string) {
-  if (AdvancedComponentState.armedDefinitionId === definitionId) {
-    // Clicking the already-armed component again disarms it
-    AdvancedComponentState.armedDefinitionId = undefined;
-    AdvancedComponentState.pendingAnchorDot = undefined;
-    updateAdvancedComponentButtonHighlight();
-    redrawCanvas();
-    return;
-  }
-  AdvancedComponentState.armedDefinitionId = definitionId;
-  AdvancedComponentState.armedRotation = 0;
-  AdvancedComponentState.pendingAnchorDot = undefined;
-  StandardComponentState.armedDefinitionId = undefined;
-  StandardComponentState.pendingStartDot = undefined;
-  IcState.selectedIc = undefined;
-  disarmWire();
-  updateAdvancedComponentButtonHighlight();
-  redrawCanvas();
+  const active = ToolState.active;
+  // Clicking the already-armed component again disarms it
+  setActiveTool(active.kind === "advanced-component" && active.definitionId === definitionId
+    ? {kind: "select"}
+    : {kind: "advanced-component", definitionId, rotation: 0});
 }
 
 export function updateAdvancedComponentButtonHighlight() {
   const container = document.getElementById("advanced-components-items");
   if (!container) return;
   container.querySelectorAll<HTMLButtonElement>("button[data-def-id]").forEach((btn) => {
-    btn.classList.toggle("active-mode", btn.dataset.defId === AdvancedComponentState.armedDefinitionId);
+    const active = ToolState.active;
+    btn.classList.toggle("active-mode", active.kind === "advanced-component" && btn.dataset.defId === active.definitionId);
   });
 }
 
