@@ -18,7 +18,11 @@ function loadCustomColorsFromLocalStorage() {
   try {
     const stored = localStorage.getItem('custom_colors');
     if (stored) {
-      customColors = JSON.parse(stored);
+      // renderSwatches puts these into HTML attributes, so only well-formed hex colors get through.
+      const parsed: unknown = JSON.parse(stored);
+      customColors = Array.isArray(parsed)
+        ? parsed.filter((c): c is string => typeof c === "string" && /^#[0-9A-Fa-f]{6}$/.test(c))
+        : [];
     }
   } catch (e) {
     console.error("Failed to load custom colors from localStorage", e);

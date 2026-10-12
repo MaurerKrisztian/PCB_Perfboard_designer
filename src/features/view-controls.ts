@@ -215,7 +215,7 @@ window.addEventListener('keydown', (e) => {
 
 // Collapsible sidebar sections
 document.querySelectorAll('.section-title[data-collapse]').forEach(title => {
-  title.addEventListener('click', (e) => {
+  title.addEventListener('click', () => {
     const targetId = (title as HTMLElement).getAttribute('data-collapse');
     if (!targetId) return;
     const body = document.getElementById(targetId);

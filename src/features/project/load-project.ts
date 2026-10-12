@@ -13,32 +13,31 @@ import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 import {applyCanvasResolution} from "../canvas-sizing";
 import {getCurrentZoom} from "../view-controls";
-import {disarmWire} from "../wire";
-import {updateSelectionStatus} from "../selection-status";
+import {resetForNewBoard} from "../reset-interaction";
 
-const loadInput = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectBtn');
+const loadInput = Utils.getSafeHtmlElement<HTMLInputElement>('loadProjectBtn');
 const loadTrigger = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectTrigger');
 
 loadTrigger.addEventListener('click', function() {
   loadInput.click();
 });
 
-loadInput.addEventListener('change', function(e) {
-  // @ts-ignore
-  const file = e.target.files[0];
+loadInput.addEventListener('change', function() {
+  const file = loadInput.files?.[0];
+  // Clear the input so picking the same file again still fires 'change'.
+  loadInput.value = '';
 
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const contents = e.target.result;
-    const data = JSON.parse(contents) as IProjectSave;
-
-    // Load the state of the canvas from the uploaded file
-    loadProject(data)
-
-    // Redraw the canvas
-    redrawCanvas();
+  reader.onload = function() {
+    try {
+      const data = JSON.parse(String(reader.result)) as IProjectSave;
+      loadProject(data);
+    } catch (err) {
+      console.error(err);
+      alert(`Couldn't open "${file.name}": it isn't a valid project file.`);
+    }
   };
   reader.readAsText(file);
 });
@@ -108,6 +107,7 @@ export function deserializePlacedAdvancedComponent(data: any): PlacedAdvancedCom
 }
 
 export function loadProject(project: IProjectSave){
+  resetForNewBoard();
   Canvas.gridWidth = project.canvas.width;
   Canvas.gridHeight = project.canvas.height;
   applyCanvasResolution(getCurrentZoom());
@@ -136,17 +136,5 @@ export function loadProject(project: IProjectSave){
   } else {
     AdvancedComponentState.placedComponents = [];
   }
-  IcState.selectedPlacedIc = undefined;
-  DotState.selectedDot = undefined;
-  LineState.selectedLine = undefined;
-  IcState.selectedIc = undefined;
-  StandardComponentState.armedDefinitionId = undefined;
-  StandardComponentState.pendingStartDot = undefined;
-  StandardComponentState.selectedPlacedComponent = undefined;
-  AdvancedComponentState.armedDefinitionId = undefined;
-  AdvancedComponentState.pendingAnchorDot = undefined;
-  AdvancedComponentState.selectedPlacedComponent = undefined;
-  disarmWire();
-  updateSelectionStatus();
   redrawCanvas();
 }

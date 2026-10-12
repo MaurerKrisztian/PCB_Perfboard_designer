@@ -34,7 +34,7 @@ export function setAnchorDots(target: IDragTarget, dots: IDot[]) {
 
 // Every grid hole the part sits on. A move is only allowed when all of them land on real dots,
 // so a part can never be dragged half off the board.
-function getOccupiedPositions(target: IDragTarget): Point[] {
+export function getOccupiedPositions(target: IDragTarget): Point[] {
   if (target.kind === "ic") {
     const topLeft = target.ic.topLeftDot;
     if (!topLeft) return [];
@@ -125,15 +125,13 @@ export function endDrag() {
   const {target, originDots, moved} = DragState;
   if (target && originDots && moved) {
     const to = getAnchorDots(target);
-    HistoryState.changes.splice(HistoryState.changeIndex + 1);
     if (target.kind === "ic") {
-      HistoryState.changes.push({type: 'move', kind: 'ic', ic: target.ic, from: originDots, to});
+      HistoryState.record({type: 'move', kind: 'ic', ic: target.ic, from: originDots, to});
     } else if (target.kind === "standard-component") {
-      HistoryState.changes.push({type: 'move', kind: 'standard-component', component: target.component, from: originDots, to});
+      HistoryState.record({type: 'move', kind: 'standard-component', component: target.component, from: originDots, to});
     } else {
-      HistoryState.changes.push({type: 'move', kind: 'advanced-component', component: target.component, from: originDots, to});
+      HistoryState.record({type: 'move', kind: 'advanced-component', component: target.component, from: originDots, to});
     }
-    HistoryState.changeIndex++;
   }
   clearDrag();
 }

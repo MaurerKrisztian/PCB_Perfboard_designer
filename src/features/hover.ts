@@ -12,6 +12,7 @@ import {ToolState} from "../state/ToolState";
 import {DragState} from "../state/DragState";
 import {updateDrag} from "./component-drag";
 import {ViewState} from "../state/ViewState";
+import {findPartAt} from "./placed-parts";
 
 export function isOverPlacedPart(x: number, y: number): boolean {
   return IcState.placedIcs.some(ic => ic.containsPoint(x, y))
@@ -41,17 +42,9 @@ function updateDragCursor(x: number, y: number) {
 }
 
 function findHoveredComponentValue(x: number, y: number): string | undefined {
-  for (const component of StandardComponentState.placedComponents) {
-    if (component.value && component.containsPoint(x, y)) {
-      return `${component.getDefinition()?.name}: ${component.value}`;
-    }
-  }
-  for (const component of AdvancedComponentState.placedComponents) {
-    if (component.value && component.containsPoint(x, y)) {
-      return `${component.getDefinition()?.name}: ${component.value}`;
-    }
-  }
-  return undefined;
+  const part = findPartAt(x, y, p => p.kind !== "ic" && !!p.component.value);
+  if (!part || part.kind === "ic") return undefined;
+  return `${part.component.getDefinition()?.name}: ${part.component.value}`;
 }
 
 Canvas.c.addEventListener('mousemove', function(e) {

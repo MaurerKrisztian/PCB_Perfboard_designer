@@ -28,5 +28,6 @@ function removeDescriptionFromDot(){
 
 
 
-ShortcutRegistry.add({key: "d", event: addDescriptionToDot, description: "Add description."})
-ShortcutRegistry.add({key: "D", event: removeDescriptionFromDot, description: "Remove description."})
+// Wrapped so the KeyboardEvent isn't passed through as the target dot.
+ShortcutRegistry.add({key: "d", event: () => addDescriptionToDot(), description: "Add description."})
+ShortcutRegistry.add({key: "d", shift: true, event: removeDescriptionFromDot, description: "Remove description."})

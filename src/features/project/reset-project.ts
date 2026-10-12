@@ -1,17 +1,21 @@
 import {Utils} from "../../utils/utils";
 import {LineState} from "../../state/LineState";
-import {DotState} from "../../state/DotState";
+import {IcState} from "../../state/IcState";
+import {StandardComponentState} from "../../state/StandardComponentState";
+import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {createDotGrid, heightInput, widthInput} from "./resize-grid";
-import {resetCanvas} from "../reset-canvas";
 import {redrawCanvas} from "../draw-canvas";
-import {Ic} from "../ic";
+import {resetForNewBoard} from "../reset-interaction";
 
+// Clears the board back to an empty grid. The IC catalog (built-in and custom ICs) is left alone:
+// it's not part of the board.
 Utils.getSafeHtmlElement<HTMLButtonElement>('resetBtn').addEventListener('click', function() {
+  resetForNewBoard();
   LineState.lines = [];
-  DotState.dots = [];
-  Ic.IC_CONTAINER = []; // todo ic menu disappears because of it
-  localStorage.setItem('save', undefined);
+  IcState.placedIcs = [];
+  StandardComponentState.placedComponents = [];
+  AdvancedComponentState.placedComponents = [];
+  localStorage.removeItem('save');
   createDotGrid(parseInt(widthInput.value || "10"), parseInt(heightInput.value || "10"));
-  resetCanvas()
   redrawCanvas()
 });

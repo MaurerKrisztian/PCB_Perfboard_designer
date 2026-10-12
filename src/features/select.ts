@@ -14,9 +14,10 @@ import {PlacedStandardComponent} from "./standard-components/placed-standard-com
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
 import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
-import {disarmWire} from "./wire";
 import {updateSelectionStatus} from "./selection-status";
-import {beginDrag, cancelDrag, endDrag} from "./component-drag";
+import {beginDrag, endDrag} from "./component-drag";
+import {clearPartSelection, findPartAt, removePart, selectPart} from "./placed-parts";
+import {resetInteraction} from "./reset-interaction";
 import {findDotAt} from "./dot-lookup";
 import {mergeNewWire} from "./wire-merge";
 import {canPickUpParts, isOverPlacedPart} from "./hover";
@@ -46,9 +47,7 @@ function startPan(clientX: number, clientY: number) {
 // What a plain click on bare board does: drop any part selection, then select the hole or wire
 // under the pointer.
 function clickBareBoard(e: MouseEvent) {
-  IcState.selectedPlacedIc = undefined;
-  StandardComponentState.selectedPlacedComponent = undefined;
-  AdvancedComponentState.selectedPlacedComponent = undefined;
+  clearPartSelection();
   setSelection(e);
   redrawCanvas();
 }
@@ -67,33 +66,9 @@ Canvas.c.addEventListener('mousedown', function(e) {
     
     // Eraser Tool Mode
     if (ToolState.activeToolMode === 'eraser') {
-      const placedIcIndex = IcState.placedIcs.findIndex(ic => ic.containsPoint(x, y));
-      if (placedIcIndex > -1) {
-        const [removedIc] = IcState.placedIcs.splice(placedIcIndex, 1);
-        IcState.selectedPlacedIc = undefined;
-        HistoryState.changes.splice(HistoryState.changeIndex + 1);
-        HistoryState.changes.push({type: 'remove', kind: 'ic', ic: removedIc});
-        HistoryState.changeIndex++;
-        redrawCanvas();
-        return;
-      }
-      const placedComponentIndex = StandardComponentState.placedComponents.findIndex(c => c.containsPoint(x, y));
-      if (placedComponentIndex > -1) {
-        const [removedComponent] = StandardComponentState.placedComponents.splice(placedComponentIndex, 1);
-        StandardComponentState.selectedPlacedComponent = undefined;
-        HistoryState.changes.splice(HistoryState.changeIndex + 1);
-        HistoryState.changes.push({type: 'remove', kind: 'standard-component', component: removedComponent});
-        HistoryState.changeIndex++;
-        redrawCanvas();
-        return;
-      }
-      const placedAdvancedComponentIndex = AdvancedComponentState.placedComponents.findIndex(c => c.containsPoint(x, y));
-      if (placedAdvancedComponentIndex > -1) {
-        const [removedComponent] = AdvancedComponentState.placedComponents.splice(placedAdvancedComponentIndex, 1);
-        AdvancedComponentState.selectedPlacedComponent = undefined;
-        HistoryState.changes.splice(HistoryState.changeIndex + 1);
-        HistoryState.changes.push({type: 'remove', kind: 'advanced-component', component: removedComponent});
-        HistoryState.changeIndex++;
+      const part = findPartAt(x, y);
+      if (part) {
+        removePart(part);
         redrawCanvas();
         return;
       }
@@ -116,9 +91,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
       IcState.placedIcs.push(newInstance);
       IcState.selectedPlacedIc = newInstance;
       IcState.selectedIc = undefined;
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'add', kind: 'ic', ic: newInstance});
-      HistoryState.changeIndex++;
+      HistoryState.record({type: 'add', kind: 'ic', ic: newInstance});
       redrawCanvas();
       return;
     }
@@ -138,9 +111,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
         );
         StandardComponentState.placedComponents.push(instance);
         StandardComponentState.selectedPlacedComponent = instance;
-        HistoryState.changes.splice(HistoryState.changeIndex + 1);
-        HistoryState.changes.push({type: 'add', kind: 'standard-component', component: instance});
-        HistoryState.changeIndex++;
+        HistoryState.record({type: 'add', kind: 'standard-component', component: instance});
       }
       StandardComponentState.pendingStartDot = undefined;
       redrawCanvas();
@@ -180,9 +151,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
           block.cols = cols;
           AdvancedComponentState.placedComponents.push(block);
           AdvancedComponentState.selectedPlacedComponent = block;
-          HistoryState.changes.splice(HistoryState.changeIndex + 1);
-          HistoryState.changes.push({type: 'add', kind: 'advanced-component', component: block});
-          HistoryState.changeIndex++;
+          HistoryState.record({type: 'add', kind: 'advanced-component', component: block});
         }
         // Stays armed for repeated placement, matching the standard component/wire flow.
         AdvancedComponentState.pendingAnchorDot = undefined;
@@ -196,9 +165,7 @@ Canvas.c.addEventListener('mousedown', function(e) {
       );
       AdvancedComponentState.placedComponents.push(instance);
       AdvancedComponentState.selectedPlacedComponent = instance;
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'add', kind: 'advanced-component', component: instance});
-      HistoryState.changeIndex++;
+      HistoryState.record({type: 'add', kind: 'advanced-component', component: instance});
       redrawCanvas();
       return;
     }
@@ -221,13 +188,9 @@ Canvas.c.addEventListener('mousedown', function(e) {
         // one wire, unless the shared dot is a pin - that endpoint has to stay splittable.
         const {line: placedLine, absorbed} = mergeNewWire(newLine);
         LineState.lines.push(placedLine);
-        HistoryState.changes.splice(HistoryState.changeIndex + 1);
-        if (absorbed.length > 0) {
-          HistoryState.changes.push({type: 'merge', kind: 'line', removed: absorbed, merged: placedLine});
-        } else {
-          HistoryState.changes.push({type: 'add', kind: 'line', line: placedLine});
-        }
-        HistoryState.changeIndex++;
+        HistoryState.record(absorbed.length > 0
+          ? {type: 'merge', kind: 'line', removed: absorbed, merged: placedLine}
+          : {type: 'add', kind: 'line', line: placedLine});
         DotState.selectedDot = undefined;
         LineState.selectedLine = placedLine;
         // Chain the run: the end pad becomes the next wire's start, so a series of
@@ -251,59 +214,18 @@ Canvas.c.addEventListener('mousedown', function(e) {
     // Skip IC/Standard Component select & drag while actively wiring, so a click on a pin/terminal
     // dot connects a wire there instead of being swallowed as "select the parent component."
     if (!ToolState.armedWire) {
-      // Check hit on an existing placed IC on canvas (Enable Drag & Drop)
-      const hitPlacedIc = IcState.placedIcs.find(ic => ic.containsPoint(x, y));
-      if (hitPlacedIc) {
-        IcState.selectedPlacedIc = hitPlacedIc;
-        beginDrag({kind: "ic", ic: hitPlacedIc}, x, y);
+      // A hit on a placed part selects it and picks it up for dragging.
+      const part = findPartAt(x, y);
+      if (part) {
+        selectPart(part);
+        beginDrag(part, x, y);
         DotState.selectedDot = undefined;
         LineState.selectedLine = undefined;
         redrawCanvas();
         return;
       }
-
-      // Deselect placed IC if clicking on empty space
-      if (IcState.selectedPlacedIc) {
-        IcState.selectedPlacedIc = undefined;
-        redrawCanvas();
-        // Fall through to normal dot/line selection
-      }
-
-      // Check hit on an existing placed Standard Component (Enable Drag & Drop)
-      const hitPlacedComponent = StandardComponentState.placedComponents.find(c => c.containsPoint(x, y));
-      if (hitPlacedComponent) {
-        StandardComponentState.selectedPlacedComponent = hitPlacedComponent;
-        beginDrag({kind: "standard-component", component: hitPlacedComponent}, x, y);
-        DotState.selectedDot = undefined;
-        LineState.selectedLine = undefined;
-        redrawCanvas();
-        return;
-      }
-
-      // Deselect placed Standard Component if clicking on empty space
-      if (StandardComponentState.selectedPlacedComponent) {
-        StandardComponentState.selectedPlacedComponent = undefined;
-        redrawCanvas();
-        // Fall through to normal dot/line selection
-      }
-
-      // Check hit on an existing placed Advanced Component (Enable Drag & Drop)
-      const hitPlacedAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(x, y));
-      if (hitPlacedAdvancedComponent) {
-        AdvancedComponentState.selectedPlacedComponent = hitPlacedAdvancedComponent;
-        beginDrag({kind: "advanced-component", component: hitPlacedAdvancedComponent}, x, y);
-        DotState.selectedDot = undefined;
-        LineState.selectedLine = undefined;
-        redrawCanvas();
-        return;
-      }
-
-      // Deselect placed Advanced Component if clicking on empty space
-      if (AdvancedComponentState.selectedPlacedComponent) {
-        AdvancedComponentState.selectedPlacedComponent = undefined;
-        redrawCanvas();
-        // Fall through to normal dot/line selection
-      }
+      // Missed every part: drop the part selection and fall through to dot/line selection.
+      clearPartSelection();
     }
 
     setSelection(e);
@@ -377,9 +299,9 @@ Canvas.c.addEventListener('contextmenu', function(e) {
 
   const {x, y} = Canvas.toDrawingCoordinates(e);
 
-  const hitComponent = StandardComponentState.placedComponents.find(c => c.containsPoint(x, y));
-  if (hitComponent) {
-    StandardComponentState.selectedPlacedComponent = hitComponent;
+  const part = findPartAt(x, y);
+  if (part) {
+    selectPart(part);
     DotState.selectedDot = undefined;
     LineState.selectedLine = undefined;
     redrawCanvas();
@@ -387,16 +309,8 @@ Canvas.c.addEventListener('contextmenu', function(e) {
     return;
   }
 
-  const hitAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(x, y));
-  if (hitAdvancedComponent) {
-    AdvancedComponentState.selectedPlacedComponent = hitAdvancedComponent;
-    DotState.selectedDot = undefined;
-    LineState.selectedLine = undefined;
-    redrawCanvas();
-    showContextMenu(e.clientX, e.clientY);
-    return;
-  }
-
+  // The menu now acts on a wire or pad, so a part selected earlier mustn't be what Delete hits.
+  clearPartSelection();
   selectLine(e);
   if (!LineState.selectedLine) {
     DotState.selectedDot = DotState.hoverDot;
@@ -416,9 +330,7 @@ function handleEraserClick(event: MouseEvent) {
   if (LineState.selectedLine) {
     const index = LineState.lines.indexOf(LineState.selectedLine);
     if (index > -1) {
-      HistoryState.changes.splice(HistoryState.changeIndex + 1);
-      HistoryState.changes.push({type: 'remove', kind: 'line', line: LineState.selectedLine});
-      HistoryState.changeIndex++;
+      HistoryState.record({type: 'remove', kind: 'line', line: LineState.selectedLine});
       LineState.lines.splice(index, 1);
       LineState.selectedLine = undefined;
       redrawCanvas();
@@ -556,8 +468,7 @@ function setSelection(event: MouseEvent) {
       LineState.selectedLine = line;
       DotState.selectedDot = undefined;
       // Clear stale component selections when selecting a wire
-      IcState.selectedPlacedIc = undefined;
-      StandardComponentState.selectedPlacedComponent = undefined;
+      clearPartSelection();
       redrawCanvas();
       return;
     }
@@ -579,19 +490,7 @@ ShortcutRegistry.add({key: "Escape", description: "Unselect dot or line", event:
     redrawCanvas();
     return;
   }
-  DotState.selectedDot = undefined;
-  LineState.selectedLine = undefined;
-  IcState.selectedIc = undefined;
-  IcState.selectedPlacedIc = undefined;
-  cancelDrag();
-  StandardComponentState.armedDefinitionId = undefined;
-  StandardComponentState.pendingStartDot = undefined;
-  StandardComponentState.selectedPlacedComponent = undefined;
-  AdvancedComponentState.armedDefinitionId = undefined;
-  AdvancedComponentState.pendingAnchorDot = undefined;
-  AdvancedComponentState.selectedPlacedComponent = undefined;
-  disarmWire();
+  resetInteraction();
   hideContextMenu();
-  updateSelectionStatus();
   redrawCanvas();
 }});

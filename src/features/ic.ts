@@ -9,6 +9,7 @@ import {StandardComponentState} from "../state/StandardComponentState";
 import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {disarmWire} from "./wire";
 import {findNearestDot} from "./dot-lookup";
+import {findPartAt, selectPart} from "./placed-parts";
 
 
 export class Ic{
@@ -37,16 +38,41 @@ export class Ic{
     this.showICs();
   }
 
+  // Opens the custom IC editor for a catalog entry. Set by ic-editor-modal, which imports this
+  // module, so importing it back here would be a cycle.
+  static onEditCustomIc?: (ic: Ic) => void;
+
+  // Built with DOM calls rather than an HTML string: names and ids come from project files and
+  // localStorage, so they must never be parsed as markup.
   static showICs(){
-    Utils.getSafeHtmlElement("ic-items").innerHTML = Ic.IC_CONTAINER.map((item)=>{
-      const editBtn = item.isCustom
-        ? `<span onclick="event.stopPropagation(); editCustomIc('${item.id}')" title="Edit custom component" style="margin-left:6px;cursor:pointer;color:#38bdf8;font-weight:bold;">✎</span>`
-        : '';
-      const deleteBtn = item.isCustom
-        ? `<span onclick="event.stopPropagation(); deleteCustomIc('${item.id}')" title="Delete custom component" style="margin-left:6px;cursor:pointer;color:#f87171;font-weight:bold;">✕</span>`
-        : '';
-      return `<button class="btn btn-accent" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick='selectIc("${item.id}")'>📦 ${item.name}${editBtn}${deleteBtn}</button>`;
-    }).join(" ");
+    const container = Utils.getSafeHtmlElement("ic-items");
+    container.replaceChildren();
+    Ic.IC_CONTAINER.forEach((item, i) => {
+      const btn = document.createElement("button");
+      btn.className = "btn btn-accent";
+      btn.style.cssText = "padding:0.3rem 0.6rem; font-size:0.75rem;";
+      btn.textContent = `📦 ${item.name}`;
+      btn.addEventListener("click", () => selectIc(item.id));
+      if (item.isCustom) {
+        btn.appendChild(Ic.catalogAction("✎", "Edit custom component", "#38bdf8", () => Ic.onEditCustomIc?.(item)));
+        btn.appendChild(Ic.catalogAction("✕", "Delete custom component", "#f87171", () => deleteCustomIc(item.id)));
+      }
+      // Matches the whitespace the old space-joined markup left between buttons.
+      if (i > 0) container.appendChild(document.createTextNode(" "));
+      container.appendChild(btn);
+    });
+  }
+
+  private static catalogAction(icon: string, title: string, color: string, onClick: () => void): HTMLSpanElement {
+    const span = document.createElement("span");
+    span.textContent = icon;
+    span.title = title;
+    span.style.cssText = `margin-left:6px;cursor:pointer;color:${color};font-weight:bold;`;
+    span.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onClick();
+    });
+    return span;
   }
 
   static saveCustomIcsToLocalStorage() {
@@ -469,19 +495,16 @@ export function rotateSelectedIc() {
     return;
   }
   if (DotState.hoverDot) {
-    const hoveredIc = IcState.placedIcs.find(ic => ic.containsPoint(DotState.hoverDot!.x, DotState.hoverDot!.y));
-    if (hoveredIc) {
-      hoveredIc.rotate();
-      IcState.selectedPlacedIc = hoveredIc;
-      redrawCanvas();
-      return;
+    // Topmost rotatable part under the cursor; standard components have no rotation.
+    const hovered = findPartAt(DotState.hoverDot.x, DotState.hoverDot.y, p => p.kind !== "standard-component");
+    if (hovered?.kind === "ic") {
+      hovered.ic.rotate();
+    } else if (hovered?.kind === "advanced-component") {
+      hovered.component.rotate();
     }
-    const hoveredAdvancedComponent = AdvancedComponentState.placedComponents.find(c => c.containsPoint(DotState.hoverDot!.x, DotState.hoverDot!.y));
-    if (hoveredAdvancedComponent) {
-      hoveredAdvancedComponent.rotate();
-      AdvancedComponentState.selectedPlacedComponent = hoveredAdvancedComponent;
+    if (hovered) {
+      selectPart(hovered);
       redrawCanvas();
-      return;
     }
   }
 }
@@ -491,7 +514,3 @@ ShortcutRegistry.add({
   description: "Rotate selected IC component.",
   event: rotateSelectedIc
 });
-
-(window as any).selectIc = selectIc;
-(window as any).deleteCustomIc = deleteCustomIc;
-(window as any).rotateSelectedIc = rotateSelectedIc;
