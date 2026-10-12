@@ -19,25 +19,45 @@ import {updateSelectionStatus} from "./selection-status";
 import {beginDrag, cancelDrag, endDrag} from "./component-drag";
 import {findDotAt} from "./dot-lookup";
 import {mergeNewWire} from "./wire-merge";
+import {canPickUpParts, isOverPlacedPart} from "./hover";
+import {ViewState} from "../state/ViewState";
 let isPanningBoard = false;
 let panStartX = 0;
 let panStartY = 0;
 let startScrollLeft = 0;
 let startScrollTop = 0;
 
+// A left press on bare board (Select mode, nothing armed) may be the start of a drag-to-pan, so
+// the click is held back until the pointer either moves this far (pan) or is released (click).
+const PAN_DRAG_THRESHOLD = 4;
+let pendingPan: {clientX: number; clientY: number; event: MouseEvent} | undefined;
+
+function startPan(clientX: number, clientY: number) {
+  const container = document.getElementById('canvas-container');
+  if (!container) return;
+  isPanningBoard = true;
+  panStartX = clientX;
+  panStartY = clientY;
+  startScrollLeft = container.scrollLeft;
+  startScrollTop = container.scrollTop;
+  Canvas.c.style.cursor = 'grabbing';
+}
+
+// What a plain click on bare board does: drop any part selection, then select the hole or wire
+// under the pointer.
+function clickBareBoard(e: MouseEvent) {
+  IcState.selectedPlacedIc = undefined;
+  StandardComponentState.selectedPlacedComponent = undefined;
+  AdvancedComponentState.selectedPlacedComponent = undefined;
+  setSelection(e);
+  redrawCanvas();
+}
+
 Canvas.c.addEventListener('mousedown', function(e) {
-  // Middle mouse click canvas panning
-  if (e.button === 1) {
+  // Middle button, or left button while Space is held, always pans.
+  if (e.button === 1 || (e.button === 0 && ViewState.spacePanHeld)) {
     e.preventDefault();
-    const container = document.getElementById('canvas-container');
-    if (container) {
-      isPanningBoard = true;
-      panStartX = e.clientX;
-      panStartY = e.clientY;
-      startScrollLeft = container.scrollLeft;
-      startScrollTop = container.scrollTop;
-      Canvas.c.style.cursor = 'grabbing';
-    }
+    startPan(e.clientX, e.clientY);
     return;
   }
 
@@ -222,6 +242,12 @@ Canvas.c.addEventListener('mousedown', function(e) {
       return;
     }
 
+    // Bare board with nothing armed: wait and see whether this is a click or a drag-to-pan.
+    if (canPickUpParts() && !isOverPlacedPart(x, y)) {
+      pendingPan = {clientX: e.clientX, clientY: e.clientY, event: e};
+      return;
+    }
+
     // Skip IC/Standard Component select & drag while actively wiring, so a click on a pin/terminal
     // dot connects a wire there instead of being swallowed as "select the parent component."
     if (!ToolState.armedWire) {
@@ -285,6 +311,11 @@ Canvas.c.addEventListener('mousedown', function(e) {
 });
 
 window.addEventListener('mousemove', (e) => {
+  if (pendingPan && Math.hypot(e.clientX - pendingPan.clientX, e.clientY - pendingPan.clientY) >= PAN_DRAG_THRESHOLD) {
+    // It's a drag: pan from where the press started (so the board doesn't jump), and drop the click.
+    startPan(pendingPan.clientX, pendingPan.clientY);
+    pendingPan = undefined;
+  }
   if (isPanningBoard) {
     const container = document.getElementById('canvas-container');
     if (container) {
@@ -297,12 +328,48 @@ window.addEventListener('mousemove', (e) => {
 });
 
 window.addEventListener('mouseup', () => {
+  if (pendingPan) {
+    // Released without moving: it was a plain click after all.
+    const {event} = pendingPan;
+    pendingPan = undefined;
+    clickBareBoard(event);
+  }
   if (isPanningBoard) {
     isPanningBoard = false;
-    Canvas.c.style.cursor = 'crosshair';
+    Canvas.c.style.cursor = ViewState.spacePanHeld ? 'grab' : 'crosshair';
   }
   endDrag();
 });
+
+// Hold Space + drag to pan in any mode (as in Figma/Photoshop). A held modifier rather than a
+// one-shot action, so it's tracked here instead of being an entry in ShortcutRegistry.
+function isTextEntry(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+}
+
+function releaseSpacePan() {
+  ViewState.spacePanHeld = false;
+  if (!isPanningBoard) Canvas.c.style.cursor = 'crosshair';
+}
+
+window.addEventListener('keydown', (e) => {
+  if (e.code !== 'Space' || isTextEntry(e.target)) return;
+  // Stops the page from scrolling, and a focused toolbar button from being "clicked" by Space.
+  e.preventDefault();
+  if (e.repeat) return;
+  ViewState.spacePanHeld = true;
+  if (!isPanningBoard) Canvas.c.style.cursor = 'grab';
+});
+
+window.addEventListener('keyup', (e) => {
+  if (e.code !== 'Space' || isTextEntry(e.target)) return;
+  e.preventDefault();
+  releaseSpacePan();
+});
+
+// Letting go of Space in another window would never reach us.
+window.addEventListener('blur', releaseSpacePan);
 
 // Right click context menu handler
 Canvas.c.addEventListener('contextmenu', function(e) {
