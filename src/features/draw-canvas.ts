@@ -8,12 +8,8 @@ import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
 import {ToolState} from "../state/ToolState";
 import {SelectionState} from "../state/SelectionState";
-import {getComponentDefinition} from "./standard-components/component-definitions";
-import {drawStandardComponentBody} from "./standard-components/standard-component-render";
-import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
-import {drawAdvancedComponentBody} from "./advanced-components/advanced-component-render";
-import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
 import {drawComponentValueLabels} from "./component-value-labels";
+import {behaviorOf} from "./tools";
 import {DEFAULT_DOT_COLOR, drawMarkedPad, drawPad, PAD_RADIUS} from "./board-appearance";
 import {GridConfig} from "../state/GridConfig";
 
@@ -135,136 +131,6 @@ function drawLine(line: ILine){
   Canvas.ctx.stroke();
 }
 
-function drawIcPlacementPreview() {
-  const armed = ToolState.armed;
-  if (armed?.kind !== "ic" || !DotState.hoverDot) return;
-  const template = armed.template;
-  const targetDot = DotState.hoverDot;
-  const w = 50 * (template.widthPin - 1);
-  const h = 50 * (template.heightPin - 1);
-
-  Canvas.ctx.save();
-  Canvas.ctx.beginPath();
-  Canvas.ctx.fillStyle = "rgba(6, 182, 212, 0.25)";
-  Canvas.ctx.strokeStyle = "#38bdf8";
-  Canvas.ctx.lineWidth = 2;
-  Canvas.ctx.setLineDash([6, 4]);
-
-  Canvas.ctx.rect(targetDot.x, targetDot.y, w, h);
-  Canvas.ctx.stroke();
-  Canvas.ctx.fill();
-
-  // Placement preview label
-  Canvas.ctx.setLineDash([]);
-  Canvas.ctx.fillStyle = "#ffffff";
-  Canvas.ctx.font = "bold 11px Inter, Arial";
-  Canvas.ctx.textAlign = "center";
-  Canvas.ctx.fillText(`➕ Place ${template.name}`, targetDot.x + (w / 2), targetDot.y + (h / 2) + 4);
-
-  Canvas.ctx.restore();
-}
-
-function drawStandardComponentPlacementPreview() {
-  const armed = ToolState.armed;
-  if (armed?.kind !== "standard-component" || !DotState.hoverDot) return;
-  const def = getComponentDefinition(armed.definitionId);
-  if (!def) return;
-
-  Canvas.ctx.save();
-
-  if (!armed.start) {
-    // No start dot chosen yet - show a small marker + hint at the hover dot
-    Canvas.ctx.beginPath();
-    Canvas.ctx.setLineDash([4, 3]);
-    Canvas.ctx.strokeStyle = "#38bdf8";
-    Canvas.ctx.lineWidth = 2;
-    Canvas.ctx.arc(DotState.hoverDot.x, DotState.hoverDot.y, 10, 0, Math.PI * 2);
-    Canvas.ctx.stroke();
-
-    Canvas.ctx.setLineDash([]);
-    Canvas.ctx.fillStyle = "#ffffff";
-    Canvas.ctx.font = "bold 11px Inter, Arial";
-    Canvas.ctx.textAlign = "center";
-    Canvas.ctx.fillText(`➕ Start ${def.name}`, DotState.hoverDot.x, DotState.hoverDot.y - 16);
-  } else {
-    drawStandardComponentBody(armed.start, DotState.hoverDot, def, {ghost: true});
-  }
-
-  Canvas.ctx.restore();
-}
-
-function drawAdvancedComponentPlacementPreview() {
-  const armed = ToolState.armed;
-  if (armed?.kind !== "advanced-component" || !DotState.hoverDot) return;
-  const def = getAdvancedComponentDefinition(armed.definitionId);
-  if (!def) return;
-
-  let ghostAnchor = DotState.hoverDot;
-  let ghostSpan: {rows: number; cols: number} | undefined;
-  if (def.gridSizable && armed.start) {
-    // Second half of the two-click span: preview the whole block from its top-left corner,
-    // using the same anchor/size math the commit path in select.ts runs.
-    const startDot = armed.start;
-    const endDot = DotState.hoverDot;
-    const topLeft = DotState.dots.find(
-      d => d.x === Math.min(startDot.x, endDot.x) && d.y === Math.min(startDot.y, endDot.y)
-    );
-    if (topLeft) {
-      ghostAnchor = topLeft;
-      ghostSpan = PlacedAdvancedComponent.gridSpanFromDots(startDot, endDot);
-    }
-  }
-
-  // Grid-sizable blocks always place unrotated - see the commit path in select.ts.
-  const ghostRotation = def.gridSizable ? 0 : armed.rotation;
-  const ghost = new PlacedAdvancedComponent(def.id, ghostAnchor, ghostRotation);
-  if (ghostSpan) {
-    ghost.rows = ghostSpan.rows;
-    ghost.cols = ghostSpan.cols;
-  }
-  Canvas.ctx.save();
-  drawAdvancedComponentBody(
-    ghost.getPinPositions(), ghost.getShadedPositions(), ghost.getBodyOutline(), ghost.getIconAnchor(),
-    def, ghostRotation, {ghost: true}
-  );
-  Canvas.ctx.restore();
-}
-
-function drawWirePlacementPreview() {
-  const armed = ToolState.armed;
-  if (armed?.kind !== "wire" || !DotState.hoverDot) return;
-
-  Canvas.ctx.save();
-
-  if (!armed.start) {
-    // No start dot chosen yet - show a small marker + hint at the hover dot
-    Canvas.ctx.beginPath();
-    Canvas.ctx.setLineDash([4, 3]);
-    Canvas.ctx.strokeStyle = "#38bdf8";
-    Canvas.ctx.lineWidth = 2;
-    Canvas.ctx.arc(DotState.hoverDot.x, DotState.hoverDot.y, 10, 0, Math.PI * 2);
-    Canvas.ctx.stroke();
-
-    Canvas.ctx.setLineDash([]);
-    Canvas.ctx.fillStyle = "#ffffff";
-    Canvas.ctx.font = "bold 11px Inter, Arial";
-    Canvas.ctx.textAlign = "center";
-    Canvas.ctx.fillText("➕ Start Wire", DotState.hoverDot.x, DotState.hoverDot.y - 16);
-  } else if (armed.start !== DotState.hoverDot) {
-    Canvas.ctx.beginPath();
-    Canvas.ctx.setLineDash([6, 4]);
-    Canvas.ctx.moveTo(armed.start.x, armed.start.y);
-    Canvas.ctx.lineTo(DotState.hoverDot.x, DotState.hoverDot.y);
-    Canvas.ctx.strokeStyle = ToolState.activeWireColor || "#3b82f6";
-    Canvas.ctx.lineWidth = ToolState.selectedWireWidth || 4;
-    Canvas.ctx.lineCap = "round";
-    Canvas.ctx.globalAlpha = 0.55;
-    Canvas.ctx.stroke();
-  }
-
-  Canvas.ctx.restore();
-}
-
 export function redrawCanvas() {
   resetCanvas();
   const selected = SelectionState.part;
@@ -290,8 +156,7 @@ export function redrawCanvas() {
   drawComponentValueLabels();
   // 6. Draw IC text badges on top of everything
   PartState.parts.forEach((part: PlacedPart) => part.drawOverlay?.(part === selected));
-  drawIcPlacementPreview();
-  drawStandardComponentPlacementPreview();
-  drawAdvancedComponentPlacementPreview();
-  drawWirePlacementPreview();
+  // 7. The active tool's placement preview
+  const tool = ToolState.active;
+  if (DotState.hoverDot) behaviorOf(tool).drawPreview?.(tool, DotState.hoverDot);
 }

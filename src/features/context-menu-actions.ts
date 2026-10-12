@@ -2,7 +2,7 @@ import {redrawCanvas} from "./draw-canvas";
 import {rotateSelectedIc} from "./ic";
 import {hideContextMenu, hideLedColorMenu, showLedColorMenu} from "./select";
 import {changeSelectedDotColor} from "./dot";
-import {addDescriptionToDot} from "./description";
+import {addDescriptionToDot} from "./dot-notes";
 import {deleteLine} from "./line";
 import {setSelectedComponentValue, setSelectedLedColor} from "./standard-components/standard-component-actions";
 import type {LedColor} from "./standard-components/standard-component-actions";
@@ -37,7 +37,7 @@ document.querySelectorAll<HTMLButtonElement>('#ledColorMenu button[data-led-colo
 document.getElementById('ctxNoteBtn')?.addEventListener('click', () => {
   hideContextMenu();
   if (SelectionState.dot) {
-    addDescriptionToDot();
+    if (addDescriptionToDot()) redrawCanvas();
   }
 });
 

@@ -2,7 +2,7 @@ import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
 import {HistoryState} from "../state/HistoryState";
 import {SelectionState} from "../state/SelectionState";
-import {ToolState} from "../state/ToolState";
+import {isPlacementTool, ToolState} from "../state/ToolState";
 import {cancelDrag} from "./component-drag";
 import {updateSelectionStatus} from "./selection-status";
 
@@ -10,7 +10,8 @@ import {updateSelectionStatus} from "./selection-status";
 export function resetInteraction() {
   cancelDrag();
   SelectionState.clear();
-  ToolState.armed = undefined;
+  // Placement tools drop back to Select; a mode (Eraser, Note) stays put.
+  if (isPlacementTool(ToolState.active)) ToolState.active = {kind: "select"};
   updateSelectionStatus();
 }
 

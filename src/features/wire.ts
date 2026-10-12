@@ -1,19 +1,10 @@
 import {ToolState} from "../state/ToolState";
 import {Utils} from "../utils/utils";
 import {ShortcutRegistry} from "./shortcut-keys";
-import {arm} from "./armed-tool";
-
-export function armWire() {
-  ToolState.activeToolMode = 'select';
-  arm({kind: "wire"});
-}
+import {setActiveTool} from "./active-tool";
 
 function toggleWire() {
-  if (ToolState.armed?.kind === "wire") {
-    arm();
-  } else {
-    armWire();
-  }
+  setActiveTool(ToolState.active.kind === "wire" ? {kind: "select"} : {kind: "wire"});
 }
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('wireArmBtn').addEventListener('click', toggleWire);

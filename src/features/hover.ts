@@ -20,7 +20,7 @@ export function isOverPlacedPart(x: number, y: number): boolean {
 // Select mode with nothing armed for placement: placed parts can be dragged, and a drag on bare
 // board pans it.
 export function canPickUpParts(): boolean {
-  return ToolState.activeToolMode === 'select' && !ToolState.armed;
+  return ToolState.active.kind === "select";
 }
 
 // Hint that a placed part can be picked up. Left alone while the cursor reads 'grabbing', which

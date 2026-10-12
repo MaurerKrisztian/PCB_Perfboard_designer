@@ -6,7 +6,7 @@ import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
 import {Rotation, ToolState} from "../state/ToolState";
 import {SelectionState} from "../state/SelectionState";
-import {arm} from "./armed-tool";
+import {setActiveTool} from "./active-tool";
 import {findNearestDot} from "./dot-lookup";
 import {findPartAt} from "./placed-parts";
 import {GridConfig} from "../state/GridConfig";
@@ -516,7 +516,7 @@ export function selectIc(id: number | string){
     console.error(`Ic with id: ${id} not found`);
     return;
   }
-  arm({kind: "ic", template: ic.clone()});
+  setActiveTool({kind: "ic", template: ic.clone()});
 }
 
 export function rotateSelectedIc() {
@@ -526,14 +526,14 @@ export function rotateSelectedIc() {
     redrawCanvas();
     return;
   }
-  const armed = ToolState.armed;
-  if (armed?.kind === "ic") {
-    armed.template.rotate();
+  const active = ToolState.active;
+  if (active.kind === "ic") {
+    active.template.rotate();
     redrawCanvas();
     return;
   }
-  if (armed?.kind === "advanced-component") {
-    armed.rotation = ((armed.rotation + 90) % 360) as Rotation;
+  if (active.kind === "advanced-component") {
+    active.rotation = ((active.rotation + 90) % 360) as Rotation;
     redrawCanvas();
     return;
   }

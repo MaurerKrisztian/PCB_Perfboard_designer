@@ -49,10 +49,20 @@ created — `ClassName.staticField` is the "store"). E.g. `Canvas` (canvas eleme
 coordinate mapping), `GridConfig` (grid constants like dot spacing/radius), `DotState` /
 `LineState` (the grid and wires, plus hover), `PartState` (every placed part, see below),
 `HistoryState` (undo/redo stack). Two discriminated unions keep "only one at a time" true by
-construction: `SelectionState.current` (one selected pad, wire *or* part) and `ToolState.armed`
-(one armed placement tool — wire, IC, standard or advanced component — with its pending first
-click). Arm/disarm through `arm()` (`src/features/armed-tool.ts`); `resetInteraction()` clears
-both. Toolbar/catalog highlights are derived from this state in `updateSelectionStatus()`.
+construction: `SelectionState.current` (one selected pad, wire *or* part) and `ToolState.active`
+(what a click on the board does: a toolbar mode — select/eraser/note — or a placement tool —
+wire, IC, standard or advanced component — with its pending first click). Switch tools through
+`setActiveTool()` (`src/features/active-tool.ts`); `resetInteraction()` clears the selection and
+drops a placement tool back to Select. Toolbar/catalog highlights are derived from this state in
+`updateSelectionStatus()`.
+
+**Tools** (`src/features/tools/`): each `ActiveTool` kind has a `ToolBehavior` —
+`onPointerDown`, `drawPreview`, `statusText`, optional `stepBack` (Escape) — registered in
+`tools/index.ts` and looked up with `behaviorOf(tool)`. Tools only change state; the caller
+(`select.ts`, the board's input router, which also owns panning, the context menu and Escape)
+redraws and refreshes the status badge. Keep tool modules free of imports that lead back to
+`draw-canvas.ts` (it imports the registry to draw previews), which is why the note prompt lives in
+`dot-notes.ts` rather than `description.ts`.
 
 **Features** (`src/features/`): self-registering modules, each owning one concern (drawing,
 hover, selection, color picker, context menu, shortcuts, project save/load, etc.). They read/
