@@ -1,7 +1,7 @@
 import {ToolState} from "../state/ToolState";
-import {LineState} from "../state/LineState";
 import {setLineColor} from "./line";
 import {updateSelectionStatus} from "./selection-status";
+import {SelectionState} from "../state/SelectionState";
 
 // Custom Colors Palette & LocalStorage Persistence
 let customColors: string[] = [];
@@ -69,7 +69,7 @@ function renderSwatches() {
         badge.style.background = color;
         badge.style.boxShadow = `0 0 6px ${color}`;
       }
-      if (LineState.selectedLine) {
+      if (SelectionState.line) {
         setLineColor(color);
       }
       updateSelectionStatus();
@@ -199,7 +199,7 @@ document.getElementById('addCustomColorToPaletteBtn')?.addEventListener('click',
     ToolState.activeWireColor = hex;
     const badge = document.getElementById('activeColorBadge');
     if (badge) badge.style.background = hex;
-    if (LineState.selectedLine) {
+    if (SelectionState.line) {
       setLineColor(hex);
     }
   }

@@ -1,41 +1,40 @@
 import {LineState} from "../state/LineState";
 import {HistoryState} from "../state/HistoryState";
-import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {changeSelectedDotColor} from "./dot";
 import {removePart} from "./placed-parts";
-import {PartState} from "../state/PartState";
+import {SelectionState} from "../state/SelectionState";
 
 export function setLineColor(color: string){
-  if (LineState.selectedLine){
-    LineState.selectedLine.color = color;
+  if (SelectionState.line){
+    SelectionState.line.color = color;
     redrawCanvas();
   }
 }
 
 // Deletes whatever is selected: a placed part, else a wire, else a pad's color and note.
 export function deleteLine(){
-  const part = PartState.selected;
+  const part = SelectionState.part;
   if (part && removePart(part)) {
     redrawCanvas();
     return;
   }
-  if(LineState.selectedLine) {
-    const index = LineState.lines.indexOf(LineState.selectedLine);
+  if(SelectionState.line) {
+    const index = LineState.lines.indexOf(SelectionState.line);
     if(index > -1){
-      HistoryState.record({type: 'remove', kind: 'line', line: LineState.selectedLine});
+      HistoryState.record({type: 'remove', kind: 'line', line: SelectionState.line});
       // Remove line
       LineState.lines.splice(index, 1);
-      LineState.selectedLine = undefined;
+      SelectionState.clear("line");
       redrawCanvas();
       return;
     }
   }
-  if (DotState.selectedDot) {
-    DotState.selectedDot.color = "#a4a0a0";
-    DotState.selectedDot.description = undefined;
-    DotState.selectedDot = undefined;
+  if (SelectionState.dot) {
+    SelectionState.dot.color = "#a4a0a0";
+    SelectionState.dot.description = undefined;
+    SelectionState.clear("dot");
     redrawCanvas();
   }
 }

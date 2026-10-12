@@ -1,6 +1,3 @@
-import {LineState} from "../state/LineState";
-import {DotState} from "../state/DotState";
-import {PartState} from "../state/PartState";
 import {redrawCanvas} from "./draw-canvas";
 import {rotateSelectedIc} from "./ic";
 import {hideContextMenu, hideLedColorMenu, showLedColorMenu} from "./select";
@@ -9,6 +6,7 @@ import {addDescriptionToDot} from "./description";
 import {deleteLine} from "./line";
 import {setSelectedComponentValue, setSelectedLedColor} from "./standard-components/standard-component-actions";
 import type {LedColor} from "./standard-components/standard-component-actions";
+import {SelectionState} from "../state/SelectionState";
 
 // Context Menu item handlers
 document.getElementById('ctxRotateBtn')?.addEventListener('click', () => {
@@ -17,13 +15,13 @@ document.getElementById('ctxRotateBtn')?.addEventListener('click', () => {
 });
 
 document.getElementById('ctxColorBtn')?.addEventListener('click', () => {
-  const part = PartState.selected;
+  const part = SelectionState.part;
   if (part?.kind === "standard-component" && part.definitionId === "led") {
     showLedColorMenu();
     return;
   }
   hideContextMenu();
-  if (LineState.selectedLine || DotState.selectedDot) {
+  if (SelectionState.line || SelectionState.dot) {
     changeSelectedDotColor();
   }
 });
@@ -38,7 +36,7 @@ document.querySelectorAll<HTMLButtonElement>('#ledColorMenu button[data-led-colo
 
 document.getElementById('ctxNoteBtn')?.addEventListener('click', () => {
   hideContextMenu();
-  if (DotState.selectedDot) {
+  if (SelectionState.dot) {
     addDescriptionToDot();
   }
 });
@@ -50,10 +48,10 @@ document.getElementById('ctxValueBtn')?.addEventListener('click', () => {
 
 document.getElementById('ctxDeleteBtn')?.addEventListener('click', () => {
   hideContextMenu();
-  if (LineState.selectedLine || PartState.selected) {
+  if (SelectionState.line || SelectionState.part) {
     deleteLine();
-  } else if (DotState.selectedDot && DotState.selectedDot.description) {
-    DotState.selectedDot.description = undefined;
+  } else if (SelectionState.dot && SelectionState.dot.description) {
+    SelectionState.dot.description = undefined;
     redrawCanvas();
   }
 });

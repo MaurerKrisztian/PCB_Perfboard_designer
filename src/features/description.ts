@@ -1,15 +1,16 @@
 import {DotState} from "../state/DotState";
 import {redrawCanvas} from "./draw-canvas";
 import {ShortcutRegistry} from "./shortcut-keys";
+import {SelectionState} from "../state/SelectionState";
 
 export function addDescriptionToDot(targetDot?: any){
-  const dot = targetDot || DotState.selectedDot || DotState.hoverDot;
+  const dot = targetDot || SelectionState.dot || DotState.hoverDot;
   if(dot){
     const current = dot.description || "";
     const description = prompt("Enter a note / annotation for this pad:", current);
     if (description !== null) {
       dot.description = description.trim() ? description.trim() : undefined;
-      DotState.selectedDot = undefined;
+      SelectionState.clear("dot");
       redrawCanvas();
     }
   } else {
@@ -18,8 +19,8 @@ export function addDescriptionToDot(targetDot?: any){
 }
 
 function removeDescriptionFromDot(){
-  if(DotState.selectedDot){
-    DotState.selectedDot.description = null;
+  if(SelectionState.dot){
+    SelectionState.dot.description = null;
     redrawCanvas();
   } else {
     alert("Please select a dot first by clicking on it");

@@ -1,17 +1,15 @@
 import {resetCanvas} from "./reset-canvas";
 import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
-import {IcState} from "../state/IcState";
 import {PartState} from "../state/PartState";
 import {PlacedPart} from "../interfaces/placed-part.interface";
 import {Canvas} from "../state/Canvas";
 import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
-import {StandardComponentState} from "../state/StandardComponentState";
 import {ToolState} from "../state/ToolState";
+import {SelectionState} from "../state/SelectionState";
 import {getComponentDefinition} from "./standard-components/component-definitions";
 import {drawStandardComponentBody} from "./standard-components/standard-component-render";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {getAdvancedComponentDefinition} from "./advanced-components/advanced-component-definitions";
 import {drawAdvancedComponentBody} from "./advanced-components/advanced-component-render";
 import {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
@@ -54,7 +52,7 @@ function drawDot(dot: IDot, underIc = false){
   }
   if (underIc) Canvas.ctx.restore();
 
-  if (dot === DotState.selectedDot) {
+  if (dot === SelectionState.dot) {
     // Outer glowing selection ring
     Canvas.ctx.beginPath();
     Canvas.ctx.arc(dot.x, dot.y, PAD_RADIUS + 4, 0, Math.PI * 2);
@@ -68,8 +66,7 @@ function drawDot(dot: IDot, underIc = false){
     Canvas.ctx.strokeStyle = "#ffffff";
     Canvas.ctx.lineWidth = 1.5;
     Canvas.ctx.stroke();
-  } else if (dot === ToolState.wireStartDot || dot === StandardComponentState.pendingStartDot
-             || dot === AdvancedComponentState.pendingAnchorDot) {
+  } else if (dot === ToolState.pendingStart) {
     // Pending placement start pad highlight
     Canvas.ctx.beginPath();
     Canvas.ctx.arc(dot.x, dot.y, PAD_RADIUS + 4, 0, Math.PI * 2);
@@ -102,7 +99,7 @@ function drawLine(line: ILine){
   const baseWidth = line.width || 4;
 
   // Selected line glowing highlight & terminal node handles
-  if (line === LineState.selectedLine) {
+  if (line === SelectionState.line) {
     // Outer selection glow aura
     Canvas.ctx.beginPath();
     Canvas.ctx.moveTo(line.start.x, line.start.y);
@@ -139,10 +136,12 @@ function drawLine(line: ILine){
 }
 
 function drawIcPlacementPreview() {
-  if (!IcState.selectedIc || !DotState.hoverDot) return;
+  const armed = ToolState.armed;
+  if (armed?.kind !== "ic" || !DotState.hoverDot) return;
+  const template = armed.template;
   const targetDot = DotState.hoverDot;
-  const w = 50 * (IcState.selectedIc.widthPin - 1);
-  const h = 50 * (IcState.selectedIc.heightPin - 1);
+  const w = 50 * (template.widthPin - 1);
+  const h = 50 * (template.heightPin - 1);
 
   Canvas.ctx.save();
   Canvas.ctx.beginPath();
@@ -160,19 +159,20 @@ function drawIcPlacementPreview() {
   Canvas.ctx.fillStyle = "#ffffff";
   Canvas.ctx.font = "bold 11px Inter, Arial";
   Canvas.ctx.textAlign = "center";
-  Canvas.ctx.fillText(`➕ Place ${IcState.selectedIc.name}`, targetDot.x + (w / 2), targetDot.y + (h / 2) + 4);
+  Canvas.ctx.fillText(`➕ Place ${template.name}`, targetDot.x + (w / 2), targetDot.y + (h / 2) + 4);
 
   Canvas.ctx.restore();
 }
 
 function drawStandardComponentPlacementPreview() {
-  if (!StandardComponentState.armedDefinitionId || !DotState.hoverDot) return;
-  const def = getComponentDefinition(StandardComponentState.armedDefinitionId);
+  const armed = ToolState.armed;
+  if (armed?.kind !== "standard-component" || !DotState.hoverDot) return;
+  const def = getComponentDefinition(armed.definitionId);
   if (!def) return;
 
   Canvas.ctx.save();
 
-  if (!StandardComponentState.pendingStartDot) {
+  if (!armed.start) {
     // No start dot chosen yet - show a small marker + hint at the hover dot
     Canvas.ctx.beginPath();
     Canvas.ctx.setLineDash([4, 3]);
@@ -187,23 +187,24 @@ function drawStandardComponentPlacementPreview() {
     Canvas.ctx.textAlign = "center";
     Canvas.ctx.fillText(`➕ Start ${def.name}`, DotState.hoverDot.x, DotState.hoverDot.y - 16);
   } else {
-    drawStandardComponentBody(StandardComponentState.pendingStartDot, DotState.hoverDot, def, {ghost: true});
+    drawStandardComponentBody(armed.start, DotState.hoverDot, def, {ghost: true});
   }
 
   Canvas.ctx.restore();
 }
 
 function drawAdvancedComponentPlacementPreview() {
-  if (!AdvancedComponentState.armedDefinitionId || !DotState.hoverDot) return;
-  const def = getAdvancedComponentDefinition(AdvancedComponentState.armedDefinitionId);
+  const armed = ToolState.armed;
+  if (armed?.kind !== "advanced-component" || !DotState.hoverDot) return;
+  const def = getAdvancedComponentDefinition(armed.definitionId);
   if (!def) return;
 
   let ghostAnchor = DotState.hoverDot;
   let ghostSpan: {rows: number; cols: number} | undefined;
-  if (def.gridSizable && AdvancedComponentState.pendingAnchorDot) {
+  if (def.gridSizable && armed.start) {
     // Second half of the two-click span: preview the whole block from its top-left corner,
     // using the same anchor/size math the commit path in select.ts runs.
-    const startDot = AdvancedComponentState.pendingAnchorDot;
+    const startDot = armed.start;
     const endDot = DotState.hoverDot;
     const topLeft = DotState.dots.find(
       d => d.x === Math.min(startDot.x, endDot.x) && d.y === Math.min(startDot.y, endDot.y)
@@ -215,7 +216,7 @@ function drawAdvancedComponentPlacementPreview() {
   }
 
   // Grid-sizable blocks always place unrotated - see the commit path in select.ts.
-  const ghostRotation = def.gridSizable ? 0 : AdvancedComponentState.armedRotation;
+  const ghostRotation = def.gridSizable ? 0 : armed.rotation;
   const ghost = new PlacedAdvancedComponent(def.id, ghostAnchor, ghostRotation);
   if (ghostSpan) {
     ghost.rows = ghostSpan.rows;
@@ -230,11 +231,12 @@ function drawAdvancedComponentPlacementPreview() {
 }
 
 function drawWirePlacementPreview() {
-  if (!ToolState.armedWire || !DotState.hoverDot) return;
+  const armed = ToolState.armed;
+  if (armed?.kind !== "wire" || !DotState.hoverDot) return;
 
   Canvas.ctx.save();
 
-  if (!ToolState.wireStartDot) {
+  if (!armed.start) {
     // No start dot chosen yet - show a small marker + hint at the hover dot
     Canvas.ctx.beginPath();
     Canvas.ctx.setLineDash([4, 3]);
@@ -248,10 +250,10 @@ function drawWirePlacementPreview() {
     Canvas.ctx.font = "bold 11px Inter, Arial";
     Canvas.ctx.textAlign = "center";
     Canvas.ctx.fillText("➕ Start Wire", DotState.hoverDot.x, DotState.hoverDot.y - 16);
-  } else if (ToolState.wireStartDot !== DotState.hoverDot) {
+  } else if (armed.start !== DotState.hoverDot) {
     Canvas.ctx.beginPath();
     Canvas.ctx.setLineDash([6, 4]);
-    Canvas.ctx.moveTo(ToolState.wireStartDot.x, ToolState.wireStartDot.y);
+    Canvas.ctx.moveTo(armed.start.x, armed.start.y);
     Canvas.ctx.lineTo(DotState.hoverDot.x, DotState.hoverDot.y);
     Canvas.ctx.strokeStyle = ToolState.activeWireColor || "#3b82f6";
     Canvas.ctx.lineWidth = ToolState.selectedWireWidth || 4;
@@ -265,7 +267,7 @@ function drawWirePlacementPreview() {
 
 export function redrawCanvas() {
   resetCanvas();
-  const selected = PartState.selected;
+  const selected = SelectionState.part;
   // 1. Draw IC chip bodies
   for (const part of PartState.parts) {
     if (part.layer === "under-board") part.draw(part === selected);

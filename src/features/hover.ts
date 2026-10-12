@@ -1,9 +1,6 @@
 import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
 import {GridConfig} from "../state/GridConfig";
-import {IcState} from "../state/IcState";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {redrawCanvas} from "./draw-canvas";
 import {Canvas} from "../state/Canvas";
 import {Utils} from "../utils/utils";
@@ -14,6 +11,7 @@ import {updateDrag} from "./component-drag";
 import {ViewState} from "../state/ViewState";
 import {findPartAt} from "./placed-parts";
 import {PartState} from "../state/PartState";
+import {SelectionState} from "../state/SelectionState";
 
 export function isOverPlacedPart(x: number, y: number): boolean {
   return PartState.parts.some(part => part.containsPoint(x, y));
@@ -22,11 +20,7 @@ export function isOverPlacedPart(x: number, y: number): boolean {
 // Select mode with nothing armed for placement: placed parts can be dragged, and a drag on bare
 // board pans it.
 export function canPickUpParts(): boolean {
-  return ToolState.activeToolMode === 'select'
-    && !ToolState.armedWire
-    && !IcState.selectedIc
-    && !StandardComponentState.armedDefinitionId
-    && !AdvancedComponentState.armedDefinitionId;
+  return ToolState.activeToolMode === 'select' && !ToolState.armed;
 }
 
 // Hint that a placed part can be picked up. Left alone while the cursor reads 'grabbing', which
@@ -98,18 +92,18 @@ Canvas.c.addEventListener('mousemove', function(e) {
 
 
 ShortcutRegistry.add({key: "m", description: "Move the point. select a point, then move the mouse pointer to another point, then press 'm'", event: ()=>{
-    if (!DotState.hoverDot || !DotState.selectedDot){
+    if (!DotState.hoverDot || !SelectionState.dot){
       return;
     }
 
     DotState.dots =  DotState.dots.map((d)=>{
      if (d.x == DotState?.hoverDot?.x && d.y == DotState.hoverDot?.y){
-       return { ...DotState.selectedDot, x: d.x, y: d.y};
+       return { ...SelectionState.dot, x: d.x, y: d.y};
      }
-      if (d.x == DotState?.selectedDot?.x && d.y == DotState.selectedDot?.y){
+      if (d.x == SelectionState.dot?.x && d.y == SelectionState.dot?.y){
         return { description: undefined, color: undefined, x: d.x, y: d.y};
       }
      return d
     });
-    DotState.selectedDot = undefined
+    SelectionState.clear("dot");
   }})

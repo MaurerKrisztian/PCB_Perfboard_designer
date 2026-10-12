@@ -1,26 +1,16 @@
 import {DotState} from "../state/DotState";
 import {LineState} from "../state/LineState";
-import {IcState} from "../state/IcState";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
 import {HistoryState} from "../state/HistoryState";
+import {SelectionState} from "../state/SelectionState";
+import {ToolState} from "../state/ToolState";
 import {cancelDrag} from "./component-drag";
-import {PartState} from "../state/PartState";
-import {disarmWire} from "./wire";
 import {updateSelectionStatus} from "./selection-status";
 
 // Drops the selection, any armed placement (wire, IC, component) and a drag in progress.
 export function resetInteraction() {
   cancelDrag();
-  DotState.selectedDot = undefined;
-  LineState.selectedLine = undefined;
-  PartState.selected = undefined;
-  IcState.selectedIc = undefined;
-  StandardComponentState.armedDefinitionId = undefined;
-  StandardComponentState.pendingStartDot = undefined;
-  AdvancedComponentState.armedDefinitionId = undefined;
-  AdvancedComponentState.pendingAnchorDot = undefined;
-  disarmWire();
+  SelectionState.clear();
+  ToolState.armed = undefined;
   updateSelectionStatus();
 }
 

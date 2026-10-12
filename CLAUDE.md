@@ -46,9 +46,13 @@ creating a module under `src/features/` and importing it in `index.ts`.
 
 **State** (`src/state/`): plain classes used as static/global singletons (no instances are ever
 created — `ClassName.staticField` is the "store"). E.g. `Canvas` (canvas element + 2D context +
-coordinate mapping), `GridConfig` (grid constants like dot spacing/radius), `ToolState` (active
-tool mode, armed wire, selected color/width), `DotState`, `LineState`, `IcState`,
-`StandardComponentState`, `AdvancedComponentState`, `HistoryState` (undo/redo stack).
+coordinate mapping), `GridConfig` (grid constants like dot spacing/radius), `DotState` /
+`LineState` (the grid and wires, plus hover), `PartState` (every placed part, see below),
+`HistoryState` (undo/redo stack). Two discriminated unions keep "only one at a time" true by
+construction: `SelectionState.current` (one selected pad, wire *or* part) and `ToolState.armed`
+(one armed placement tool — wire, IC, standard or advanced component — with its pending first
+click). Arm/disarm through `arm()` (`src/features/armed-tool.ts`); `resetInteraction()` clears
+both. Toolbar/catalog highlights are derived from this state in `updateSelectionStatus()`.
 
 **Features** (`src/features/`): self-registering modules, each owning one concern (drawing,
 hover, selection, color picker, context menu, shortcuts, project save/load, etc.). They read/
@@ -68,12 +72,22 @@ components → advanced components → IC labels → in-progress placement previ
   the anchor) are rotated at render/placement time (`rotate-offset.ts`).
 - IC chips (`src/features/ic.ts`, `ic-editor-modal.ts`) are a third, older placement concept
   (multi-pin chip with a user-editable pin-label catalog), separate from both of the above.
+  `Ic` is both the catalog entry and the placed chip; catalog entries are saved by
+  `JSON.stringify`-ing them whole, so never add instance fields to `Ic` casually.
+
+All three placed-part classes implement `PlacedPart` (`src/interfaces/placed-part.interface.ts`):
+hit-testing, drawing, pin/occupied positions, anchor dots and `serialize()`. Board-level code
+(drag, delete, undo, save, resize) goes through that interface — narrow on `part.kind` only for
+kind-specific behavior. They live in one list, `PartState.parts`, kept grouped by kind (ICs →
+standard → advanced) so stacking and the per-kind arrays in the save file stay stable; add/remove
+via `src/features/placed-parts.ts` (`placePart`/`removePart` record history, `addToBoard`/
+`takeOffBoard` don't).
 
 **Undo/redo** (`src/features/project/undo-redo.ts` + `src/state/HistoryState.ts`): every mutation
-that should be undoable pushes an `IChange` (`src/interfaces/change.interface.ts` — tagged union
-over `line` / `ic` / `standard-component` / `advanced-component`, each with `type: "add" |
-"remove"`) onto `HistoryState.changes`, truncating any redo tail first. `undo`/`redo` just replay
-these adds/removes against the relevant state array and call `redrawCanvas()`.
+that should be undoable calls `HistoryState.record(change)` with an `IChange`
+(`src/interfaces/change.interface.ts`): `add`/`remove`/`merge` of a line, or `add`/`remove`/`move`
+of a part. `undo`/`redo` replay these and call `redrawCanvas()`. History is cleared whenever the
+board is replaced (load, reset, resize) via `resetForNewBoard()`.
 
 **Persistence**: `src/features/project/save-project.ts` / `load-project.ts` serialize/deserialize
 the full board (dots, lines, placed ICs/standard/advanced components, canvas size — shape in

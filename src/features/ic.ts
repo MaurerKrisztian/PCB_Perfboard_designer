@@ -1,16 +1,14 @@
 import {Canvas} from "../state/Canvas";
 import {DotState} from "../state/DotState";
-import {IcState} from "../state/IcState";
 import {IDot} from "../interfaces/dot.interface";
 import {ShortcutRegistry} from "./shortcut-keys";
 import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
-import {StandardComponentState} from "../state/StandardComponentState";
-import {AdvancedComponentState} from "../state/AdvancedComponentState";
-import {disarmWire} from "./wire";
+import {Rotation, ToolState} from "../state/ToolState";
+import {SelectionState} from "../state/SelectionState";
+import {arm} from "./armed-tool";
 import {findNearestDot} from "./dot-lookup";
 import {findPartAt} from "./placed-parts";
-import {PartState} from "../state/PartState";
 import {GridConfig} from "../state/GridConfig";
 import {isRotatable, PlacedPart} from "../interfaces/placed-part.interface";
 import {Point} from "../interfaces/point.interface";
@@ -518,28 +516,24 @@ export function selectIc(id: number | string){
     console.error(`Ic with id: ${id} not found`);
     return;
   }
-  IcState.selectedIc = ic.clone();
-  StandardComponentState.armedDefinitionId = undefined;
-  StandardComponentState.pendingStartDot = undefined;
-  AdvancedComponentState.armedDefinitionId = undefined;
-  AdvancedComponentState.pendingAnchorDot = undefined;
-  disarmWire();
+  arm({kind: "ic", template: ic.clone()});
 }
 
 export function rotateSelectedIc() {
-  const selected = PartState.selected;
+  const selected = SelectionState.part;
   if (selected && isRotatable(selected)) {
     selected.rotate();
     redrawCanvas();
     return;
   }
-  if (IcState.selectedIc) {
-    IcState.selectedIc.rotate();
+  const armed = ToolState.armed;
+  if (armed?.kind === "ic") {
+    armed.template.rotate();
     redrawCanvas();
     return;
   }
-  if (AdvancedComponentState.armedDefinitionId) {
-    AdvancedComponentState.armedRotation = ((AdvancedComponentState.armedRotation + 90) % 360) as 0 | 90 | 180 | 270;
+  if (armed?.kind === "advanced-component") {
+    armed.rotation = ((armed.rotation + 90) % 360) as Rotation;
     redrawCanvas();
     return;
   }
@@ -548,7 +542,7 @@ export function rotateSelectedIc() {
     const hovered = findPartAt(DotState.hoverDot.x, DotState.hoverDot.y, isRotatable);
     if (hovered && isRotatable(hovered)) {
       hovered.rotate();
-      PartState.selected = hovered;
+      SelectionState.current = {kind: "part", part: hovered};
       redrawCanvas();
     }
   }

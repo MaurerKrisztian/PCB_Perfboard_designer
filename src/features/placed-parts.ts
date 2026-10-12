@@ -1,6 +1,7 @@
 import type {Part} from "../interfaces/placed-part.interface";
 import {PartState} from "../state/PartState";
 import {HistoryState} from "../state/HistoryState";
+import {SelectionState} from "../state/SelectionState";
 
 // Stacking group of each kind within PartState.parts.
 const KIND_ORDER: Record<Part["kind"], number> = {"ic": 0, "standard-component": 1, "advanced-component": 2};
@@ -16,7 +17,7 @@ export function addToBoard(part: Part) {
 // Takes a part off the board, dropping it from the selection. Records no history. Returns false
 // if it wasn't on the board.
 export function takeOffBoard(part: Part): boolean {
-  if (PartState.selected === part) PartState.selected = undefined;
+  if (SelectionState.part === part) SelectionState.clear();
   const index = PartState.parts.indexOf(part);
   if (index < 0) return false;
   PartState.parts.splice(index, 1);
@@ -26,7 +27,7 @@ export function takeOffBoard(part: Part): boolean {
 // Places a new part as one undoable step, and selects it.
 export function placePart(part: Part) {
   addToBoard(part);
-  PartState.selected = part;
+  SelectionState.current = {kind: "part", part};
   HistoryState.record({type: "add", kind: "part", part});
 }
 
