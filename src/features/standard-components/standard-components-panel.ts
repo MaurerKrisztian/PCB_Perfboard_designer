@@ -1,35 +1,22 @@
 import {Utils} from "../../utils/utils";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
-import {IcState} from "../../state/IcState";
-import {redrawCanvas} from "../draw-canvas";
-import {disarmWire} from "../wire";
+import {ToolState} from "../../state/ToolState";
+import {setActiveTool} from "../active-tool";
 import {COMPONENT_DEFINITIONS, getIconPath} from "./component-definitions";
 
 export function armStandardComponent(definitionId: string) {
-  if (StandardComponentState.armedDefinitionId === definitionId) {
-    // Clicking the already-armed component again disarms it
-    StandardComponentState.armedDefinitionId = undefined;
-    StandardComponentState.pendingStartDot = undefined;
-    updateStandardComponentButtonHighlight();
-    redrawCanvas();
-    return;
-  }
-  StandardComponentState.armedDefinitionId = definitionId;
-  StandardComponentState.pendingStartDot = undefined;
-  AdvancedComponentState.armedDefinitionId = undefined;
-  AdvancedComponentState.pendingAnchorDot = undefined;
-  IcState.selectedIc = undefined;
-  disarmWire();
-  updateStandardComponentButtonHighlight();
-  redrawCanvas();
+  const active = ToolState.active;
+  // Clicking the already-armed component again disarms it
+  setActiveTool(active.kind === "standard-component" && active.definitionId === definitionId
+    ? {kind: "select"}
+    : {kind: "standard-component", definitionId});
 }
 
 export function updateStandardComponentButtonHighlight() {
   const container = document.getElementById("standard-components-items");
   if (!container) return;
   container.querySelectorAll<HTMLButtonElement>("button[data-def-id]").forEach((btn) => {
-    btn.classList.toggle("active-mode", btn.dataset.defId === StandardComponentState.armedDefinitionId);
+    const active = ToolState.active;
+    btn.classList.toggle("active-mode", active.kind === "standard-component" && btn.dataset.defId === active.definitionId);
   });
 }
 

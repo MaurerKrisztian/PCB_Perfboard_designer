@@ -1,13 +1,11 @@
 import {HistoryState} from "../../state/HistoryState";
 import {LineState} from "../../state/LineState";
-import {IcState} from "../../state/IcState";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {redrawCanvas} from "../draw-canvas";
 import {Utils} from "../../utils/utils";
 import {ShortcutRegistry} from "../shortcut-keys";
 import {IChange} from "../../interfaces/change.interface";
-import {setAnchorDots} from "../component-drag";
+import {addToBoard, takeOffBoard} from "../placed-parts";
+import {setBoardSetup} from "../board-type";
 
 Utils.getSafeHtmlElement<HTMLButtonElement>('backBtn').addEventListener('click', function() {
 undo();
@@ -17,8 +15,18 @@ undo();
 // was before it. A move isn't expressible as an add or a remove, hence the direction rather than
 // the change's own type driving this.
 function applyChange(change: IChange, direction: "apply" | "revert") {
+  if (change.kind === "board") {
+    setBoardSetup(direction === "apply" ? change.to : change.from);
+    return;
+  }
+
+  if (change.kind === "cut") {
+    change.dot.cut = direction === "apply" ? change.cut : !change.cut;
+    return;
+  }
+
   if (change.type === "move") {
-    setAnchorDots(change, direction === "apply" ? change.to : change.from);
+    change.part.setAnchorDots(direction === "apply" ? change.to : change.from);
     return;
   }
 
@@ -45,27 +53,10 @@ function applyChange(change: IChange, direction: "apply" | "revert") {
       const index = LineState.lines.findIndex(l => l.start === change.line.start && l.end === change.line.end);
       if (index > -1) LineState.lines.splice(index, 1);
     }
-  } else if (change.kind === "ic") {
-    if (add) {
-      IcState.placedIcs.push(change.ic);
-    } else {
-      const index = IcState.placedIcs.indexOf(change.ic);
-      if (index > -1) IcState.placedIcs.splice(index, 1);
-    }
-  } else if (change.kind === "standard-component") {
-    if (add) {
-      StandardComponentState.placedComponents.push(change.component);
-    } else {
-      const index = StandardComponentState.placedComponents.indexOf(change.component);
-      if (index > -1) StandardComponentState.placedComponents.splice(index, 1);
-    }
-  } else if (change.kind === "advanced-component") {
-    if (add) {
-      AdvancedComponentState.placedComponents.push(change.component);
-    } else {
-      const index = AdvancedComponentState.placedComponents.indexOf(change.component);
-      if (index > -1) AdvancedComponentState.placedComponents.splice(index, 1);
-    }
+  } else if (add) {
+    addToBoard(change.part);
+  } else {
+    takeOffBoard(change.part);
   }
 }
 

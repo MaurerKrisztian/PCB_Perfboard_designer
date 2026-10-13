@@ -1,8 +1,7 @@
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {redrawCanvas} from "../draw-canvas";
 import {ComponentUnit} from "./component-definitions";
 import {formatComponentValue, parseComponentValue} from "./component-value";
+import {SelectionState} from "../../state/SelectionState";
 
 const VALUE_EXAMPLES: Record<ComponentUnit, string> = {
   "Ω": "e.g. 220, 4.7k, 1M",
@@ -17,15 +16,16 @@ const LED_COLOR_LABELS: Record<LedColor, string> = {
 };
 
 export function setSelectedLedColor(color: LedColor | undefined) {
-  const component = StandardComponentState.selectedPlacedComponent;
-  if (!component || component.definitionId !== "led") return;
+  const component = SelectionState.part;
+  if (component?.kind !== "standard-component" || component.definitionId !== "led") return;
   component.color = color;
   component.value = color ? LED_COLOR_LABELS[color] : undefined;
   redrawCanvas();
 }
 
 export function setSelectedComponentValue() {
-  const component = StandardComponentState.selectedPlacedComponent ?? AdvancedComponentState.selectedPlacedComponent;
+  const selected = SelectionState.part;
+  const component = selected?.kind === "ic" ? undefined : selected;
   if (!component) {
     alert("Please select a component first by clicking on it.");
     return;
