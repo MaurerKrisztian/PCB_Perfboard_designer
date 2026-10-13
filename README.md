@@ -1,96 +1,221 @@
-# ⚡ PCB Perfboard Designer
+<h1 align="center">Perfboard Designer: Free Online Perfboard &amp; Stripboard Layout Tool</h1>
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo%20App-brightgreen?style=for-the-badge&logo=github)](https://perfboarddesigner.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![HTML5 Canvas](https://img.shields.io/badge/HTML5-Canvas-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+<p align="center">
+  <strong>Plan your perfboard or stripboard (Veroboard) circuit in the browser before you solder.</strong><br />
+  Place parts and wires on a virtual hole grid, cut strips, and check the finished board in 3D.
+</p>
 
-The **PCB Perfboard Designer** is an advanced, user-friendly web CAD application for designing and prototyping electronic circuits on virtual perfboard grids. It allows electronics engineers, makers, and hobbyists to visualize component placements, trace wire connections, and eliminate desoldering mistakes before assembling physical hardware.
+<p align="center">
+  <a href="https://perfboarddesigner.com/app/"><img alt="Open the designer" src="https://img.shields.io/badge/Open%20the%20designer-perfboarddesigner.com-0ea5e9?style=for-the-badge" /></a>
+</p>
 
-![Perfboard Designer Screenshot](screenshot.png)
+<p align="center">
+  <img alt="Free and open source" src="https://img.shields.io/badge/free-open%20source-22c55e" />
+  <img alt="No sign-up, runs in the browser" src="https://img.shields.io/badge/no%20sign--up-runs%20in%20the%20browser-64748b" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white" />
+  <img alt="three.js" src="https://img.shields.io/badge/three.js-000000?logo=threedotjs&logoColor=white" />
+  <img alt="License: ISC" src="https://img.shields.io/badge/license-ISC-blue" />
+</p>
 
----
+<p align="center">
+  <a href="https://perfboarddesigner.com/app/">
+    <img src="docs/images/editor-perfboard.webp" width="900"
+         alt="Perfboard Designer editor showing a perfboard layout with an NE555 timer, 74HC14, 74HC595, Arduino Nano, resistors, capacitors, LEDs and colored jumper wires" />
+  </a>
+</p>
 
-## ✨ Key Features
+**[Perfboard Designer](https://perfboarddesigner.com/)** is a free, open-source **perfboard layout
+tool** and **stripboard (Veroboard) planner** that runs in your web browser. Lay out resistors,
+capacitors, LEDs, transistors, MOSFETs, potentiometers, header pins and ICs (NE555, ATmega328P,
+Arduino Nano or your own custom chip) on a protoboard hole grid. Draw jumper wires the way you'll
+solder them, cut stripboard tracks where you need a break, and see the finished board in 3D. You
+catch mistakes on screen instead of at the soldering iron.
 
-- ✏ **Interactive Wire Tracing & Gauges**: Draw custom wire paths with selectable line thickness gauges (`2px Thin`, `4px Normal`, `7px Thick`).
-- 📦 **Integrated Circuits (ICs) Catalog & Editor**: Place built-in chips (`NE555 Timer`, `DIP-14 Logic`, `ATmega328P`) or open the **IC Editor** to create custom chips with dynamic pin labels.
-- 🎨 **Visual 2D Color Selector & LocalStorage Palette**: Click and drag across a 2D color spectrum box with rainbow hue slider to pick active wire colors. Save custom color swatches permanently to `localStorage`.
-- ⛶ **Fullscreen Focus Mode & Widescreen Auto-Fit**: Expand the canvas workspace to `100vw` × `100vh` for distraction-free designing. Includes auto-fit scale calculation (`🎯 Fit`) to display large boards (`30×20`, `40×30`, `50×50`) with zero scrollbars.
-- 🖱 **Middle Mouse Button Board Panning**: Pan across large perfboard grids by holding the middle mouse wheel button and dragging.
-- 🔍 **Smooth Board Zooming**: Zoom in and out smoothly from `20%` up to `300%` using `Ctrl + Mouse Wheel` or dedicated zoom buttons.
-- 💾 **Full Progress & Project File Persistence**: Save your progress locally (`File → Save Project to Browser`) or export/import complete circuit designs as JSON project files (`File → Save Project to File` / `Load Project from File`).
-- 🛠 **Dedicated Tool Modes**: Toggle between `🖐 Select` (inspection only), `✏ Wire`, `🧹 Eraser`, and `📝 Note` annotation modes.
-- 🖱 **Right-Click Context Menu**: Quick access to color changes, text note editing, and component deletion.
+There's nothing to install, no account, and nothing is uploaded: your designs stay on your own
+device.
 
----
-
-## 🛠 Tech Stack
-
-- **Core**: HTML5 Canvas, Vanilla JavaScript & TypeScript (ESNext)
-- **Bundler & Build Tool**: Vite v3
-- **Styling**: Custom Dark Engineering Layout System (CSS3 Tokens & Glassmorphic Components)
-- **Storage**: Browser LocalStorage & Native File API
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-Ensure you have [Node.js](https://nodejs.org/) (v16+) installed.
-
-### Installation & Local Development
-
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/MaurerKrisztian/perfboard-designer.git
-   cd perfboard-designer
-   ```
-
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Start Development Server**:
-   ```bash
-   npm run start
-   ```
-   Open `http://localhost:5173` in your browser.
-
-4. **Build Production Bundle**:
-   ```bash
-   npm run build
-   ```
+**▶ Try it now: [perfboarddesigner.com/app](https://perfboarddesigner.com/app/)**
 
 ---
 
-## ⌨ Keyboard Shortcuts & Controls
+## Contents
 
-| Action | Shortcut / Gesture |
+- [Features](#features)
+- [Stripboard (Veroboard) layout](#stripboard-veroboard-layout)
+- [3D board preview](#3d-board-preview)
+- [How to plan a perfboard layout](#how-to-plan-a-perfboard-layout)
+- [Keyboard shortcuts and mouse controls](#keyboard-shortcuts-and-mouse-controls)
+- [FAQ](#faq)
+- [Run it locally](#run-it-locally)
+- [Project file format](#project-file-format)
+- [Contributing](#contributing)
+
+---
+
+## Features
+
+- 🔌 **Real component library**: resistors with color bands worked out from their value
+  (type `4.7k`, get yellow-violet-red), ceramic and electrolytic capacitors, inductors, diodes,
+  colored LEDs, transistors, MOSFETs, potentiometers and header pins.
+- 📦 **ICs and custom chips**: drop in an NE555 timer, DIP-14 and DIP-16 logic chips, an
+  ATmega328P or an Arduino Nano. You can also build your own chip with labeled pins in the custom
+  IC editor and edit it again later. Chips and fixed-pin parts rotate in 90° steps.
+- ✏️ **Wires the way you solder them**: jumper wires in any color and three thicknesses (thin,
+  normal, thick). Straight runs of the same color merge into one wire automatically.
+- 📐 **Perfboard or stripboard, any size**: start from a common board size (2×8 cm up to
+  8×12 cm) or enter your own hole count, then zoom, pan and go fullscreen while you work.
+- 🏷️ **Part names and values on the board**: every part gets a reference designator (R1, C2,
+  U1…). Toggle **Labels** to show them with their values as on a silkscreen (`R1 10k`).
+- 📝 **Notes on any hole**: label pads like `+9V`, `GND` or `TP1` so the layout still makes sense
+  months later.
+- 💾 **Save, share and export**: keep progress in the browser, download the design as a JSON
+  project file to share or reopen, or export the board as a high-resolution PNG image.
+- ↩️ **Fast to work with**: undo and redo, drag parts to move them, a right-click context menu,
+  and keyboard shortcuts for the common actions.
+
+## Stripboard (Veroboard) layout
+
+Switch any layout between **Perfboard** and **Stripboard** with one click. On a stripboard the
+copper strips run along every row (or every column), so parts on the same strip are already
+connected. Use the **Cut** tool to break a strip at a hole, for example under a DIP chip so its
+two rows of pins don't short. Click a cut again to mend it.
+
+<p align="center">
+  <img src="docs/images/editor-stripboard.webp" width="49%"
+       alt="An NE555 LED blinker on a stripboard in Perfboard Designer, with horizontal copper strips, strip cuts under the chip, resistors R1 to R3, capacitors C1 and C2 and LED D1 labeled" />
+  <img src="assets/images/stripboard-copper-side.webp" width="49%"
+       alt="The copper side of the same stripboard in the 3D view, showing the copper strips, the cuts under the chip and a solder joint on every lead" />
+</p>
+
+- Horizontal or vertical strips, on a board of any size.
+- Turn the 3D view over to check the copper strips and cuts on the solder side.
+- Switch back to perfboard at any time and your parts and wires stay put.
+
+## 3D board preview
+
+One click on **3D View** turns the layout into a 3D model of the finished board: resistors with
+their color bands, ICs with labeled pins, LEDs, capacitors, transistors, pots, headers and every
+jumper wire, on a perfboard or stripboard sized to match yours.
+
+<p align="center">
+  <img src="assets/images/hero-3d.webp" width="900"
+       alt="A perfboard in Perfboard Designer's 3D view with an Arduino Nano, NE555 timer, 74HC14, 74HC595, IRLZ44N MOSFET, potentiometer, LEDs, resistors and colored jumper wires" />
+</p>
+
+- Drag to orbit, right-drag to pan and scroll to zoom, or jump to an angled, top or bottom view.
+- Check the solder side to see where wires and leads meet the copper.
+- Save a screenshot of the render to share or keep next to your build.
+
+<p align="center">
+  <img src="assets/images/hero-board.webp" width="49%"
+       alt="The same board as a 2D perfboard layout in the editor, with components and wires on the hole grid" />
+  <img src="assets/images/board-3d-detail.webp" width="49%"
+       alt="Close-up of the 3D view: a 10kΩ potentiometer, a 74HC595 with labeled pins, an Arduino Nano, a 74HC14, a BC547 transistor, LEDs and jumper wires" />
+</p>
+
+## How to plan a perfboard layout
+
+1. **Pick your board**: open the [designer](https://perfboarddesigner.com/app/), choose
+   **Perfboard** or **Stripboard**, then a preset or the number of holes across and down to match
+   the board on your bench.
+2. **Place parts and wires**: pick a component, then click the holes for its leads. Rotate chips
+   with `R` and draw wires between pins with the **Wire Tool** (`W`).
+3. **Check it in 3D**: open **3D View** to see how everything fits, and flip the board to check
+   the solder side.
+4. **Save it and build it**: use **File → Save Project to File** to keep the design, and
+   **File → Download Image** to print a PNG for your workbench.
+
+## Keyboard shortcuts and mouse controls
+
+| Action | Shortcut / gesture |
 | :--- | :--- |
-| **Pan Canvas View** | `Middle Mouse Click + Drag` |
-| **Zoom In / Zoom Out** | `Mouse Wheel` or `🔍 +` / `🔍 -` |
-| **Toggle Fullscreen Mode** | `f` / `F` or `⛶ Fullscreen` |
-| **Unselect / Exit Fullscreen** | `Escape` |
-| **Delete Selected Item** | `Delete` key or `🧹 Eraser` |
-| **Undo Last Change** | `Ctrl + Z` |
-| **Redo Last Action** | `Ctrl + Y` |
-| **Rotate Placed IC** | `r` |
-| **Add Text Note** | `d` |
-| **Remove Text Note** | `D` |
+| Toggle the wire tool | `W` |
+| Rotate the selected chip or part | `R` |
+| Add a note to the selected hole | `D` |
+| Remove a hole's note | `Shift` + `D` |
+| Change the selected hole's color | `C` |
+| Delete the selected part or wire | `Delete` |
+| Undo / redo | `Ctrl` + `Z` / `Ctrl` + `Y` |
+| Deselect, or step back out of a tool | `Esc` |
+| Fullscreen | `F` |
+| Download the board as an image | `P` |
+| Zoom (20% to 300%, around the cursor) | Mouse wheel, or the 🔍 buttons |
+| Pan | Left-drag empty space, `Space` + drag, or middle-mouse drag |
+| Rotate, recolor, add a note, set a value or delete | Right-click |
 
----
+## FAQ
 
-## 🤝 Contributing
+### Is Perfboard Designer free?
 
-Contributions are welcome! Feel free to:
-1. **Report Issues**: Submit bug reports or feature requests via GitHub Issues.
-2. **Pull Requests**: Fork the repository and open pull requests for new tools or improvements.
+Yes. It's completely free and open source, with no account, ads or limits.
 
----
+### Do I need to install anything?
 
-## 📜 License
+No. It runs in any modern web browser, and works best on a desktop or laptop with a mouse.
 
-Distributed under the **ISC License**.
+### Where are my designs saved?
+
+On your own device. **Save Project to Browser** keeps your work in this browser, and
+**Save Project to File** downloads a project file you can reopen or share later. Nothing is
+uploaded to a server.
+
+### Does it work for stripboard (Veroboard)?
+
+Yes. Switch the board to Stripboard and copper strips run along every row or column. Use the Cut
+tool to cut a strip at any hole; the cuts are saved with your project and shown on the copper side
+of the 3D view.
+
+### Can I add a chip that isn't in the list?
+
+Yes. The custom IC editor lets you set the size and label every pin, and you can edit a custom
+chip again after creating it.
+
+### Does it simulate or check my circuit?
+Not yet. Perfboard Designer is a layout planner: it helps you work out where parts and wires go on the board. It doesn’t simulate circuits, but basic checks of your layout are planned and in progress.
+
+## Run it locally
+
+You need [Node.js](https://nodejs.org/) 16 or newer.
+
+```bash
+git clone https://github.com/MaurerKrisztian/perfboard-designer.git
+cd perfboard-designer
+npm install
+npm run start
+```
+
+Then open <http://localhost:3000/app/> for the editor (<http://localhost:3000/> is the landing
+page).
+
+| Command | What it does |
+| :--- | :--- |
+| `npm run start` | Dev server with hot reload |
+| `npm run build` | Type-check and build the site into `dist/` |
+| `npm run serve` | Preview the production build |
+| `npm run lint` | Lint `src/` with ESLint |
+
+It's built with vanilla TypeScript and the HTML5 Canvas API, with no UI framework. Vite bundles
+it, and three.js powers the 3D view (it's lazy-loaded, so the editor itself stays small).
+
+## Project file format
+
+Projects are saved as plain, readable JSON (format version 3): the board type and size, strip
+cuts, wires, and every part with its reference designator, all as `[column, row]` grid positions
+rather than pixels. Files from older versions still open. The format is documented field by field
+in [`src/project-file/project-file.ts`](src/project-file/project-file.ts), and the
+[`examples/`](examples) folder has sample projects to load with **File → Load Project from File**.
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome:
+
+- 🐞 [Report a bug or suggest a feature](https://github.com/MaurerKrisztian/perfboard-designer/issues)
+- 🔧 Fork the repo and open a pull request
+- 👥 See the [people who've already helped](https://perfboarddesigner.com/contributors/)
+
+If Perfboard Designer saved you a desoldering session, a ⭐ on GitHub helps other makers find it.
+
+## License
+
+Distributed under the ISC License.
