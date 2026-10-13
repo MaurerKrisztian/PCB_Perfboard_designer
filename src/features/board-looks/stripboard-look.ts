@@ -11,7 +11,7 @@ import {HoleStamp} from "./hole-stamp";
 // A cut is a gap of bare board across the strip at the cut hole, breaking the strip in two (the
 // 3D viewer draws the same gap, from the same sizes).
 
-const BOARD_COLOR = "#5c3b1e";
+export const BOARD_COLOR = "#5c3b1e";
 const STRIP_WIDTH = STRIP_WIDTH_PITCH * GridConfig.dotSpace;
 const CUT_GAP = CUT_GAP_PITCH * GridConfig.dotSpace;
 

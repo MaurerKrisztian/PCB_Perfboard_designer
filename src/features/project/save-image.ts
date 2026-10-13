@@ -4,6 +4,7 @@ import {ShortcutRegistry} from "../shortcut-keys";
 import {applyCanvasResolution} from "../canvas-sizing";
 import {redrawCanvas} from "../draw-canvas";
 import {getCurrentZoom} from "../view-controls";
+import {downloadFileName} from "./save-project";
 
 // Fixed resolution multiplier for exports, independent of the current zoom/DPR,
 // so the PNG is always the same crisp resolution regardless of what the user is viewing.
@@ -22,7 +23,7 @@ export function downloadAsImage(){
   redrawCanvas();
 
   const link = document.createElement('a');
-  link.download = 'canvas.png';
+  link.download = downloadFileName("png");
   link.href = Canvas.c.toDataURL();
   link.click();
 

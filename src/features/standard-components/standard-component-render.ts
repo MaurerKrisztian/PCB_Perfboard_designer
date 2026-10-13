@@ -153,7 +153,7 @@ function drawCeramicCapacitorCode(value: string, bodyStart: number, bodySize: nu
 // Mirrors the flat-cathode-edge body path baked into led.svg - keep these in sync so the
 // color fill lines up with the artwork's silhouette instead of spilling past its edges.
 const LED_BODY_PATH = "M8 24.08A46 46 0 1 1 8 75.92Z";
-const LED_SOLID_COLORS: Record<string, string> = {
+export const LED_SOLID_COLORS: Record<string, string> = {
   red: "#ef4444",
   green: "#22c55e",
   blue: "#3b82f6",

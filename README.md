@@ -69,9 +69,9 @@ device.
   U1…). Toggle **Labels** to show them with their values as on a silkscreen (`R1 10k`).
 - 📝 **Notes on any hole**: label pads like `+9V`, `GND` or `TP1` so the layout still makes sense
   months later.
-- 💾 **Save, share and export**: your work is saved in the browser automatically as you go.
-  Download the design as a JSON project file to share or reopen, or export the board as a
-  high-resolution PNG image.
+- 💾 **Save, share and export**: keep as many projects as you like in the browser, saved
+  automatically as you go. Download a design as a JSON project file to share or reopen, or export
+  the board as a high-resolution PNG image.
 - ↩️ **Fast to work with**: undo and redo, drag parts to move them, a right-click context menu,
   and keyboard shortcuts for the common actions.
 
@@ -157,8 +157,9 @@ No. It runs in any modern web browser, and works best on a desktop or laptop wit
 
 ### Where are my designs saved?
 
-On your own device. Your work is saved in this browser automatically as you edit, and
-**Save Project to File** downloads a project file you can reopen or share later. Nothing is
+On your own device. Your projects are saved in this browser automatically as you edit: open,
+rename, duplicate or delete them from **File → Open Project**. **Save Project to File** downloads a
+project file you can import again or share. Nothing is
 uploaded to a server.
 
 ### Does it work for stripboard (Veroboard)?
@@ -205,7 +206,7 @@ Projects are saved as plain, readable JSON (format version 3): the board type an
 cuts, wires, and every part with its reference designator, all as `[column, row]` grid positions
 rather than pixels. Files from older versions still open. The format is documented field by field
 in [`src/project-file/project-file.ts`](src/project-file/project-file.ts), and the
-[`examples/`](examples) folder has sample projects to load with **File → Load Project from File**.
+[`examples/`](examples) folder has sample projects to open with **File → Import Project from File**.
 
 ## Contributing
 
