@@ -60,7 +60,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.85rem 1.5rem;
+  height: 3.75rem;
+  padding: 0 1.5rem;
   background-color: rgba(17, 24, 39, 0.95);
   border-bottom: 1px solid var(--border-color);
   backdrop-filter: blur(8px);
