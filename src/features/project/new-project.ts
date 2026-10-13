@@ -12,7 +12,6 @@ Utils.getSafeHtmlElement<HTMLButtonElement>('newProjectBtn').addEventListener('c
   resetForNewBoard();
   LineState.lines = [];
   PartState.parts = [];
-  localStorage.removeItem('save');
   createDotGrid(parseInt(widthInput.value || "10"), parseInt(heightInput.value || "10"));
   redrawCanvas()
 });

@@ -128,6 +128,14 @@ function drawLine(line: ILine){
   Canvas.ctx.stroke();
 }
 
+// Run after every redraw. Every change to the board ends in one, so this is how a feature hears
+// about changes without each edit having to report itself (autosave uses it).
+const redrawListeners: (() => void)[] = [];
+
+export function onRedraw(listener: () => void) {
+  redrawListeners.push(listener);
+}
+
 export function redrawCanvas() {
   resetCanvas();
   const selected = SelectionState.part;
@@ -156,4 +164,6 @@ export function redrawCanvas() {
   // 7. The active tool's placement preview
   const tool = ToolState.active;
   if (DotState.hoverDot) behaviorOf(tool).drawPreview?.(tool, DotState.hoverDot);
+
+  for (const listener of redrawListeners) listener();
 }

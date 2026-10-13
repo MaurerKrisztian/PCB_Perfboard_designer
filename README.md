@@ -69,8 +69,9 @@ device.
   U1…). Toggle **Labels** to show them with their values as on a silkscreen (`R1 10k`).
 - 📝 **Notes on any hole**: label pads like `+9V`, `GND` or `TP1` so the layout still makes sense
   months later.
-- 💾 **Save, share and export**: keep progress in the browser, download the design as a JSON
-  project file to share or reopen, or export the board as a high-resolution PNG image.
+- 💾 **Save, share and export**: your work is saved in the browser automatically as you go.
+  Download the design as a JSON project file to share or reopen, or export the board as a
+  high-resolution PNG image.
 - ↩️ **Fast to work with**: undo and redo, drag parts to move them, a right-click context menu,
   and keyboard shortcuts for the common actions.
 
@@ -156,7 +157,7 @@ No. It runs in any modern web browser, and works best on a desktop or laptop wit
 
 ### Where are my designs saved?
 
-On your own device. **Save Project to Browser** keeps your work in this browser, and
+On your own device. Your work is saved in this browser automatically as you edit, and
 **Save Project to File** downloads a project file you can reopen or share later. Nothing is
 uploaded to a server.
 

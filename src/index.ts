@@ -1,6 +1,6 @@
 import "./style.css";
 import "./features/project/save-image";
-import "./features/project/save-progress";
+import "./features/project/autosave";
 import "./features/project/save-project";
 import "./features/description";
 import "./features/select";
@@ -8,7 +8,6 @@ import "./features/project/load-project";
 import "./features/hover";
 import "./features/line";
 import "./features/project/undo-redo";
-import "./features/project/load-from-local-storage";
 import "./features/shortcut-keys";
 import "./features/dot";
 import "./features/project/new-project";
