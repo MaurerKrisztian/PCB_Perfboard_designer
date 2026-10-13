@@ -146,6 +146,8 @@ function renderCategoryNode(category: CatalogCategory, depth: number): {el: HTML
 
 function renderTree() {
   treeEl.innerHTML = "";
+  // Top-level entries (the Custom… action) sit above every category
+  items.filter(item => !item.categoryId).forEach(item => treeEl.appendChild(createItemRow(item, 0)));
   for (const category of getChildCategories()) {
     const node = renderCategoryNode(category, 0);
     if (node) treeEl.appendChild(node.el);
@@ -203,7 +205,9 @@ function createResultRow(result: CatalogSearchResult, index: number): HTMLElemen
     row.appendChild(createItemIcon(result.item));
     text.append(
       createTextSpan("catalog-name", result.item.name),
-      createTextSpan("catalog-breadcrumb", getCategoryPath(result.item.categoryId).map(c => c.name).join(" › "))
+      createTextSpan("catalog-breadcrumb", result.item.categoryId
+        ? getCategoryPath(result.item.categoryId).map(c => c.name).join(" › ")
+        : "Create your own part")
     );
   } else {
     const parentPath = getCategoryPath(result.category.id).slice(0, -1).map(c => c.name).join(" › ");

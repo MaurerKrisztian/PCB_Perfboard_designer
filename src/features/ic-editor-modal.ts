@@ -76,7 +76,7 @@ function renderPinInputs(labels?: Record<number, string>) {
   }
 }
 
-// Opened from the Components panel's "Custom IC…" / "Custom Module…" entries, with the type
+// Opened from the Components panel's "Custom…" entry, with the type
 // preselected. The user can still switch it before saving.
 export function openIcEditor(type: CustomIcType) {
   if (editingIc) {

@@ -65,7 +65,7 @@ export function searchCatalog(rawQuery: string, items: CatalogItem[]): CatalogSe
   // Empty categories are hidden from the tree, so don't offer them here either
   const nonEmptyCategoryIds = new Set<string>();
   for (const item of items) {
-    getCategoryPath(item.categoryId).forEach(c => nonEmptyCategoryIds.add(c.id));
+    if (item.categoryId) getCategoryPath(item.categoryId).forEach(c => nonEmptyCategoryIds.add(c.id));
   }
   for (const category of CATALOG_CATEGORIES) {
     if (!nonEmptyCategoryIds.has(category.id)) continue;

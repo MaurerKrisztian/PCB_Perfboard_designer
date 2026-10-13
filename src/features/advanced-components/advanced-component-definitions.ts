@@ -131,14 +131,14 @@ const POT_ICON_CENTER: PinOffset = {dx: 2, dy: 0.5};
 
 export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
-    id: "transistor", refPrefix: "Q", category: "semiconductors.transistors", name: "Transistor", fallbackLabel: "Q",
+    id: "transistor", refPrefix: "Q", category: "semiconductors.transistors", name: "Transistor (TO-92)", fallbackLabel: "Q",
     keywords: ["bjt", "npn", "pnp", "to-92", "2n2222", "bc547"],
     pinOffsets: INLINE_3_PINS,
     bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: TRANSISTOR_PIN_LABEL_OFFSET
   },
   {
-    id: "mosfet", refPrefix: "Q", category: "semiconductors.transistors", name: "MOSFET", fallbackLabel: "MOS",
+    id: "mosfet", refPrefix: "Q", category: "semiconductors.transistors", name: "MOSFET (TO-220)", fallbackLabel: "MOS",
     keywords: ["fet", "to-220", "irf"],
     pinOffsets: INLINE_3_PINS,
     bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,

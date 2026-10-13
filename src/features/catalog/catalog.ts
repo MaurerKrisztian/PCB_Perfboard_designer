@@ -10,12 +10,13 @@ import {CategoryId} from "./catalog-categories";
 // One entry in the Components panel, whichever placement system backs it. The panel and search
 // only ever deal with these - activate/isArmed/remove hide which system a part belongs to.
 export interface CatalogItem {
-  // Unique across all sources, e.g. "standard:resistor", "ic:ne555", "action:custom-ic".
+  // Unique across all sources, e.g. "standard:resistor", "ic:ne555", "action:custom".
   key: string;
-  // Actions (e.g. "Custom IC…") open something instead of arming a part for placement.
+  // Actions (e.g. "Custom…") open something instead of arming a part for placement.
   isAction: boolean;
   name: string;
-  categoryId: CategoryId;
+  // Omitted for top-level entries that sit above the category tree (the Custom… action).
+  categoryId?: CategoryId;
   keywords: readonly string[];
   // Artwork next to the name; `emoji` stands in when there's no icon file or it fails to load.
   iconPath?: string;
@@ -40,14 +41,9 @@ const CUSTOM_ACTION_KEYWORDS = ["custom", "new", "create", "add"];
 export function buildCatalog(): CatalogItem[] {
   const items: CatalogItem[] = [
     {
-      key: "action:custom-ic", isAction: true, name: "Custom IC…", categoryId: "ics.custom",
+      key: "action:custom", isAction: true, name: "Custom…",
       keywords: CUSTOM_ACTION_KEYWORDS, emoji: "➕",
       activate: () => openIcEditor("ic"), isArmed: () => false
-    },
-    {
-      key: "action:custom-module", isAction: true, name: "Custom Module…", categoryId: "modules.custom",
-      keywords: CUSTOM_ACTION_KEYWORDS, emoji: "➕",
-      activate: () => openIcEditor("module"), isArmed: () => false
     },
   ];
 
