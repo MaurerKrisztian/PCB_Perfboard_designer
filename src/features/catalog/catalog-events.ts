@@ -1,6 +1,6 @@
 // How the rest of the app tells the Components panel something changed, without importing it.
 // Kept import-free on purpose, and only index.ts may import components-panel.ts: the panel imports
-// every part source (ic.ts, the arm-* modules...), so any of those importing the panel back forms
+// every part source (ic.ts, the definitions...), so any of those importing the panel back forms
 // a cycle in which the panel can run before the classes it reads exist - which crashes startup.
 let catalogChangedListener: (() => void) | undefined;
 let armedPartChangedListener: (() => void) | undefined;

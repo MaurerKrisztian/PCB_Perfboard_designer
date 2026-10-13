@@ -1,9 +1,9 @@
 import {IDot} from "../interfaces/dot.interface";
-import {IDragTarget} from "../interfaces/drag-target.interface";
+import type {Part} from "../interfaces/placed-part.interface";
 
 export class DragState {
   // The part currently being dragged; undefined means no drag is in progress.
-  static target?: IDragTarget;
+  static target?: Part;
   // Dot nearest the cursor as of the last committed step. The part translates by the delta
   // between this and the dot nearest the cursor now, which is what keeps the grab offset.
   static grabDot?: IDot;

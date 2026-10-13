@@ -15,8 +15,33 @@
   --text-muted: #9ca3af;
 }
 
+/* Dark, slim scrollbars across the editor, matching the sidebar's. Firefox and current Chromium
+   use the two standard properties; Safari and older Chromium fall back to ::-webkit-scrollbar. */
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border: 2px solid transparent; /* insets the thumb so it floats inside its track */
+  background-clip: padding-box;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
 }
 
 body {
@@ -315,10 +340,17 @@ body {
   padding: 0 0.25rem;
 }
 
+/* One row of equal buttons, however many are shown (Cut only appears on a stripboard) */
 .tool-mode-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 0.5rem;
+}
+
+/* Outranks the display: flex below */
+.tool-mode-grid .tool-mode-btn[hidden] {
+  display: none;
 }
 
 /* Wire arm button - arms wire placement, matching how components/ICs are armed */
@@ -403,6 +435,23 @@ body {
 }
 
 /* Grid presets row */
+/* Board type and strip direction switches */
+.board-switch {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.board-switch[hidden] {
+  display: none;
+}
+
+.board-switch button {
+  flex: 1;
+  padding: 0.4rem;
+  font-size: 0.75rem;
+}
+
 .grid-presets {
   display: flex;
   flex-wrap: wrap;
@@ -587,6 +636,11 @@ input[type="number"]:focus, input[type="text"]:focus, input[type="search"]:focus
   color: #38bdf8;
   border: 1px solid rgba(6, 182, 212, 0.3);
   font-weight: 500;
+}
+
+/* The board's scrollbars light up a little while the pointer is over it. */
+#canvas-container:hover {
+  scrollbar-color: #4b5d78 transparent;
 }
 
 #canvas-container {
@@ -829,7 +883,8 @@ button.catalog-row.catalog-result-active:not(.active-mode) {
 }
 
 /* Tool Mode & Gauge Selector Active States */
-.tool-mode-btn.active-mode, .gauge-btn.active-mode, .wire-arm-btn.active-mode, .btn-accent.active-mode {
+.tool-mode-btn.active-mode, .gauge-btn.active-mode, .wire-arm-btn.active-mode, .btn-accent.active-mode,
+.board-switch button.active-mode {
   background: linear-gradient(135deg, #0284c7, #0369a1);
   border-color: #38bdf8;
   color: #ffffff;

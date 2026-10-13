@@ -141,39 +141,40 @@ function toggleFullscreenMode(enable?: boolean) {
   }
 }
 
-const SHOW_VALUES_STORAGE_KEY = 'show_component_values';
+// Named from when the labels showed values only; kept so the remembered preference carries over.
+const PART_LABELS_STORAGE_KEY = 'show_component_values';
 
-function setComponentValuesVisible(show: boolean) {
-  ViewState.showComponentValues = show;
+function setPartLabelsVisible(show: boolean) {
+  ViewState.showPartLabels = show;
   const btn = document.getElementById('toggleValuesBtn');
   if (btn) {
-    btn.innerText = show ? '🏷 Values: On' : '🏷 Values';
+    btn.innerText = show ? '🏷 Labels: On' : '🏷 Labels';
     btn.className = show ? 'btn-accent' : 'btn';
   }
 }
 
-function toggleComponentValues() {
-  setComponentValuesVisible(!ViewState.showComponentValues);
+function togglePartLabels() {
+  setPartLabelsVisible(!ViewState.showPartLabels);
   try {
-    localStorage.setItem(SHOW_VALUES_STORAGE_KEY, String(ViewState.showComponentValues));
+    localStorage.setItem(PART_LABELS_STORAGE_KEY, String(ViewState.showPartLabels));
   } catch (e) {
-    console.error("Failed to save value label visibility to localStorage", e);
+    console.error("Failed to save part label visibility to localStorage", e);
   }
   redrawCanvas();
 }
 
 // Restore the remembered preference; index.ts does the initial redraw after all imports.
 try {
-  setComponentValuesVisible(localStorage.getItem(SHOW_VALUES_STORAGE_KEY) === 'true');
+  setPartLabelsVisible(localStorage.getItem(PART_LABELS_STORAGE_KEY) === 'true');
 } catch (e) {
-  console.error("Failed to load value label visibility from localStorage", e);
+  console.error("Failed to load part label visibility from localStorage", e);
 }
 
-// Bind Zoom, Sidebar, Value labels & Fullscreen buttons
+// Bind Zoom, Sidebar, Part labels & Fullscreen buttons
 document.getElementById('zoomInBtn')?.addEventListener('click', zoomIn);
 document.getElementById('zoomOutBtn')?.addEventListener('click', zoomOut);
 document.getElementById('zoomFitBtn')?.addEventListener('click', () => fitToScreen());
-document.getElementById('toggleValuesBtn')?.addEventListener('click', toggleComponentValues);
+document.getElementById('toggleValuesBtn')?.addEventListener('click', togglePartLabels);
 
 document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => toggleSidebar());
 
@@ -215,7 +216,7 @@ window.addEventListener('keydown', (e) => {
 
 // Collapsible sidebar sections
 document.querySelectorAll('.section-title[data-collapse]').forEach(title => {
-  title.addEventListener('click', (e) => {
+  title.addEventListener('click', () => {
     const targetId = (title as HTMLElement).getAttribute('data-collapse');
     if (!targetId) return;
     const body = document.getElementById(targetId);

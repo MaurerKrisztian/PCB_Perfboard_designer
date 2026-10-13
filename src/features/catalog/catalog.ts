@@ -3,11 +3,8 @@ import {ADVANCED_COMPONENT_DEFINITIONS, getAdvancedIconPath} from "../advanced-c
 import {deleteCustomIc, Ic, selectIc} from "../ic";
 import {getIcDefinition} from "../ic-definitions";
 import {editCustomIc, openIcEditor} from "../ic-editor-modal";
-import {armStandardComponent} from "../standard-components/arm-standard-component";
-import {armAdvancedComponent} from "../advanced-components/arm-advanced-component";
-import {StandardComponentState} from "../../state/StandardComponentState";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
-import {IcState} from "../../state/IcState";
+import {ToolState} from "../../state/ToolState";
+import {setActiveTool} from "../active-tool";
 import {CategoryId} from "./catalog-categories";
 
 // One entry in the Components panel, whichever placement system backs it. The panel and search
@@ -29,6 +26,11 @@ export interface CatalogItem {
   // Only on user-created parts.
   edit?: () => void;
   remove?: () => void;
+}
+
+function isArmed(kind: "standard-component" | "advanced-component", definitionId: string): boolean {
+  const active = ToolState.active;
+  return active.kind === kind && active.definitionId === definitionId;
 }
 
 const CUSTOM_ACTION_KEYWORDS = ["custom", "new", "create", "add"];
@@ -53,8 +55,11 @@ export function buildCatalog(): CatalogItem[] {
     items.push({
       key: `standard:${def.id}`, isAction: false, name: def.name, categoryId: def.category,
       keywords: def.keywords ?? [], iconPath: getIconPath(def), emoji: "🧩",
-      activate: () => armStandardComponent(def.id),
-      isArmed: () => StandardComponentState.armedDefinitionId === def.id
+      // Clicking the already-armed part again disarms it
+      activate: () => setActiveTool(isArmed("standard-component", def.id)
+        ? {kind: "select"}
+        : {kind: "standard-component", definitionId: def.id}),
+      isArmed: () => isArmed("standard-component", def.id)
     });
   }
 
@@ -62,8 +67,10 @@ export function buildCatalog(): CatalogItem[] {
     items.push({
       key: `advanced:${def.id}`, isAction: false, name: def.name, categoryId: def.category,
       keywords: def.keywords ?? [], iconPath: getAdvancedIconPath(def), emoji: "🧩",
-      activate: () => armAdvancedComponent(def.id),
-      isArmed: () => AdvancedComponentState.armedDefinitionId === def.id
+      activate: () => setActiveTool(isArmed("advanced-component", def.id)
+        ? {kind: "select"}
+        : {kind: "advanced-component", definitionId: def.id, rotation: 0}),
+      isArmed: () => isArmed("advanced-component", def.id)
     });
   }
 
@@ -73,8 +80,11 @@ export function buildCatalog(): CatalogItem[] {
       key: `ic:${ic.definitionId ?? ic.id}`, isAction: false, name: ic.name, categoryId: ic.category,
       keywords: def?.keywords ?? [], emoji: ic.category.indexOf("modules") === 0 ? "📟" : "📦",
       activate: () => selectIc(ic.id),
-      isArmed: () => IcState.selectedIc?.armedFrom === ic,
-      edit: ic.isCustom ? () => editCustomIc(ic.id) : undefined,
+      isArmed: () => {
+        const active = ToolState.active;
+        return active.kind === "ic" && active.template.armedFrom === ic;
+      },
+      edit: ic.isCustom ? () => editCustomIc(ic) : undefined,
       remove: ic.isCustom ? () => deleteCustomIc(ic.id) : undefined
     });
   }

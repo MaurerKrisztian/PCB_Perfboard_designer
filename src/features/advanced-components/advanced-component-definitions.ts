@@ -17,6 +17,8 @@ export interface AdvancedComponentDefinition {
   name: string;
   // Extra search terms (abbreviations, part families) that don't appear in `name`.
   keywords?: string[];
+  // Letters of a placed part's reference designator: "Q" makes Q1, Q2...
+  refPrefix: string;
   iconPath?: string;
   fallbackLabel: string;
   pinOffsets: PinOffset[];
@@ -41,6 +43,10 @@ export interface AdvancedComponentDefinition {
   // body). Parts without it get their value label next to the body instead.
   valueLabelOffset?: PinOffset;
   unit?: ComponentUnit;
+  // The value prompt still normalizes anything that parses as a `unit` quantity (so "10k"
+  // becomes "10kΩ"), but keeps any other text as typed instead of rejecting it. For parts whose
+  // real-world marking isn't a bare number, e.g. a pot's taper code ("B10K", "A100K").
+  freeFormValue?: boolean;
   // When true, the icon is scaled to fill the full body box (rather than padded within it)
   // and, once it has loaded, the body's solid color fill is skipped entirely so only the
   // icon's own artwork is visible. Only sensible when bodyOutline's aspect ratio matches the
@@ -119,29 +125,33 @@ const POT_BODY_OUTLINE: PinOffset[] = [
   {dx: 0 - POT_OUTLINE_PAD, dy: 0 + POT_OUTLINE_PAD},
 ];
 
+// Center of POT_BODY_OUTLINE's bounding box (x -0.3..4.3, y -1.3..2.3), which iconFillsBody
+// stretches potentiometer.svg across. That box's 4.6 x 3.6 ratio matches the SVG's viewBox.
+const POT_ICON_CENTER: PinOffset = {dx: 2, dy: 0.5};
+
 export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
-    id: "transistor", category: "semiconductors.transistors", name: "Transistor", fallbackLabel: "Q",
+    id: "transistor", refPrefix: "Q", category: "semiconductors.transistors", name: "Transistor", fallbackLabel: "Q",
     keywords: ["bjt", "npn", "pnp", "to-92", "2n2222", "bc547"],
     pinOffsets: INLINE_3_PINS,
     bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: TRANSISTOR_PIN_LABEL_OFFSET
   },
   {
-    id: "mosfet", category: "semiconductors.transistors", name: "MOSFET", fallbackLabel: "MOS",
+    id: "mosfet", refPrefix: "Q", category: "semiconductors.transistors", name: "MOSFET", fallbackLabel: "MOS",
     keywords: ["fet", "to-220", "irf"],
     pinOffsets: INLINE_3_PINS,
     bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
   },
   {
-    id: "potentiometer", category: "passives.resistors", name: "Potentiometer", fallbackLabel: "POT",
+    id: "potentiometer", refPrefix: "RV", category: "passives.resistors", name: "Potentiometer", fallbackLabel: "POT",
     keywords: ["pot", "variable resistor", "trimmer", "knob"],
     pinOffsets: WIDE_INLINE_3_PINS, shadedOffsets: WIDE_INLINE_3_SHADED, bodyOutline: POT_BODY_OUTLINE,
-    iconOffset: {dx: 2, dy: -0.5}, iconSize: 60, unit: "Ω"
+    iconOffset: POT_ICON_CENTER, iconFillsBody: true, unit: "Ω", freeFormValue: true
   },
   {
-    id: "header-pins", category: "connectors", name: "Header Pins", fallbackLabel: "HDR",
+    id: "header-pins", refPrefix: "J", category: "connectors", name: "Header Pins", fallbackLabel: "HDR",
     keywords: ["header", "pin header", "jumper", "dupont"],
     // Only the 1x1 default lives here - the real lattice is the placed instance's rows/cols.
     pinOffsets: [{dx: 0, dy: 0}],

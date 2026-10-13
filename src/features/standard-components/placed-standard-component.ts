@@ -1,5 +1,8 @@
 import {IDot} from "../../interfaces/dot.interface";
-import {StandardComponentState} from "../../state/StandardComponentState";
+import {Point} from "../../interfaces/point.interface";
+import {PlacedPart} from "../../interfaces/placed-part.interface";
+import {SavedStandardComponent} from "../../project-file/project-file";
+import {toGridPos} from "../../project-file/grid";
 import {ComponentDefinition, getComponentDefinition} from "./component-definitions";
 import {drawStandardComponentBody, getStandardComponentSpan} from "./standard-component-render";
 
@@ -13,8 +16,8 @@ const BODY_HIT_PAD = 4;
 const LEAD_HIT_HALF_WIDTH = 8;
 const END_HIT_PAD = 6;
 
-export class PlacedStandardComponent {
-  public id: number = Math.random() * 100;
+export class PlacedStandardComponent implements PlacedPart {
+  public ref = "";
   public value?: string;
   public color?: string;
 
@@ -24,15 +27,45 @@ export class PlacedStandardComponent {
     public endDot: IDot
   ) {}
 
+  get kind(): "standard-component" { return "standard-component"; }
+  get layer(): "over-wires" { return "over-wires"; }
+
   getDefinition(): ComponentDefinition | undefined {
     return getComponentDefinition(this.definitionId);
   }
 
-  draw() {
+  draw(selected: boolean) {
     const def = this.getDefinition();
     if (!def) return;
-    const isSelected = this === StandardComponentState.selectedPlacedComponent;
-    drawStandardComponentBody(this.startDot, this.endDot, def, {selected: isSelected, value: this.value, color: this.color});
+    drawStandardComponentBody(this.startDot, this.endDot, def, {selected, value: this.value, color: this.color});
+  }
+
+  getPinPositions(): Point[] {
+    return [{x: this.startDot.x, y: this.startDot.y}, {x: this.endDot.x, y: this.endDot.y}];
+  }
+
+  getOccupiedPositions(): Point[] {
+    return this.getPinPositions();
+  }
+
+  getAnchorDots(): IDot[] {
+    return [this.startDot, this.endDot];
+  }
+
+  setAnchorDots(dots: IDot[]) {
+    if (dots[0]) this.startDot = dots[0];
+    if (dots[1]) this.endDot = dots[1];
+  }
+
+  serialize(): SavedStandardComponent {
+    return {
+      ref: this.ref,
+      definitionId: this.definitionId,
+      from: toGridPos(this.startDot),
+      to: toGridPos(this.endDot),
+      ...(this.value ? {value: this.value} : {}),
+      ...(this.color ? {color: this.color} : {}),
+    };
   }
 
   containsPoint(x: number, y: number): boolean {

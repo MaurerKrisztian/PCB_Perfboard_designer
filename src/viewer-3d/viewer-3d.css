@@ -1,0 +1,100 @@
+/* Full-window 3D board viewer. Sits above everything, including the editor's fullscreen mode. */
+.viewer3d-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  background: #0b1220;
+  color: #e5e7eb;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.viewer3d-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0.6rem 1rem;
+  background: #111827;
+  border-bottom: 1px solid #1f2937;
+}
+
+.viewer3d-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-width: 0;
+}
+
+.viewer3d-status {
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewer3d-status-error {
+  color: #f87171;
+}
+
+.viewer3d-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.viewer3d-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  background: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.viewer3d-btn:hover {
+  background: #273244;
+  border-color: #4b5563;
+}
+
+.viewer3d-btn-close {
+  color: #fecaca;
+  border-color: #7f1d1d;
+}
+
+.viewer3d-file {
+  display: none;
+}
+
+.viewer3d-canvas-host {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.viewer3d-canvas-host canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+
+.viewer3d-canvas-host canvas:active {
+  cursor: grabbing;
+}
+
+.viewer3d-hint {
+  padding: 0.4rem 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  text-align: center;
+  background: #0b1220;
+}

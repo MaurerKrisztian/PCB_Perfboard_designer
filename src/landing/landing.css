@@ -17,6 +17,33 @@
   box-sizing: border-box;
 }
 
+/* Dark, slim scrollbars to match the page (same style as the editor). */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 var(--bg);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border: 2px solid transparent; /* insets the thumb so it floats inside its track */
+  background-clip: padding-box;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -203,7 +230,7 @@ h1, h2, h3 {
   border-bottom: 1px solid var(--border);
 }
 
-.window-bar span {
+.window-bar span:not(.shot-label) {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -214,6 +241,34 @@ h1, h2, h3 {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Hero: the 3D render up front, with the 2D editor layout overlapping its corner. */
+.hero-media {
+  position: relative;
+  padding-bottom: 5rem;
+}
+
+.hero-inset {
+  position: absolute;
+  bottom: 0;
+  left: -1.75rem;
+  width: 44%;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.hero-inset .window-bar {
+  padding: 0.4rem 0.6rem;
+}
+
+.shot-label {
+  margin-left: auto;
+  color: var(--text-faint);
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* --- Sections --- */
@@ -272,6 +327,66 @@ h1, h2, h3 {
   margin: 0;
   color: var(--text-muted);
   font-size: 0.95rem;
+}
+
+/* --- 3D view showcase --- */
+
+.showcase {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 3rem;
+  max-width: 1200px;
+}
+
+.showcase h2 {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.showcase-text p {
+  color: var(--text-muted);
+}
+
+.showcase-text strong {
+  color: var(--text);
+}
+
+.showcase-list {
+  margin: 1.25rem 0 0;
+  padding-left: 1.2rem;
+  color: var(--text-muted);
+}
+
+.showcase-list li + li {
+  margin-top: 0.4rem;
+}
+
+/* Picture on the left, text on the right; the text still comes first in the page. */
+.showcase-reverse {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.showcase-reverse .showcase-media {
+  order: -1;
+}
+
+/* A main screenshot with a smaller one overlapping its corner, as in the hero. */
+.showcase-media {
+  position: relative;
+  padding-bottom: 4.5rem;
+}
+
+.showcase-inset {
+  position: absolute;
+  bottom: 0;
+  right: -1.75rem;
+  width: 46%;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.showcase-inset .window-bar {
+  padding: 0.4rem 0.6rem;
 }
 
 .steps {
@@ -428,6 +543,23 @@ h1, h2, h3 {
   .hero {
     grid-template-columns: minmax(0, 1fr);
     padding-top: 3rem;
+  }
+
+  .hero-inset {
+    left: 0.75rem;
+  }
+
+  .showcase {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+
+  .showcase-reverse .showcase-media {
+    order: 0;
+  }
+
+  .showcase-inset {
+    right: 0.75rem;
   }
 
   .site-nav {

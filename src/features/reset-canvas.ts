@@ -1,9 +1,7 @@
 import {Canvas} from "../state/Canvas";
-import {GridConfig} from "../state/GridConfig";
+import {activeBoardLook} from "./board-looks";
 
 export function resetCanvas(){
-  Canvas.ctx.fillStyle = GridConfig.canvasBackgroundColor
   Canvas.ctx.clearRect(0, 0, Canvas.gridWidth, Canvas.gridHeight);
-  Canvas.ctx.fillRect(0, 0, Canvas.gridWidth, Canvas.gridHeight);
-  Canvas.ctx.fill()
+  activeBoardLook().paintBoard(Canvas.gridWidth, Canvas.gridHeight);
 }

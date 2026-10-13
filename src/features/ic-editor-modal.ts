@@ -92,9 +92,8 @@ export function openIcEditor(type: CustomIcType) {
   if (modal) modal.style.display = 'flex';
 }
 
-export function editCustomIc(id: number | string) {
-  const ic = Ic.IC_CONTAINER.find(item => String(item.id) === String(id));
-  if (!ic || !ic.isCustom) return;
+export function editCustomIc(ic: Ic) {
+  if (!ic.isCustom) return;
   editingIc = ic;
   nameInputEl.value = ic.name;
   widthInputEl.value = String(ic.widthPin);

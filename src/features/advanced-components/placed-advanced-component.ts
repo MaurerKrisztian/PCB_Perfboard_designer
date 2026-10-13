@@ -1,12 +1,14 @@
 import {IDot} from "../../interfaces/dot.interface";
+import {PlacedPart} from "../../interfaces/placed-part.interface";
+import {SavedAdvancedComponent} from "../../project-file/project-file";
+import {toGridPos} from "../../project-file/grid";
 import {GridConfig} from "../../state/GridConfig";
-import {AdvancedComponentState} from "../../state/AdvancedComponentState";
 import {AdvancedComponentDefinition, getAdvancedComponentDefinition, PIN_TILE_HALF, PinOffset} from "./advanced-component-definitions";
 import {drawAdvancedComponentBody, getBoundingRect, PIN_PAD, Point} from "./advanced-component-render";
 import {rotateOffset} from "./rotate-offset";
 
-export class PlacedAdvancedComponent {
-  public id: number = Math.random() * 100;
+export class PlacedAdvancedComponent implements PlacedPart {
+  public ref = "";
   public value?: string;
   public rotationAngle: 0 | 90 | 180 | 270 = 0;
   // Only meaningful for gridSizable definitions; 1x1 keeps every fixed-geometry part - and
@@ -21,6 +23,9 @@ export class PlacedAdvancedComponent {
   ) {
     this.rotationAngle = rotationAngle;
   }
+
+  get kind(): "advanced-component" { return "advanced-component"; }
+  get layer(): "over-wires" { return "over-wires"; }
 
   // Rows/cols spanned by a two-click placement, from the two corner dots in either order.
   static gridSpanFromDots(a: IDot, b: IDot): {rows: number; cols: number} {
@@ -107,14 +112,38 @@ export class PlacedAdvancedComponent {
     this.rotationAngle = ((this.rotationAngle + 90) % 360) as 0 | 90 | 180 | 270;
   }
 
-  draw() {
+  draw(selected: boolean) {
     const def = this.getDefinition();
     if (!def) return;
-    const isSelected = this === AdvancedComponentState.selectedPlacedComponent;
     drawAdvancedComponentBody(
       this.getPinPositions(), this.getShadedPositions(), this.getBodyOutline(), this.getIconAnchor(),
-      def, this.rotationAngle, {selected: isSelected}
+      def, this.rotationAngle, {selected}
     );
+  }
+
+  // Pin and shaded-hole positions already account for rotation and rows/cols.
+  getOccupiedPositions(): Point[] {
+    return [...this.getPinPositions(), ...this.getShadedPositions()];
+  }
+
+  getAnchorDots(): IDot[] {
+    return [this.anchorDot];
+  }
+
+  setAnchorDots(dots: IDot[]) {
+    if (dots[0]) this.anchorDot = dots[0];
+  }
+
+  serialize(): SavedAdvancedComponent {
+    return {
+      ref: this.ref,
+      definitionId: this.definitionId,
+      at: toGridPos(this.anchorDot),
+      rotation: this.rotationAngle,
+      rows: this.rows,
+      cols: this.cols,
+      ...(this.value ? {value: this.value} : {}),
+    };
   }
 
   // Axis-aligned box around the visible body - the outline if the definition has one,
