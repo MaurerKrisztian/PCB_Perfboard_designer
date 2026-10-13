@@ -46,14 +46,14 @@ export function updateSelectionStatus() {
   if (selection?.kind === "part") {
     const part = selection.part;
     if (part.kind === "ic") {
-      setStatus(statusEl, `Placed IC Selected (${part.name}) [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
+      setStatus(statusEl, `${part.ref} ${part.name} Selected [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
     } else if (part.kind === "advanced-component") {
       const def = part.getDefinition();
       const size = def?.gridSizable ? ` ${part.rows}×${part.cols}` : "";
-      setStatus(statusEl, `${def?.name ?? "Component"}${size} Selected [Drag to Move • R to Rotate • Del to Remove]`, SELECTED_PART_COLOR);
+      setStatus(statusEl, `${part.ref} ${def?.name ?? "Component"}${size} Selected [Drag to Move • R to Rotate • Del to Remove]`, SELECTED_PART_COLOR);
     } else {
       const def = part.getDefinition();
-      setStatus(statusEl, `${def?.name ?? "Component"} Selected [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
+      setStatus(statusEl, `${part.ref} ${def?.name ?? "Component"} Selected [Drag to Move • Del to Remove]`, SELECTED_PART_COLOR);
     }
   } else if (isPlacementTool(tool)) {
     setStatus(statusEl, toolText);

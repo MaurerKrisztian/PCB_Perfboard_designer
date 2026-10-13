@@ -16,6 +16,7 @@ import "./features/ic-editor-modal";
 import "./features/standard-components/standard-components-panel";
 import "./features/advanced-components/advanced-components-panel";
 import "./features/toolbar";
+import "./features/board-type";
 import "./features/wire";
 import "./features/context-menu-actions";
 import "./features/color-picker";

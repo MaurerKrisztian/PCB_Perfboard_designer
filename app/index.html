@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="../favicon.png" />
 
-    <title>Perfboard Designer | Virtual PCB Prototyping</title>
-    <meta name="description" content="Online perfboard editor: place resistors, ICs, LEDs and wires on a virtual hole grid, then save your layout or export it as an image. Free, no sign-up." />
+    <title>Perfboard Designer | Perfboard &amp; Stripboard Editor</title>
+    <meta name="description" content="Online perfboard and stripboard editor: place resistors, ICs, LEDs and wires on a virtual hole grid, cut strips, then save your layout or export it as an image. Free, no sign-up." />
     <link rel="canonical" href="https://perfboarddesigner.com/app/" />
     <!-- Link previews (Facebook, LinkedIn, Discord, Slack, X...) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Perfboard Designer" />
-    <meta property="og:title" content="Perfboard Designer – Online Perfboard Editor" />
-    <meta property="og:description" content="Lay out your perfboard circuit right in the browser. Free, no sign-up." />
+    <meta property="og:title" content="Perfboard Designer – Online Perfboard &amp; Stripboard Editor" />
+    <meta property="og:description" content="Lay out your perfboard or stripboard circuit right in the browser. Free, no sign-up." />
     <meta property="og:url" content="https://perfboarddesigner.com/app/" />
     <meta property="og:image" content="https://perfboarddesigner.com/images/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
@@ -69,7 +69,7 @@
       <!-- Hidden native color input, driven by the right-click "Change Color" context menu action -->
       <input type="color" id="colorPicker" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;">
 
-      <!-- Tools: Tool Mode (always visible) + Grid Configuration (collapsible) -->
+      <!-- Tools: Tool Mode (always visible) + Board (collapsible) -->
       <div class="sidebar-group">
         <div class="sidebar-group-title">
           <span class="section-icon">🔧</span>
@@ -91,6 +91,11 @@
               <span class="tool-icon">📝</span>
               <span class="tool-label">Note</span>
             </button>
+            <!-- Stripboard only; board-type.ts shows it -->
+            <button class="tool-mode-btn" data-mode="cut" id="cutToolBtn" title="Cut the strip at a hole" hidden>
+              <span class="tool-icon">✂</span>
+              <span class="tool-label">Cut</span>
+            </button>
           </div>
           <div class="btn-group">
             <button id="backBtn" class="icon-btn">↩ Undo</button>
@@ -100,14 +105,22 @@
 
         <div class="sidebar-divider"></div>
 
-        <!-- Grid Configuration -->
+        <!-- Board: type and size -->
         <div class="sidebar-section">
           <div class="section-title" data-collapse="gridSection">
             <span class="section-icon">⊞</span>
-            <span>Grid Configuration</span>
+            <span>Board</span>
             <span class="collapse-chevron">▾</span>
           </div>
           <div class="section-body" id="gridSection">
+            <div class="board-switch" id="boardTypeSelector">
+              <button data-board-type="perfboard" class="active-mode">Perfboard</button>
+              <button data-board-type="stripboard">Stripboard</button>
+            </div>
+            <div class="board-switch" id="stripDirectionSelector" hidden>
+              <button data-strips="horizontal" class="active-mode">↔ Horizontal strips</button>
+              <button data-strips="vertical">↕ Vertical strips</button>
+            </div>
             <div class="grid-inputs">
               <label style="font-size:0.8rem; color:var(--text-muted);">W:</label>
               <input type="number" id="dotMatrixWidth" min="1" value="10">
@@ -251,7 +264,7 @@
           <span id="zoomLevelText" style="font-size:0.75rem; color:var(--text-muted); font-family:monospace; min-width:40px; text-align:center;">100%</span>
           <button id="zoomInBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🔍 +</button>
           <button id="zoomFitBtn" class="btn-accent" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🎯 Fit</button>
-          <button id="toggleValuesBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🏷 Values</button>
+          <button id="toggleValuesBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;" title="Show part names and values">🏷 Labels</button>
           <button id="canvasFullscreenTrigger" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">⛶ Fullscreen</button>
         </div>
       </div>

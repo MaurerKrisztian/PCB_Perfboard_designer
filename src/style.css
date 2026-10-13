@@ -340,10 +340,17 @@ body {
   padding: 0 0.25rem;
 }
 
+/* One row of equal buttons, however many are shown (Cut only appears on a stripboard) */
 .tool-mode-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
   gap: 0.5rem;
+}
+
+/* Outranks the display: flex below */
+.tool-mode-grid .tool-mode-btn[hidden] {
+  display: none;
 }
 
 /* Wire arm button - arms wire placement, matching how components/ICs are armed */
@@ -428,6 +435,23 @@ body {
 }
 
 /* Grid presets row */
+/* Board type and strip direction switches */
+.board-switch {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+}
+
+.board-switch[hidden] {
+  display: none;
+}
+
+.board-switch button {
+  flex: 1;
+  padding: 0.4rem;
+  font-size: 0.75rem;
+}
+
 .grid-presets {
   display: flex;
   flex-wrap: wrap;
@@ -711,7 +735,8 @@ kbd {
 }
 
 /* Tool Mode & Gauge Selector Active States */
-.tool-mode-btn.active-mode, .gauge-btn.active-mode, .wire-arm-btn.active-mode, .btn-accent.active-mode {
+.tool-mode-btn.active-mode, .gauge-btn.active-mode, .wire-arm-btn.active-mode, .btn-accent.active-mode,
+.board-switch button.active-mode {
   background: linear-gradient(135deg, #0284c7, #0369a1);
   border-color: #38bdf8;
   color: #ffffff;

@@ -8,7 +8,7 @@ import {drawAdvancedComponentBody, getBoundingRect, PIN_PAD, Point} from "./adva
 import {rotateOffset} from "./rotate-offset";
 
 export class PlacedAdvancedComponent implements PlacedPart {
-  public id: number = Math.random() * 100;
+  public ref = "";
   public value?: string;
   public rotationAngle: 0 | 90 | 180 | 270 = 0;
   // Only meaningful for gridSizable definitions; 1x1 keeps every fixed-geometry part - and
@@ -136,6 +136,7 @@ export class PlacedAdvancedComponent implements PlacedPart {
 
   serialize(): SavedAdvancedComponent {
     return {
+      ref: this.ref,
       definitionId: this.definitionId,
       at: toGridPos(this.anchorDot),
       rotation: this.rotationAngle,

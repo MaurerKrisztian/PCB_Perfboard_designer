@@ -1,7 +1,7 @@
 import {Canvas} from "../state/Canvas";
-import {paintBoard} from "./board-appearance";
+import {activeBoardLook} from "./board-looks";
 
 export function resetCanvas(){
   Canvas.ctx.clearRect(0, 0, Canvas.gridWidth, Canvas.gridHeight);
-  paintBoard(Canvas.gridWidth, Canvas.gridHeight);
+  activeBoardLook().paintBoard(Canvas.gridWidth, Canvas.gridHeight);
 }

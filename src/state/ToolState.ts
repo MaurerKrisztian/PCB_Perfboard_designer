@@ -10,6 +10,8 @@ export type ActiveTool =
   | {kind: "select"}
   | {kind: "eraser"}
   | {kind: "note"}
+  // Stripboard only: cuts the strip at a hole, or mends a cut.
+  | {kind: "cut"}
   // Wire runs chain: each wire's end pad becomes the next one's start.
   | {kind: "wire"; start?: IDot}
   // A clone of the catalog entry, so rotating it before placing leaves the catalog alone.
@@ -19,10 +21,10 @@ export type ActiveTool =
   | {kind: "advanced-component"; definitionId: string; rotation: Rotation; start?: IDot};
 
 // The toolbar's mode buttons. Everything else is a placement tool.
-export type ToolMode = "select" | "eraser" | "note";
+export type ToolMode = "select" | "eraser" | "note" | "cut";
 
 export function isPlacementTool(tool: ActiveTool): boolean {
-  return tool.kind !== "select" && tool.kind !== "eraser" && tool.kind !== "note";
+  return tool.kind !== "select" && tool.kind !== "eraser" && tool.kind !== "note" && tool.kind !== "cut";
 }
 
 export class ToolState {

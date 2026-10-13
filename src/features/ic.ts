@@ -15,15 +15,17 @@ import {Point} from "../interfaces/point.interface";
 import {SavedCustomIc, SavedIc} from "../project-file/project-file";
 import {toGridPos} from "../project-file/grid";
 import {readCustomIcs} from "../project-file/read-project-file";
+import {ViewState} from "../state/ViewState";
 
 
 // Both a catalog entry (IC_CONTAINER, the clone armed for placement) and a chip placed on the
-// board; only the latter has a topLeftDot. Catalog entries are saved by JSON.stringify-ing them
-// whole, so anything added here as an instance field ends up in project files.
+// board; only the latter has a topLeftDot and a ref. `id` identifies the catalog entry, not the
+// placed chip. Catalog entries are saved through customIcEntries, which picks its fields.
 export class Ic implements PlacedPart {
   static IC_CONTAINER: Ic[] = [];
 
   public id = Math.random() * 100;
+  public ref = "";
   public isCustom?: boolean = false;
   public rotationAngle: number = 0; // 0, 90, 180, 270
   topLeftDot: IDot | null = null;
@@ -318,9 +320,11 @@ export class Ic implements PlacedPart {
     const centerX = this.topLeftDot.x + (w / 2);
     const centerY = this.topLeftDot.y + (h / 2);
 
+    const title = ViewState.showPartLabels && this.ref ? `${this.ref} ${this.name}` : this.name;
+
     Canvas.ctx.save();
     Canvas.ctx.font = "bold 15px Inter, Arial";
-    const textWidth = Canvas.ctx.measureText(this.name).width;
+    const textWidth = Canvas.ctx.measureText(title).width;
     const badgeW = textWidth + 20;
     const badgeH = 26;
 
@@ -339,7 +343,7 @@ export class Ic implements PlacedPart {
     Canvas.ctx.fillStyle = isSelected ? "#38bdf8" : "#ffffff";
     Canvas.ctx.textAlign = "center";
     Canvas.ctx.textBaseline = "middle";
-    Canvas.ctx.fillText(this.name, centerX, centerY + 1);
+    Canvas.ctx.fillText(title, centerX, centerY + 1);
     Canvas.ctx.restore();
 
     this.drawPinMarkers();
@@ -384,6 +388,7 @@ export class Ic implements PlacedPart {
   // Only called for placed chips, which always have a topLeftDot.
   serialize(): SavedIc {
     return {
+      ref: this.ref,
       name: this.name,
       widthPin: this.widthPin,
       heightPin: this.heightPin,

@@ -1,8 +1,9 @@
 import {GRID_PITCH_PX, GridPos, holesAlong, pxToGrid} from "./grid";
 import {
-  PROJECT_FILE_VERSION, ProjectFile, Rotation, SavedAdvancedComponent, SavedCustomIc, SavedIc, SavedPad,
-  SavedStandardComponent, SavedWire
+  PROJECT_FILE_VERSION, ProjectFile, Rotation, SavedAdvancedComponent, SavedBoard, SavedCustomIc, SavedIc, SavedPad,
+  SavedPerfboard, SavedStandardComponent, SavedWire
 } from "./project-file";
+import {BoardRefs, refPrefixFor} from "./part-refs";
 
 // Reads any version of a project file into the current ProjectFile shape. Pure: no DOM and no
 // editor state, so the editor (file and localStorage loads) and the 3D viewer share it.
@@ -135,21 +136,72 @@ class Reader {
     return pads;
   }
 
-  result(project: Omit<ProjectFile, "version" | "board">): ReadProjectResult {
-    return {project: {version: PROJECT_FILE_VERSION, board: {cols: this.cols, rows: this.rows}, ...project}, skipped: this.skipped};
+  // A perfboard of this size. Every version 1 and 2 board is one.
+  perfboard(): SavedPerfboard {
+    return {type: "perfboard", cols: this.cols, rows: this.rows};
   }
+
+  // Version 3's board entry. Anything but a stripboard reads as a perfboard.
+  board(entry: Entry): SavedBoard {
+    if (entry.type !== "stripboard") return this.perfboard();
+    return {
+      type: "stripboard", cols: this.cols, rows: this.rows,
+      strips: entry.strips === "vertical" ? "vertical" : "horizontal",
+      cuts: this.cuts(entry.cuts),
+    };
+  }
+
+  // A stripboard's cut holes, each listed once.
+  cuts(value: unknown): GridPos[] {
+    const cuts: GridPos[] = [];
+    const seen = new Set<string>();
+    for (const item of Array.isArray(value) ? value : []) {
+      const at = this.gridPos(item);
+      if (!at) {
+        this.skipped++;
+        continue;
+      }
+      const key = `${at[0]},${at[1]}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      cuts.push(at);
+    }
+    return cuts;
+  }
+
+  result(board: SavedBoard, project: Omit<ProjectFile, "version" | "board">): ReadProjectResult {
+    giveEveryPartARef(project);
+    return {project: {version: PROJECT_FILE_VERSION, board, ...project}, skipped: this.skipped};
+  }
+}
+
+// Every part keeps the ref the file gives it, if that's well-formed and no earlier part took it;
+// the rest are numbered after them. Version 1 and 2 files have no refs, so all their parts are
+// numbered, in file order: U1, U2..., R1, R2...
+function giveEveryPartARef(project: Pick<ProjectFile, "placedIcs" | "placedStandardComponents" | "placedAdvancedComponents">) {
+  const parts = [
+    ...project.placedIcs.map(entry => ({entry, kind: "ic" as const, definitionId: undefined})),
+    ...project.placedStandardComponents.map(entry => ({entry, kind: "standard-component" as const, definitionId: entry.definitionId})),
+    ...project.placedAdvancedComponents.map(entry => ({entry, kind: "advanced-component" as const, definitionId: entry.definitionId})),
+  ];
+  const refs = new BoardRefs();
+  const unnamed = parts.filter(({entry}) => !refs.claim(entry.ref));
+  for (const part of unnamed) part.entry.ref = refs.claimNext(refPrefixFor(part));
 }
 
 function optional<K extends string, V>(key: K, value: V | undefined): {[P in K]?: V} {
   return (value === undefined ? {} : {[key]: value}) as {[P in K]?: V};
 }
 
-function readV2(data: Entry): ReadProjectResult {
-  const board = asEntry(data.board);
-  const cols = board && wholeCount(board.cols);
-  const rows = board && wholeCount(board.rows);
-  if (!cols || !rows) throw new ProjectFileError(NOT_A_PROJECT);
+// Versions 2 and 3: grid positions. Version 3 added the board type (with a stripboard's cuts) and
+// part refs. A version 2 board is always a perfboard, and its parts are given refs on reading.
+function readGridFile(data: Entry, version: 2 | 3): ReadProjectResult {
+  const boardEntry = asEntry(data.board);
+  const cols = boardEntry && wholeCount(boardEntry.cols);
+  const rows = boardEntry && wholeCount(boardEntry.rows);
+  if (!boardEntry || !cols || !rows) throw new ProjectFileError(NOT_A_PROJECT);
   const r = new Reader(cols, rows);
+  const board = version === 3 ? r.board(boardEntry) : r.perfboard();
 
   const pads = r.pads(data.pads, entry => ({at: r.gridPos(entry.at), color: text(entry.color), note: text(entry.note)}));
 
@@ -166,7 +218,7 @@ function readV2(data: Entry): ReadProjectResult {
     const heightPin = wholeCount(entry.heightPin);
     if (!at || !widthPin || !heightPin) return undefined;
     return {
-      name: text(entry.name) ?? "Component", widthPin, heightPin,
+      ref: text(entry.ref) ?? "", name: text(entry.name) ?? "Component", widthPin, heightPin,
       rotation: rotation(entry.rotation), pinDescription: pinLabels(entry.pinDescription), at,
     };
   });
@@ -176,7 +228,7 @@ function readV2(data: Entry): ReadProjectResult {
     const from = r.gridPos(entry.from);
     const to = r.gridPos(entry.to);
     if (!definitionId || !from || !to) return undefined;
-    return {definitionId, from, to, ...optional("value", text(entry.value)), ...optional("color", text(entry.color))};
+    return {ref: text(entry.ref) ?? "", definitionId, from, to, ...optional("value", text(entry.value)), ...optional("color", text(entry.color))};
   });
 
   const placedAdvancedComponents = r.list<SavedAdvancedComponent>(data.placedAdvancedComponents, entry => {
@@ -184,7 +236,7 @@ function readV2(data: Entry): ReadProjectResult {
     const at = r.gridPos(entry.at);
     if (!definitionId || !at) return undefined;
     return {
-      definitionId, at, rotation: rotation(entry.rotation),
+      ref: text(entry.ref) ?? "", definitionId, at, rotation: rotation(entry.rotation),
       rows: wholeCount(entry.rows) ?? 1, cols: wholeCount(entry.cols) ?? 1,
       ...optional("value", text(entry.value)),
     };
@@ -192,7 +244,7 @@ function readV2(data: Entry): ReadProjectResult {
 
   const customIcs = r.list(data.customIcs, readCustomIc);
 
-  return r.result({pads, wires, placedIcs, placedStandardComponents, placedAdvancedComponents, customIcs});
+  return r.result(board, {pads, wires, placedIcs, placedStandardComponents, placedAdvancedComponents, customIcs});
 }
 
 // Version 1: pixel coordinates, every hole listed, and the whole IC catalog (built-ins included).
@@ -237,7 +289,7 @@ function readV1(data: Entry): ReadProjectResult {
     const nearest = (px: number, count: number) =>
       Math.min(count - 1, Math.max(0, Math.round((px - GRID_PITCH_PX / 2) / GRID_PITCH_PX)));
     return {
-      name: text(entry.name) ?? "Component", widthPin, heightPin,
+      ref: "", name: text(entry.name) ?? "Component", widthPin, heightPin,
       rotation: rotation(entry.rotationAngle), pinDescription: pinLabels(entry.pinDescription),
       at: [nearest(x, r.cols), nearest(y, r.rows)],
     };
@@ -248,7 +300,7 @@ function readV1(data: Entry): ReadProjectResult {
     const from = r.pxPos(entry.startDotX, entry.startDotY);
     const to = r.pxPos(entry.endDotX, entry.endDotY);
     if (!definitionId || !from || !to) return undefined;
-    return {definitionId, from, to, ...optional("value", text(entry.value)), ...optional("color", text(entry.color))};
+    return {ref: "", definitionId, from, to, ...optional("value", text(entry.value)), ...optional("color", text(entry.color))};
   });
 
   const placedAdvancedComponents = r.list<SavedAdvancedComponent>(data.placedAdvancedComponents, entry => {
@@ -256,7 +308,7 @@ function readV1(data: Entry): ReadProjectResult {
     const at = r.pxPos(entry.anchorDotX, entry.anchorDotY);
     if (!definitionId || !at) return undefined;
     return {
-      definitionId, at, rotation: rotation(entry.rotationAngle),
+      ref: "", definitionId, at, rotation: rotation(entry.rotationAngle),
       rows: wholeCount(entry.rows) ?? 1, cols: wholeCount(entry.cols) ?? 1,
       ...optional("value", text(entry.value)),
     };
@@ -268,14 +320,14 @@ function readV1(data: Entry): ReadProjectResult {
     readCustomIc
   );
 
-  return r.result({pads, wires, placedIcs, placedStandardComponents, placedAdvancedComponents, customIcs});
+  return r.result(r.perfboard(), {pads, wires, placedIcs, placedStandardComponents, placedAdvancedComponents, customIcs});
 }
 
 export function readProjectFile(raw: unknown): ReadProjectResult {
   const data = asEntry(raw);
   if (!data) throw new ProjectFileError(NOT_A_PROJECT);
   if (data.version === undefined) return readV1(data);
-  if (data.version === PROJECT_FILE_VERSION) return readV2(data);
+  if (data.version === 2 || data.version === 3) return readGridFile(data, data.version);
   if (typeof data.version === "number" && data.version > PROJECT_FILE_VERSION) {
     throw new ProjectFileError(
       "This project was saved by a newer version of Perfboard Designer. Reload the page to get the latest version, then open it again."

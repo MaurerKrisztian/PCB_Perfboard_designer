@@ -362,6 +362,33 @@ h1, h2, h3 {
   margin-top: 0.4rem;
 }
 
+/* Picture on the left, text on the right; the text still comes first in the page. */
+.showcase-reverse {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.showcase-reverse .showcase-media {
+  order: -1;
+}
+
+/* A main screenshot with a smaller one overlapping its corner, as in the hero. */
+.showcase-media {
+  position: relative;
+  padding-bottom: 4.5rem;
+}
+
+.showcase-inset {
+  position: absolute;
+  bottom: 0;
+  right: -1.75rem;
+  width: 46%;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.showcase-inset .window-bar {
+  padding: 0.4rem 0.6rem;
+}
+
 .steps {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -525,6 +552,14 @@ h1, h2, h3 {
   .showcase {
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
+  }
+
+  .showcase-reverse .showcase-media {
+    order: 0;
+  }
+
+  .showcase-inset {
+    right: 0.75rem;
   }
 
   .site-nav {

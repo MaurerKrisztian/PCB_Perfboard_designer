@@ -8,9 +8,10 @@ import {IDot} from "../interfaces/dot.interface";
 import {ILine} from "../interfaces/line.interface";
 import {ToolState} from "../state/ToolState";
 import {SelectionState} from "../state/SelectionState";
-import {drawComponentValueLabels} from "./component-value-labels";
+import {drawPartLabels} from "./part-labels";
 import {behaviorOf} from "./tools";
-import {DEFAULT_DOT_COLOR, drawMarkedPad, drawPad, PAD_RADIUS} from "./board-appearance";
+import {activeBoardLook} from "./board-looks";
+import {PAD_RADIUS} from "./board-looks/board-look";
 import {GridConfig} from "../state/GridConfig";
 
 // How strongly a hole shows through an IC body sitting on top of it.
@@ -41,11 +42,7 @@ function drawDot(dot: IDot, underIc = false){
     Canvas.ctx.save();
     Canvas.ctx.globalAlpha = COVERED_PAD_OPACITY;
   }
-  if (dot.color && dot.color.toLowerCase() !== DEFAULT_DOT_COLOR) {
-    drawMarkedPad(dot.x, dot.y, dot.color);
-  } else {
-    drawPad(dot.x, dot.y);
-  }
+  activeBoardLook().drawHole(dot);
   if (underIc) Canvas.ctx.restore();
 
   if (dot === SelectionState.dot) {
@@ -152,8 +149,8 @@ export function redrawCanvas() {
   for (const part of PartState.parts) {
     if (part.layer === "over-wires") part.draw(part === selected);
   }
-  // 5. Draw silkscreen-style component value labels (when toggled on)
-  drawComponentValueLabels();
+  // 5. Draw silkscreen-style part labels, ref and value (when toggled on)
+  drawPartLabels();
   // 6. Draw IC text badges on top of everything
   PartState.parts.forEach((part: PlacedPart) => part.drawOverlay?.(part === selected));
   // 7. The active tool's placement preview
