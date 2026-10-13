@@ -22,16 +22,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-  <script type="module" crossorigin src="../assets/app.5d2888fc.js"></script>
+  <script type="module" crossorigin src="../assets/app.18da0fcb.js"></script>
   <link rel="modulepreload" crossorigin href="../assets/modulepreload-polyfill.c7c6310f.js">
-  <link rel="stylesheet" href="../assets/index.8fe50ea5.css">
+  <link rel="stylesheet" href="../assets/index.ec461139.css">
 </head>
 
 <body>
 
   <!-- App Header -->
   <header class="app-header">
-    <div class="brand-logo">
+    <a class="brand-logo" href="../" title="Back to the Perfboard Designer home page">
       <div class="brand-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
           <circle cx="6" cy="6" r="2" />
@@ -43,23 +43,38 @@
       </div>
       <div>
         <span class="brand-title">Perfboard Designer</span>
-        <span class="brand-tag">v1.0</span>
-        <a class="brand-link" href="../contributors/">Contributors</a>
       </div>
-    </div>
+    </a>
     
-    <div class="header-actions">
-      <button id="toggleFullscreenBtn" class="btn-accent">⛶ Fullscreen</button>
-      <button id="open3dViewBtn" class="btn-accent">🧊 3D View</button>
-      <button id="downloadBtn" class="btn-primary">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download Image
-      </button>
-      <button id="saveProgressBtn" class="btn">Save Progress</button>
-      <button id="saveProjectBtn" class="btn-accent">Save Project</button>
-      <button id="loadProjectTrigger" class="btn">Load Project</button>
-      <button id="resetBtn" class="btn-danger">Reset</button>
+    <nav class="menu-bar">
+      <div class="menu">
+        <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">File</button>
+        <div class="menu-panel" role="menu" hidden>
+          <button id="newProjectBtn" role="menuitem">New Project...</button>
+          <button id="loadProjectTrigger" role="menuitem">Load Project from File...</button>
+          <div class="menu-divider"></div>
+          <button id="saveProgressBtn" role="menuitem">Save Project to Browser...</button>
+          <button id="saveProjectBtn" role="menuitem">Save Project to File...</button>
+          <div class="menu-divider"></div>
+          <button id="downloadBtn" role="menuitem">Download Image</button>
+        </div>
+      </div>
+
+      <div class="menu">
+        <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">View</button>
+        <div class="menu-panel" role="menu" hidden>
+          <button id="toggleFullscreenBtn" role="menuitem">Fullscreen</button>
+          <button data-open-3d role="menuitem">3D View</button>
+          <div class="menu-divider"></div>
+          <button id="toggleSidebarBtn" role="menuitemcheckbox" aria-checked="true">Tools Sidebar<span class="menu-check">✓</span></button>
+          <button id="toggleShortcutsBtn" role="menuitemcheckbox" aria-checked="true">Keyboard Shortcuts<span class="menu-check">✓</span></button>
+        </div>
+      </div>
       <input type="file" id="loadProjectBtn" style="display:none">
+    </nav>
+
+    <div class="header-actions">
+      <button id="open3dViewBtn" data-open-3d class="btn-accent">🧊 3D View</button>
     </div>
   </header>
 
@@ -262,7 +277,6 @@
           <span>Pointer: Idle / Select</span>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
-          <button id="toggleSidebarBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">◀ Sidebar</button>
           <button id="zoomOutBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🔍 -</button>
           <span id="zoomLevelText" style="font-size:0.75rem; color:var(--text-muted); font-family:monospace; min-width:40px; text-align:center;">100%</span>
           <button id="zoomInBtn" class="btn" style="padding:0.25rem 0.5rem; font-size:0.75rem;">🔍 +</button>
@@ -284,7 +298,7 @@
     </section>
 
     <!-- Right Sidebar: Shortcuts & Legend -->
-    <aside class="right-sidebar tool-panel">
+    <aside id="shortcutsPanel" class="right-sidebar tool-panel">
       <div class="section-title">Keyboard Shortcuts</div>
       <div id="shortcuts"></div>
     </aside>
