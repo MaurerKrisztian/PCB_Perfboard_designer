@@ -1,8 +1,8 @@
-<h1 align="center">Perfboard Designer: Free Online Perfboard &amp; Stripboard Layout Tool</h1>
+<h1 align="center">Perfboard Designer</h1>
 
 <p align="center">
-  <strong>Plan your perfboard or stripboard (Veroboard) circuit in the browser before you solder.</strong><br />
-  Place parts and wires on a virtual hole grid, cut strips, and check the finished board in 3D.
+  A browser-based layout editor for perfboard and stripboard (Veroboard) circuits.<br />
+  Place components and wires on the hole grid, mark strip cuts, and view the board in 3D.
 </p>
 
 <p align="center">
