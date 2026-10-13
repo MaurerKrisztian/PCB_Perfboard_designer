@@ -19,7 +19,7 @@ The **PCB Perfboard Designer** is an advanced, user-friendly web CAD application
 - ⛶ **Fullscreen Focus Mode & Widescreen Auto-Fit**: Expand the canvas workspace to `100vw` × `100vh` for distraction-free designing. Includes auto-fit scale calculation (`🎯 Fit`) to display large boards (`30×20`, `40×30`, `50×50`) with zero scrollbars.
 - 🖱 **Middle Mouse Button Board Panning**: Pan across large perfboard grids by holding the middle mouse wheel button and dragging.
 - 🔍 **Smooth Board Zooming**: Zoom in and out smoothly from `20%` up to `300%` using `Ctrl + Mouse Wheel` or dedicated zoom buttons.
-- 💾 **Full Progress & Project File Persistence**: Save your progress locally (`Save Progress`) or export/import complete circuit designs as JSON project files (`Save Project` / `Load Project`).
+- 💾 **Full Progress & Project File Persistence**: Save your progress locally (`File → Save Project to Browser`) or export/import complete circuit designs as JSON project files (`File → Save Project to File` / `Load Project from File`).
 - 🛠 **Dedicated Tool Modes**: Toggle between `🖐 Select` (inspection only), `✏ Wire`, `🧹 Eraser`, and `📝 Note` annotation modes.
 - 🖱 **Right-Click Context Menu**: Quick access to color changes, text note editing, and component deletion.
 
