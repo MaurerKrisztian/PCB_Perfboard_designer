@@ -48,9 +48,9 @@
         <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">File</button>
         <div class="menu-panel" role="menu" hidden>
           <button id="newProjectBtn" role="menuitem">New Project...</button>
-          <button id="loadProjectTrigger" role="menuitem">Load Project from File...</button>
+          <button id="openProjectBtn" role="menuitem">Open Project...</button>
+          <button id="loadProjectTrigger" role="menuitem">Import Project from File...</button>
           <div class="menu-divider"></div>
-          <button id="saveProgressBtn" role="menuitem">Save Project to Browser...</button>
           <button id="saveProjectBtn" role="menuitem">Save Project to File...</button>
           <div class="menu-divider"></div>
           <button id="downloadBtn" role="menuitem">Download Image</button>
@@ -68,6 +68,8 @@
         </div>
       </div>
       <input type="file" id="loadProjectBtn" style="display:none">
+      <!-- The open project's name, filled in by projects-modal.ts. -->
+      <button id="currentProjectBtn" class="project-name-btn"></button>
     </nav>
 
     <div class="header-actions">
@@ -355,6 +357,27 @@
       <div class="modal-footer">
         <button id="cancelCustomIcBtn" class="btn">Cancel</button>
         <button id="saveCustomIcBtn" class="btn-primary">💾 Save Component</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Projects Modal -->
+  <div id="projectsModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card projects-card" role="dialog" aria-modal="true" aria-labelledby="projectsModalTitle">
+      <div class="modal-header">
+        <span id="projectsModalTitle" class="modal-title projects-title">📁 Projects <span id="projectsCount" class="projects-count"></span></span>
+        <button id="closeProjectsModalBtn" class="close-btn" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Shown once there are enough projects to look through (projects-modal.ts). -->
+        <input type="search" id="projectsSearch" class="projects-search" placeholder="Search projects..." aria-label="Search projects" hidden>
+        <ul id="projectsList" class="projects-grid"></ul>
+      </div>
+
+      <div class="modal-footer projects-footer">
+        <span class="projects-footer-hint">💾 Saved in this browser as you edit</span>
+        <button id="modalImportProjectBtn" class="btn">Import from File...</button>
       </div>
     </div>
   </div>

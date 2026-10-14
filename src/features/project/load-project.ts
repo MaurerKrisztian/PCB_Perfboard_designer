@@ -1,4 +1,3 @@
-import {Utils} from "../../utils/utils";
 import {LineState} from "../../state/LineState";
 import {PartState} from "../../state/PartState";
 import type {Part} from "../../interfaces/placed-part.interface";
@@ -11,40 +10,8 @@ import {resetForNewBoard} from "../reset-interaction";
 import {createDotGrid, heightInput, widthInput} from "./resize-grid";
 import {buildDotIndex, dotPositionKey} from "../dot-lookup";
 import {GridPos, gridToPx} from "../../project-file/grid";
-import {ProjectFileError, readProjectFile} from "../../project-file/read-project-file";
+import {readProjectFile} from "../../project-file/read-project-file";
 import {setBoardSetup} from "../board-type";
-
-const loadInput = Utils.getSafeHtmlElement<HTMLInputElement>('loadProjectBtn');
-const loadTrigger = Utils.getSafeHtmlElement<HTMLButtonElement>('loadProjectTrigger');
-
-loadTrigger.addEventListener('click', function() {
-  loadInput.click();
-});
-
-loadInput.addEventListener('change', function() {
-  const file = loadInput.files?.[0];
-  // Clear the input so picking the same file again still fires 'change'.
-  loadInput.value = '';
-
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function() {
-    let skipped: number;
-    try {
-      ({skipped} = loadProject(JSON.parse(String(reader.result))));
-    } catch (err) {
-      console.error(err);
-      const reason = err instanceof ProjectFileError ? err.message : "It isn't a valid project file.";
-      alert(`Couldn't open "${file.name}". ${reason}`);
-      return;
-    }
-    if (skipped > 0) {
-      alert(`Opened "${file.name}", but ${skipped} item${skipped === 1 ? "" : "s"} couldn't be read and ${skipped === 1 ? "was" : "were"} left out.`);
-    }
-  };
-  reader.readAsText(file);
-});
 
 // Replaces the board with a project file's (any version). The file is read and checked in full
 // first, so a file that isn't a project throws ProjectFileError with the board untouched.

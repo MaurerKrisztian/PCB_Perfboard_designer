@@ -10,21 +10,28 @@ import {PROJECT_FILE_VERSION, ProjectFile, SavedBoard, SavedPad, SavedWire} from
 import {holesAlong, toGridPos} from "../../project-file/grid";
 import {DEFAULT_DOT_COLOR} from "../board-looks/board-look";
 import {BoardState} from "../../state/BoardState";
+import {ProjectState} from "../../state/ProjectState";
 
 const saveBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('saveProjectBtn');
 saveBtn.addEventListener('click', function() {
-  // Convert the state of the canvas to a string (in JSON format)
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getSaveJson()));
+  downloadProjectFile(JSON.stringify(getSaveJson()));
+});
 
-  // Create a download link and click it
+// Downloads are named after the project (the open one by default), minus characters file systems
+// don't allow.
+export function downloadFileName(extension: string, projectName = ProjectState.current?.name): string {
+  const name = (projectName ?? "").replace(/[\\/:*?"<>|]+/g, "-").trim();
+  return `${name || "perfboard-project"}.${extension}`;
+}
+
+export function downloadProjectFile(json: string, projectName?: string) {
   const downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute("href", dataStr);
-  downloadAnchorNode.setAttribute("download", "canvas_project.json");
+  downloadAnchorNode.setAttribute("href", "data:text/json;charset=utf-8," + encodeURIComponent(json));
+  downloadAnchorNode.setAttribute("download", downloadFileName("json", projectName));
   document.body.appendChild(downloadAnchorNode); // required for firefox
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
-});
-
+}
 
 // A stripboard lists its cuts. A perfboard has none to list: cuts made while the board was a
 // stripboard stay on the dots, but they mean nothing on a perfboard, so they aren't saved.

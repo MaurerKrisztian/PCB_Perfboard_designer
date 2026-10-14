@@ -1021,6 +1021,392 @@ body.fullscreen-active .right-sidebar {
   gap: 0.5rem;
 }
 
+/* The open project's name in the header; opens the Projects dialog */
+button.project-name-btn {
+  display: inline-block;
+  max-width: 16rem;
+  margin-left: 0.75rem;
+  padding: 0.3rem 0.7rem;
+  background: none;
+  border-color: var(--border-color);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button.project-name-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-main);
+}
+
+/* Projects dialog: a grid of cards, one per project, each with a thumbnail of its board */
+.projects-card {
+  max-width: 820px;
+}
+
+.projects-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.projects-count:not(:empty) {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background-color: #374151;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+input.projects-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: #1f2937;
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+input.projects-search:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+}
+
+input.projects-search[hidden] {
+  display: none;
+}
+
+.projects-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0.15rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+.project-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  background-color: #161f2e;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.project-card:hover {
+  border-color: #4b5563;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+}
+
+.project-card.is-open {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 1px var(--accent-blue), 0 0 22px rgba(59, 130, 246, 0.25);
+}
+
+/* The whole card is one button that opens the project. */
+button.project-open,
+button.project-open:hover {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  text-align: left;
+  transform: none;
+}
+
+button.project-open:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.project-thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+  border-radius: 11px 11px 0 0;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(56, 189, 248, 0.08), transparent 60%),
+    linear-gradient(160deg, #1e293b, #0b1120);
+}
+
+.project-thumb canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.project-thumb-missing {
+  font-size: 2rem;
+  color: #4b5563;
+}
+
+.project-badge {
+  position: absolute;
+  top: 0.55rem;
+  left: 0.55rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background-color: var(--accent-blue);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
+}
+
+.project-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.65rem 0.8rem 0.75rem;
+}
+
+.project-name {
+  overflow: hidden;
+  color: var(--text-main);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-meta {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.project-edited {
+  color: #6b7280;
+  font-size: 0.7rem;
+}
+
+input.project-rename-input,
+input.project-new-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.35rem 0.55rem;
+  font-weight: 600;
+}
+
+/* The ⋯ button over the thumbnail's corner, shown on hover (always, on touch screens). */
+button.project-menu-btn {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 8px;
+  background-color: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  color: #e5e7eb;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0;
+}
+
+.project-card:hover button.project-menu-btn,
+button.project-menu-btn:focus-visible,
+button.project-menu-btn[aria-expanded="true"] {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  button.project-menu-btn {
+    opacity: 1;
+  }
+}
+
+.project-menu {
+  position: absolute;
+  top: 2.75rem;
+  right: 0.45rem;
+  z-index: 5;
+  min-width: 10.5rem;
+  padding: 0.3rem;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background-color: var(--bg-card);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+}
+
+.project-menu[hidden] {
+  display: none;
+}
+
+.project-menu button {
+  justify-content: flex-start;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  font-size: 0.82rem;
+}
+
+.project-menu button:hover {
+  background-color: var(--bg-hover);
+  transform: none;
+}
+
+.project-menu button.is-danger {
+  color: #f87171;
+}
+
+.project-menu button.is-danger:hover {
+  background-color: rgba(220, 38, 38, 0.15);
+}
+
+.project-menu-icon {
+  width: 1rem;
+  text-align: center;
+}
+
+/* Asks before deleting, over the card itself. */
+.project-confirm {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  border-radius: 12px;
+  background-color: rgba(17, 24, 39, 0.95);
+  text-align: center;
+  font-size: 0.88rem;
+}
+
+.project-confirm strong {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.project-confirm-note {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.project-confirm-actions,
+.project-new-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.project-confirm-actions button,
+.project-new-actions button {
+  padding: 0.4rem 0.8rem;
+}
+
+/* The first card: starts a new project, then asks for its name in place. */
+.project-card.project-new,
+.project-card.project-new:hover {
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+button.project-new-btn {
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  height: 100%;
+  min-height: 12rem;
+  border: 1.5px dashed #4b5563;
+  border-radius: 12px;
+  background-color: rgba(31, 41, 55, 0.35);
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+button.project-new-btn:hover {
+  border-color: var(--accent-blue);
+  background-color: rgba(59, 130, 246, 0.08);
+  color: var(--text-main);
+}
+
+.project-new-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  font-size: 1.4rem;
+  transition: transform 0.15s ease;
+}
+
+button.project-new-btn:hover .project-new-icon {
+  transform: scale(1.08);
+}
+
+.project-new-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.55rem;
+  height: 100%;
+  min-height: 12rem;
+  box-sizing: border-box;
+  padding: 1rem;
+  border: 1.5px solid var(--accent-blue);
+  border-radius: 12px;
+  background-color: rgba(59, 130, 246, 0.07);
+}
+
+.project-new-label {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.projects-empty {
+  grid-column: 1 / -1;
+  padding: 1.5rem 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.projects-footer {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.projects-footer-hint {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;
