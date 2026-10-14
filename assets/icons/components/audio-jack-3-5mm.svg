@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 276 236" width="276" height="236" role="img" aria-label="3.5 mm stereo audio jack opening to the right, top view">
+  <rect x="3" y="3" width="270" height="230" rx="6" fill="#1c1f23" stroke="#6b7684" stroke-width="4"/>
+  <rect x="218" y="40" width="50" height="156" rx="4" fill="#2b3037" stroke="#46505c" stroke-width="3"/>
+  <path d="M120 118h150" stroke="#0b0d10" stroke-width="44"/>
+  <path d="M130 118h138" stroke="#9aa3ad" stroke-width="8" stroke-linecap="round"/>
+  <path d="M228 92v52M252 92v52" stroke="#4c5663" stroke-width="3"/>
+  <text x="62" y="126" text-anchor="middle" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="22" font-weight="bold">3.5</text>
+</svg>

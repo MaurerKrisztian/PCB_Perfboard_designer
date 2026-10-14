@@ -71,6 +71,10 @@ device.
   thermistors, film capacitors, 5×20 mm fuse holders, rotary encoders and DC barrel jacks.
   Each has 2D artwork and a dedicated 3D model; check the footprint notes for parts whose
   leads must be formed to fit the grid.
+- 🔋 **Everyday hobby parts**: ATtiny85, L293D, CD4017, NE556, LM393, TL072, 74HC14, 4N35 and
+  6N137 DIP presets; 6×6 mm tactile, latching and toggle switches; 3 mm LEDs; 10-segment bar
+  graphs and 4-digit seven-segment displays; DS18B20, DHT11/DHT22, IR receiver and electret
+  microphone; 3.5 mm audio jacks, JST XH connectors, and CR2032, 2×AA and 18650 battery holders.
 - ✏️ **Wires the way you solder them**: jumper wires in any color and three thicknesses (thin,
   normal, thick). Straight runs of the same color merge into one wire automatically.
 - 📐 **Perfboard or stripboard, any size**: start from a common board size (2×8 cm up to

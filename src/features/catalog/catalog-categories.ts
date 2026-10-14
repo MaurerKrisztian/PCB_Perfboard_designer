@@ -32,6 +32,8 @@ const CATEGORY_LIST = [
   {id: "connectors", name: "Connectors", icon: "🔌", keywords: ["connector", "header"]},
   {id: "switches", name: "Switches", icon: "🔘", keywords: ["switch", "button", "input", "control"]},
   {id: "displays", name: "Displays", icon: "🔢", keywords: ["display", "seven segment", "digit", "indicator"]},
+  {id: "sensors", name: "Sensors & Audio", icon: "🌡️", keywords: ["sensor", "temperature", "humidity", "infrared", "microphone", "audio"]},
+  {id: "batteries", name: "Batteries", icon: "🔋", keywords: ["battery", "cell", "holder", "power"]},
   {id: "outputs", name: "Relays & Buzzers", icon: "🔔", keywords: ["output", "relay", "buzzer", "sound"]},
 ] as const;
 

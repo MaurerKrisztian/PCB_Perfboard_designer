@@ -161,6 +161,20 @@ function sevenSegmentLabels(common: string): string[] {
   return ["E", "D", common, "C", "DP", "B", "A", common, "F", "G"];
 }
 
+// 0.56" four-digit display (5641AS / 5641BS pinout): the same 15.24 mm row spacing as the
+// single digit with six pins per row, centered under a 50.4 × 19 mm body. DG1-DG4 are the
+// digits' common pins.
+const FOUR_DIGIT_PINS: PinOffset[] = [
+  ...Array.from({length: 6}, (_, i) => ({dx: i, dy: 0})),
+  ...Array.from({length: 6}, (_, i) => ({dx: 5 - i, dy: -6})),
+];
+const FOUR_DIGIT_LABELS = ["E", "D", "DP", "C", "G", "DG4", "B", "DG3", "DG2", "F", "A", "DG1"];
+
+// A single row of pins one hole apart.
+function inlinePins(count: number): PinOffset[] {
+  return Array.from({length: count}, (_, i) => ({dx: i, dy: 0}));
+}
+
 export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "transistor", refPrefix: "Q", category: "semiconductors.transistors", name: "Transistor (TO-92)", fallbackLabel: "Q",
@@ -375,6 +389,150 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     pinLabels: ["CTR", "SLV", "SW"],
     bodyOutline: rectangularOutline(-0.354, -1.772, 5.354, 1.772),
     iconOffset: {dx: 2.5, dy: 0}, iconFillsBody: true
+  },
+  {
+    // Omron B3F-1000: pins 6.5 × 4.5 mm apart, formed to the same 3 × 2 hole span as the KSA.
+    id: "tactile-6x6", refPrefix: "SW", category: "switches", name: "Tactile Switch (6 × 6 mm, formed)", fallbackLabel: "BTN",
+    keywords: ["tactile", "momentary", "push button", "tact", "b3f", "6x6"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 3, dy: 0}, {dx: 3, dy: 2}, {dx: 0, dy: 2}],
+    bodyOutline: rectangularOutline(0.32, -0.18, 2.68, 2.18), iconFillsBody: true
+  },
+  {
+    // Self-locking DPDT switch: two rows of three at 2.5 mm, 6 mm apart, formed to 2.54 mm and a
+    // 2-hole row spacing. The middle pin of each row is that pole's common.
+    id: "latching-switch", refPrefix: "SW", category: "switches", name: "Latching Push Switch (8 × 8 mm DPDT, formed)", fallbackLabel: "LATCH",
+    keywords: ["self locking", "push on push off", "power switch", "dpdt", "8x8"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 1, dy: 0}, {dx: 2, dy: 0}, {dx: 0, dy: -2}, {dx: 1, dy: -2}, {dx: 2, dy: -2}],
+    bodyOutline: rectangularOutline(-0.575, -2.575, 2.575, 0.575), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    // MTS-102 style miniature toggle: 4.7 mm pin pitch formed to 2 holes. Middle pin is common.
+    id: "toggle-spdt", refPrefix: "SW", category: "switches", name: "Toggle Switch (MTS-102 SPDT, formed)", fallbackLabel: "TOG",
+    keywords: ["toggle", "lever", "on on", "mts-102", "panel", "power switch"],
+    pinOffsets: WIDE_INLINE_3_PINS, pinLabels: ["1", "COM", "3"],
+    bodyOutline: rectangularOutline(-0.6, -1.6, 4.6, 1.6), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.9}
+  },
+  {
+    // MTS-202 style: two rows of the SPDT layout, one per pole. Pins 2 and 5 are the commons.
+    id: "toggle-dpdt", refPrefix: "SW", category: "switches", name: "Toggle Switch (MTS-202 DPDT, formed)", fallbackLabel: "TOG2",
+    keywords: ["toggle", "lever", "on on", "mts-202", "panel", "double pole"],
+    pinOffsets: [...WIDE_INLINE_3_PINS, ...WIDE_INLINE_3_PINS.map(({dx}) => ({dx, dy: -2}))],
+    bodyOutline: rectangularOutline(-0.6, -3.52, 4.6, 1.52), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    // Kingbright DC-10: 20 pins in a 0.3" DIP, numbered like a DIP IC. LED k runs from anode
+    // pin k (bottom row) to cathode pin 21 - k, straight above it.
+    id: "led-bargraph-10", refPrefix: "D", category: "displays", name: "LED Bar Graph (10-segment)", fallbackLabel: "BAR",
+    keywords: ["bargraph", "bar graph", "level meter", "vu meter", "dc-10", "led array"],
+    pinOffsets: dipSwitchPins(10),
+    pinLabels: [
+      ...Array.from({length: 10}, (_, i) => `A${i + 1}`),
+      ...Array.from({length: 10}, (_, i) => `K${10 - i}`),
+    ],
+    bodyOutline: rectangularOutline(-0.5, -3.5, 9.5, 0.5), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    id: "seven-segment-4-cc", refPrefix: "DS", category: "displays", name: "4-Digit 7-Segment Display (Common Cathode, 0.56\")", fallbackLabel: "8888",
+    keywords: ["seven segment", "7seg", "led display", "clock", "4 digit", "5641as", "cc", "multiplexed"],
+    iconPath: `${COMPONENT_ICON_DIR}seven-segment-4.svg`,
+    pinOffsets: FOUR_DIGIT_PINS, pinLabels: FOUR_DIGIT_LABELS,
+    bodyOutline: rectangularOutline(-7.42, -6.75, 12.42, 0.75), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    id: "seven-segment-4-ca", refPrefix: "DS", category: "displays", name: "4-Digit 7-Segment Display (Common Anode, 0.56\")", fallbackLabel: "8888",
+    keywords: ["seven segment", "7seg", "led display", "clock", "4 digit", "5641bs", "ca", "multiplexed"],
+    iconPath: `${COMPONENT_ICON_DIR}seven-segment-4.svg`,
+    pinOffsets: FOUR_DIGIT_PINS, pinLabels: FOUR_DIGIT_LABELS,
+    bodyOutline: rectangularOutline(-7.42, -6.75, 12.42, 0.75), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    // Maxim DS18B20 in TO-92, flat face toward the viewer.
+    id: "ds18b20", refPrefix: "U", category: "sensors", name: "DS18B20 Temperature Sensor (TO-92)", fallbackLabel: "DS18",
+    keywords: ["temperature", "1-wire", "onewire", "thermometer", "dallas", "maxim"],
+    iconPath: `${COMPONENT_ICON_DIR}transistor.svg`,
+    pinOffsets: INLINE_3_PINS, pinLabels: ["GND", "DQ", "VDD"],
+    bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true,
+    pinLabelOffset: TRANSISTOR_PIN_LABEL_OFFSET
+  },
+  {
+    // Vishay TSOP38238 (and VS1838B clones): 5.0 × 4.8 mm body, lens facing the viewer.
+    id: "ir-receiver", refPrefix: "U", category: "sensors", name: "IR Receiver (TSOP38238, 38 kHz)", fallbackLabel: "IR",
+    keywords: ["infrared", "remote control", "vs1838b", "tsop", "38khz", "demodulator"],
+    pinOffsets: INLINE_3_PINS, pinLabels: ["OUT", "GND", "VS"],
+    bodyOutline: rectangularOutline(-0.1, -0.95, 2.1, 1.35), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.25}
+  },
+  {
+    // Aosong DHT22 / AM2302 bare sensor, 15.1 × 7.7 mm footprint, standing 25 mm tall.
+    id: "dht22", refPrefix: "U", category: "sensors", name: "DHT22 Humidity Sensor (AM2302)", fallbackLabel: "DHT22",
+    keywords: ["humidity", "temperature", "am2302", "dht", "hygrometer"],
+    pinOffsets: inlinePins(4), pinLabels: ["VDD", "DATA", "NC", "GND"],
+    bodyOutline: rectangularOutline(-1.47, -1.52, 4.47, 1.52), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.8}
+  },
+  {
+    // Aosong DHT11 bare sensor, 12 × 5.5 mm footprint, standing 15.5 mm tall. Same pinout as the DHT22.
+    id: "dht11", refPrefix: "U", category: "sensors", name: "DHT11 Humidity Sensor", fallbackLabel: "DHT11",
+    keywords: ["humidity", "temperature", "dht", "hygrometer"],
+    pinOffsets: inlinePins(4), pinLabels: ["VDD", "DATA", "NC", "GND"],
+    bodyOutline: rectangularOutline(-0.86, -1.08, 3.86, 1.08), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.4}
+  },
+  {
+    // Same Sky CMA-4544PF-W: 9.7 mm capsule with two PC pins 2.54 mm apart under it.
+    id: "electret-mic", refPrefix: "MK", category: "sensors", name: "Electret Microphone (9.7 mm, PC pins)", fallbackLabel: "MIC",
+    keywords: ["microphone", "mic", "audio", "condenser", "sound", "cma-4544"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 1, dy: 0}], pinLabels: ["OUT", "GND"],
+    bodyOutline: rectangularOutline(-1.41, -1.91, 2.41, 1.91), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    // Same Sky SJ1-3523N stereo jack, opening to the right: sleeve pin nearest the opening,
+    // tip and ring 5 mm behind it and 5 mm to either side, formed to 2 holes.
+    id: "audio-jack-3-5mm", refPrefix: "J", category: "connectors", name: "Audio Jack (3.5 mm stereo, formed)", fallbackLabel: "AUX",
+    keywords: ["headphone", "trs", "aux", "line in", "line out", "3.5mm", "sj1-3523n"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: -2, dy: -2}, {dx: -2, dy: 2}], pinLabels: ["SLV", "TIP", "RNG"],
+    bodyOutline: rectangularOutline(-3.74, -2.36, 1.77, 2.36),
+    iconOffset: {dx: -0.985, dy: 0}, iconFillsBody: true
+  },
+  // JST XH (B2B-XH-A family): 2.5 mm pitch formed to 2.54 mm, in a housing 4.9 mm longer than
+  // the pin row and 5.75 mm deep.
+  ...[2, 3, 4].map((count): AdvancedComponentDefinition => ({
+    id: `jst-xh-${count}`, refPrefix: "J", category: "connectors", name: `JST XH Connector (${count}-pin, formed)`, fallbackLabel: `XH${count}`,
+    keywords: ["jst", "xh", "battery connector", "wire to board", "2.5mm", "b2b-xh"],
+    pinOffsets: inlinePins(count),
+    bodyOutline: rectangularOutline(-0.965, -1.38, count - 1 + 0.965, 0.88), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 1.15}
+  })),
+  {
+    // Generic open CR2032 holder with PC pins about 20 mm apart, across the cell.
+    id: "coin-cell-holder", refPrefix: "BT", category: "batteries", name: "Coin Cell Holder (CR2032, 8-hole span)", fallbackLabel: "2032",
+    keywords: ["cr2032", "coin cell", "button cell", "rtc backup", "3v", "bs-7"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 8, dy: 0}], pinLabels: ["+", "−"],
+    bodyOutline: rectangularOutline(-0.6, -4.53, 8.6, 4.53), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    // Keystone 2462: both terminals at one end, 12.7 mm (5 holes) apart.
+    id: "battery-2xaa", refPrefix: "BT", category: "batteries", name: "Battery Holder (2 × AA, Keystone 2462)", fallbackLabel: "2×AA",
+    keywords: ["aa", "battery", "3v", "two cell", "keystone"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 0, dy: -5}], pinLabels: ["+", "−"],
+    bodyOutline: rectangularOutline(-22.13, -8.98, 1.3, 3.98), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    // Keystone 1043: contacts 71.6 mm apart at either end, 0.24 mm off a 28-hole span each.
+    id: "battery-18650", refPrefix: "BT", category: "batteries", name: "Battery Holder (18650, Keystone 1043, 28-hole span)", fallbackLabel: "18650",
+    keywords: ["18650", "li-ion", "lithium", "battery", "3.7v", "keystone"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 28, dy: 0}], pinLabels: ["+", "−"],
+    bodyOutline: rectangularOutline(-1.18, -4.075, 29.18, 4.075), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
   },
 ];
 

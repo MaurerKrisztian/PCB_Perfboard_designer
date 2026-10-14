@@ -84,7 +84,7 @@ export function drawStandardComponentBody(startDot: IDot, endDot: IDot, def: Com
     if (options.value) {
       drawValueOverlay(def, options.value, bodyStart, bodySize);
     }
-    if (def.id === "led" && options.color) {
+    if (def.led && options.color) {
       drawLedColorOverlay(options.color, bodyStart, bodySize);
     }
   } else {

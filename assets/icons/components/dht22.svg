@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 297 152" width="297" height="152" role="img" aria-label="DHT22 humidity and temperature sensor, top view">
+  <rect x="3" y="3" width="291" height="146" rx="5" fill="#f1f2f0" stroke="#f8fafc" stroke-width="4"/>
+  <path d="M10 112h277" stroke="#7b8794" stroke-width="3" stroke-opacity="0.6"/>
+  <rect x="22" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="44" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="66" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="88" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="110" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="132" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="154" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="176" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="198" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="220" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <rect x="242" y="122" width="12" height="16" rx="2" fill="#7b8794"/>
+  <text x="148.5" y="72.0" text-anchor="middle" fill="#7b8794" font-family="Arial,sans-serif" font-size="33" font-weight="bold">DHT22</text>
+</svg>

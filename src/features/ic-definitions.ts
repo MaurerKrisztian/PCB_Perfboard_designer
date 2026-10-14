@@ -66,6 +66,58 @@ export const IC_DEFINITIONS: IcDefinition[] = [
     }
   },
   {
+    id: "ne556", category: "ics.timers", name: "NE556 Dual Timer", keywords: ["556", "dual 555", "timer", "oscillator", "dip-14"],
+    widthPin: 4, heightPin: 7,
+    pinDescription: dualRowPins(
+      ["DIS1", "THR1", "CTL1", "RST1", "OUT1", "TRG1", "GND"],
+      ["VCC", "DIS2", "THR2", "CTL2", "RST2", "OUT2", "TRG2"]
+    )
+  },
+  {
+    id: "lm393", category: "ics.analog", name: "LM393 Dual Comparator", keywords: ["comparator", "open collector", "dip-8"],
+    widthPin: 4, heightPin: 4,
+    pinDescription: {1: "OUT1", 2: "IN1-", 3: "IN1+", 4: "GND", 5: "IN2+", 6: "IN2-", 7: "OUT2", 8: "VCC"}
+  },
+  {
+    id: "tl072", category: "ics.analog", name: "TL072 Dual JFET Op Amp", keywords: ["opamp", "operational amplifier", "audio", "low noise", "dip-8"],
+    widthPin: 4, heightPin: 4,
+    pinDescription: {1: "OUT1", 2: "IN1-", 3: "IN1+", 4: "VCC-", 5: "IN2+", 6: "IN2-", 7: "OUT2", 8: "VCC+"}
+  },
+  {
+    id: "4n35", category: "ics.opto", name: "4N35 Optocoupler", keywords: ["phototransistor", "photocoupler", "isolator", "dip-6"],
+    widthPin: 4, heightPin: 3,
+    pinDescription: {1: "A", 2: "K", 3: "NC", 4: "E", 5: "C", 6: "B"}
+  },
+  {
+    id: "6n137", category: "ics.opto", name: "6N137 High-Speed Optocoupler", keywords: ["logic output", "photocoupler", "isolator", "midi", "dip-8"],
+    widthPin: 4, heightPin: 4,
+    pinDescription: {1: "NC", 2: "A", 3: "K", 4: "NC", 5: "GND", 6: "VO", 7: "VE", 8: "VCC"}
+  },
+  {
+    id: "l293d", category: "ics.drivers", name: "L293D Motor Driver", keywords: ["h-bridge", "motor", "stepper", "dc motor", "dip-16"],
+    widthPin: 4, heightPin: 8,
+    pinDescription: dualRowPins(
+      ["1,2EN", "1A", "1Y", "GND", "GND", "2Y", "2A", "VCC2"],
+      ["VCC1", "4A", "4Y", "GND", "GND", "3Y", "3A", "3,4EN"]
+    )
+  },
+  {
+    id: "cd4017", category: "ics.logic", name: "CD4017 Decade Counter", keywords: ["4017", "johnson counter", "led chaser", "dip-16"],
+    widthPin: 4, heightPin: 8,
+    pinDescription: dualRowPins(
+      ["Q5", "Q1", "Q0", "Q2", "Q6", "Q7", "Q3", "VSS"],
+      ["VDD", "RST", "CLK", "/EN", "CO", "Q9", "Q4", "Q8"]
+    )
+  },
+  {
+    id: "74hc14", category: "ics.logic", name: "74HC14 Schmitt Inverter", keywords: ["sn74hc14", "hex inverter", "schmitt trigger", "debounce", "dip-14"],
+    widthPin: 4, heightPin: 7,
+    pinDescription: dualRowPins(
+      ["1A", "1Y", "2A", "2Y", "3A", "3Y", "GND"],
+      ["VCC", "6A", "6Y", "5A", "5Y", "4A", "4Y"]
+    )
+  },
+  {
     id: "dip-14-logic", category: "ics.logic", name: "DIP-14 Logic", keywords: ["74hc", "7400", "gate"],
     widthPin: 4, heightPin: 7,
     pinDescription: {1: "1A", 2: "1B", 3: "1Y", 4: "2A", 5: "2B", 6: "2Y", 7: "GND", 14: "VCC"}
@@ -79,6 +131,11 @@ export const IC_DEFINITIONS: IcDefinition[] = [
     id: "atmega328p", category: "ics.microcontrollers", name: "ATmega328P", keywords: ["avr", "arduino", "328"],
     widthPin: 4, heightPin: 14,
     pinDescription: {1: "RESET", 2: "RX", 3: "TX", 7: "VCC", 8: "GND", 22: "GND", 20: "AVCC"}
+  },
+  {
+    id: "attiny85", category: "ics.microcontrollers", name: "ATtiny85", keywords: ["avr", "attiny", "tiny85", "digispark", "dip-8"],
+    widthPin: 4, heightPin: 4,
+    pinDescription: {1: "PB5/RST", 2: "PB3", 3: "PB4", 4: "GND", 5: "PB0", 6: "PB1", 7: "PB2", 8: "VCC"}
   },
   // Arduino Nano: 0.6" between header rows, 15 pins per side. Labels as silkscreened on the board.
   {

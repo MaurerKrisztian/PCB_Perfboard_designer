@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200" width="500" height="200" role="img" aria-label="10-segment LED bar graph, top view">
+  <rect x="3" y="3" width="494" height="194" rx="5" fill="#2a2a2e" stroke="#6b7280" stroke-width="4"/>
+  <rect x="5" y="48" width="12" height="6" fill="#9ca3af"/>
+  <rect x="12" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="62" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="112" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="162" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="212" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="262" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="312" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="362" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="412" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <rect x="462" y="55" width="26" height="90" rx="2" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+</svg>

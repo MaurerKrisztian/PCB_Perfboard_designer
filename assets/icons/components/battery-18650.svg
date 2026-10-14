@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1518 408" width="1518" height="408" role="img" aria-label="Holder for one 18650 lithium-ion cell, top view">
+  <rect x="3" y="3" width="1512" height="402" rx="14" fill="#1c1f23" stroke="#6b7684" stroke-width="5"/>
+  <rect x="96" y="30" width="16" height="348" fill="#c3c9d0"/>
+  <rect x="1406" y="30" width="16" height="348" fill="#c3c9d0"/>
+  <rect x="119" y="21" width="1280" height="366" rx="40" fill="#2563a6" stroke="#93c5fd" stroke-width="4"/>
+  <rect x="119" y="21" width="80" height="366" fill="#c3c9d0" stroke="#eef2f5" stroke-width="3"/>
+  <text x="760" y="235" text-anchor="middle" fill="#e0efff" font-family="Arial,sans-serif" font-size="110" font-weight="bold">+  18650  −</text>
+</svg>
