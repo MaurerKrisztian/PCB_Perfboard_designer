@@ -4,6 +4,7 @@
 // a cycle in which the panel can run before the classes it reads exist - which crashes startup.
 let catalogChangedListener: (() => void) | undefined;
 let armedPartChangedListener: (() => void) | undefined;
+let recentChangedListener: (() => void) | undefined;
 
 export function onCatalogChanged(fn: () => void) {
   catalogChangedListener = fn;
@@ -11,6 +12,10 @@ export function onCatalogChanged(fn: () => void) {
 
 export function onArmedPartChanged(fn: () => void) {
   armedPartChangedListener = fn;
+}
+
+export function onRecentChanged(fn: () => void) {
+  recentChangedListener = fn;
 }
 
 // A catalog source changed (custom ICs added, deleted or merged in from a loaded project).
@@ -21,4 +26,9 @@ export function notifyCatalogChanged() {
 // A different part (or none) is now armed for placement, so the highlight needs refreshing.
 export function notifyArmedPartChanged() {
   armedPartChangedListener?.();
+}
+
+// A part was placed, so the "Recently used…" list may have changed.
+export function notifyRecentChanged() {
+  recentChangedListener?.();
 }

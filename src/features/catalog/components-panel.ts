@@ -3,7 +3,8 @@ import {ShortcutRegistry} from "../shortcut-keys";
 import {buildCatalog, CatalogItem} from "./catalog";
 import {CatalogCategory, getCategoryPath, getChildCategories} from "./catalog-categories";
 import {CatalogSearchResult, searchCatalog} from "./catalog-search";
-import {onArmedPartChanged, onCatalogChanged} from "./catalog-events";
+import {onArmedPartChanged, onCatalogChanged, onRecentChanged} from "./catalog-events";
+import {getRecentKeys} from "./recent-components";
 
 // The sidebar's Components section: a search box over a category tree. While the box has a
 // query, the tree is swapped for a flat list of ranked results.
@@ -13,6 +14,8 @@ import {onArmedPartChanged, onCatalogChanged} from "./catalog-events";
 
 const SECTION_BODY_ID = "componentsSection";
 const COLLAPSED_STORAGE_KEY = "catalog_collapsed";
+// Shares the collapsed-categories store; not a real category, so it can't clash with one.
+const RECENT_NODE_ID = "recent";
 
 const searchInput = Utils.getSafeHtmlElement<HTMLInputElement>("catalogSearch");
 const treeEl = Utils.getSafeHtmlElement("catalog-tree");
@@ -144,10 +147,45 @@ function renderCategoryNode(category: CatalogCategory, depth: number): {el: HTML
   return {el: node, count};
 }
 
+// A submenu under the top-level Custom… entry, listing the components most recently placed on the
+// board. Entries whose part no longer exists (a deleted custom part) are left out.
+function renderRecentNode(): HTMLElement | null {
+  const recent = getRecentKeys()
+    .map(key => itemsByKey.get(key))
+    .filter((item): item is CatalogItem => item !== undefined);
+  if (!recent.length) return null;
+
+  const node = document.createElement("div");
+  node.className = "catalog-category";
+  node.dataset.categoryId = RECENT_NODE_ID;
+  node.classList.toggle("collapsed", collapsedCategories.has(RECENT_NODE_ID));
+
+  const header = document.createElement("button");
+  header.type = "button";
+  header.className = "catalog-row catalog-category-row";
+  setDepth(header, 0);
+  header.append(
+    createTextSpan("catalog-chevron", "▾"),
+    createTextSpan("catalog-icon", "🕘"),
+    createTextSpan("catalog-name", "Recently used…"),
+    createTextSpan("catalog-count", String(recent.length))
+  );
+  header.addEventListener("click", () => toggleCategory(RECENT_NODE_ID));
+
+  const children = document.createElement("div");
+  children.className = "catalog-children";
+  recent.forEach(item => children.appendChild(createItemRow(item, 1)));
+
+  node.append(header, children);
+  return node;
+}
+
 function renderTree() {
   treeEl.innerHTML = "";
   // Top-level entries (the Custom… action) sit above every category
   items.filter(item => !item.categoryId).forEach(item => treeEl.appendChild(createItemRow(item, 0)));
+  const recentNode = renderRecentNode();
+  if (recentNode) treeEl.appendChild(recentNode);
   for (const category of getChildCategories()) {
     const node = renderCategoryNode(category, 0);
     if (node) treeEl.appendChild(node.el);
@@ -328,4 +366,8 @@ ShortcutRegistry.add({
 
 onCatalogChanged(renderComponentsPanel);
 onArmedPartChanged(updateCatalogHighlight);
+onRecentChanged(() => {
+  renderTree();
+  updateCatalogHighlight();
+});
 renderComponentsPanel();

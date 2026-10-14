@@ -6,6 +6,7 @@ import {editCustomIc, openIcEditor} from "../ic-editor-modal";
 import {ToolState} from "../../state/ToolState";
 import {setActiveTool} from "../active-tool";
 import {CategoryId} from "./catalog-categories";
+import {advancedKey, icKey, standardKey} from "./catalog-keys";
 
 // One entry in the Components panel, whichever placement system backs it. The panel and search
 // only ever deal with these - activate/isArmed/remove hide which system a part belongs to.
@@ -49,7 +50,7 @@ export function buildCatalog(): CatalogItem[] {
 
   for (const def of COMPONENT_DEFINITIONS) {
     items.push({
-      key: `standard:${def.id}`, isAction: false, name: def.name, categoryId: def.category,
+      key: standardKey(def.id), isAction: false, name: def.name, categoryId: def.category,
       keywords: def.keywords ?? [], iconPath: getIconPath(def), emoji: "🧩",
       // Clicking the already-armed part again disarms it
       activate: () => setActiveTool(isArmed("standard-component", def.id)
@@ -61,7 +62,7 @@ export function buildCatalog(): CatalogItem[] {
 
   for (const def of ADVANCED_COMPONENT_DEFINITIONS) {
     items.push({
-      key: `advanced:${def.id}`, isAction: false, name: def.name, categoryId: def.category,
+      key: advancedKey(def.id), isAction: false, name: def.name, categoryId: def.category,
       keywords: def.keywords ?? [], iconPath: getAdvancedIconPath(def), emoji: "🧩",
       activate: () => setActiveTool(isArmed("advanced-component", def.id)
         ? {kind: "select"}
@@ -73,7 +74,7 @@ export function buildCatalog(): CatalogItem[] {
   for (const ic of Ic.IC_CONTAINER) {
     const def = ic.definitionId ? getIcDefinition(ic.definitionId) : undefined;
     items.push({
-      key: `ic:${ic.definitionId ?? ic.id}`, isAction: false, name: ic.name, categoryId: ic.category,
+      key: icKey(ic), isAction: false, name: ic.name, categoryId: ic.category,
       keywords: def?.keywords ?? [], emoji: ic.category.indexOf("modules") === 0 ? "📟" : "📦",
       activate: () => selectIc(ic.id),
       isArmed: () => {

@@ -6,6 +6,8 @@ import {drawAdvancedComponentBody} from "../advanced-components/advanced-compone
 import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 import {findDotAt} from "../dot-lookup";
 import {placePart} from "../placed-parts";
+import {advancedKey} from "../catalog/catalog-keys";
+import {recordRecentKey} from "../catalog/recent-components";
 import {ToolBehavior} from "./tool";
 
 type AdvancedComponentTool = Extract<ActiveTool, {kind: "advanced-component"}>;
@@ -34,6 +36,7 @@ export const advancedComponentTool: ToolBehavior<AdvancedComponentTool> = {
     const def = getAdvancedComponentDefinition(tool.definitionId);
     if (!def?.gridSizable) {
       placePart(new PlacedAdvancedComponent(tool.definitionId, hoverDot, tool.rotation));
+      recordRecentKey(advancedKey(tool.definitionId));
       return true;
     }
     if (!tool.start) {
@@ -41,7 +44,10 @@ export const advancedComponentTool: ToolBehavior<AdvancedComponentTool> = {
       return true;
     }
     const block = spannedBlock(tool.definitionId, tool.start, hoverDot);
-    if (block) placePart(block);
+    if (block) {
+      placePart(block);
+      recordRecentKey(advancedKey(tool.definitionId));
+    }
     tool.start = undefined;
     return true;
   },

@@ -3,6 +3,8 @@ import {getComponentDefinition} from "../standard-components/component-definitio
 import {drawStandardComponentBody} from "../standard-components/standard-component-render";
 import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
 import {placePart} from "../placed-parts";
+import {standardKey} from "../catalog/catalog-keys";
+import {recordRecentKey} from "../catalog/recent-components";
 import {drawStartMarker, ToolBehavior} from "./tool";
 
 type StandardComponentTool = Extract<ActiveTool, {kind: "standard-component"}>;
@@ -17,6 +19,7 @@ export const standardComponentTool: ToolBehavior<StandardComponentTool> = {
     }
     if (tool.start !== hoverDot) {
       placePart(new PlacedStandardComponent(tool.definitionId, tool.start, hoverDot));
+      recordRecentKey(standardKey(tool.definitionId));
     }
     tool.start = undefined;
     return true;
