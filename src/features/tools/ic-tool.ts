@@ -2,6 +2,8 @@ import {Canvas} from "../../state/Canvas";
 import {GridConfig} from "../../state/GridConfig";
 import {ActiveTool, ToolState} from "../../state/ToolState";
 import {placePart} from "../placed-parts";
+import {icKey} from "../catalog/catalog-keys";
+import {recordRecentKey} from "../catalog/recent-components";
 import {ToolBehavior} from "./tool";
 
 type IcTool = Extract<ActiveTool, {kind: "ic"}>;
@@ -13,6 +15,8 @@ export const icTool: ToolBehavior<IcTool> = {
     const newInstance = tool.template.clone();
     newInstance.updatePosition(hoverDot.x, hoverDot.y);
     placePart(newInstance);
+    // The catalog entry the copy came from, which is what the Components panel lists
+    recordRecentKey(icKey(tool.template.armedFrom ?? tool.template));
     ToolState.active = {kind: "select"};
     return true;
   },

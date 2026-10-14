@@ -2,7 +2,6 @@ import {Canvas} from "../state/Canvas";
 import {DotState} from "../state/DotState";
 import {IDot} from "../interfaces/dot.interface";
 import {ShortcutRegistry} from "./shortcut-keys";
-import {Utils} from "../utils/utils";
 import {redrawCanvas} from "./draw-canvas";
 import {Rotation, ToolState} from "../state/ToolState";
 import {SelectionState} from "../state/SelectionState";
@@ -16,6 +15,9 @@ import {SavedCustomIc, SavedIc} from "../project-file/project-file";
 import {toGridPos} from "../project-file/grid";
 import {readCustomIcs} from "../project-file/read-project-file";
 import {ViewState} from "../state/ViewState";
+import {IC_DEFINITIONS} from "./ic-definitions";
+import {CategoryId, isCategoryId} from "./catalog/catalog-categories";
+import {notifyCatalogChanged} from "./catalog/catalog-events";
 
 
 // Both a catalog entry (IC_CONTAINER, the clone armed for placement) and a chip placed on the
@@ -27,6 +29,12 @@ export class Ic implements PlacedPart {
   public id = Math.random() * 100;
   public ref = "";
   public isCustom?: boolean = false;
+  // Where a catalog template is listed in the Components panel tree.
+  public category: CategoryId = "ics.custom";
+  // The IC_DEFINITIONS entry a built-in template came from; undefined for custom parts.
+  public definitionId?: string;
+  // Set on the armed copy of a catalog template (see selectIc); undefined everywhere else.
+  public armedFrom?: Ic;
   public rotationAngle: number = 0; // 0, 90, 180, 270
   topLeftDot: IDot | null = null;
 
@@ -49,44 +57,7 @@ export class Ic implements PlacedPart {
     if (saveToStorage) {
       this.saveCustomIcsToLocalStorage();
     }
-    this.showICs();
-  }
-
-  // Opens the custom IC editor for a catalog entry. Set by ic-editor-modal, which imports this
-  // module, so importing it back here would be a cycle.
-  static onEditCustomIc?: (ic: Ic) => void;
-
-  // Built with DOM calls rather than an HTML string: names and ids come from project files and
-  // localStorage, so they must never be parsed as markup.
-  static showICs(){
-    const container = Utils.getSafeHtmlElement("ic-items");
-    container.replaceChildren();
-    Ic.IC_CONTAINER.forEach((item, i) => {
-      const btn = document.createElement("button");
-      btn.className = "btn btn-accent";
-      btn.style.cssText = "padding:0.3rem 0.6rem; font-size:0.75rem;";
-      btn.textContent = `📦 ${item.name}`;
-      btn.addEventListener("click", () => selectIc(item.id));
-      if (item.isCustom) {
-        btn.appendChild(Ic.catalogAction("✎", "Edit custom component", "#38bdf8", () => Ic.onEditCustomIc?.(item)));
-        btn.appendChild(Ic.catalogAction("✕", "Delete custom component", "#f87171", () => deleteCustomIc(item.id)));
-      }
-      // Matches the whitespace the old space-joined markup left between buttons.
-      if (i > 0) container.appendChild(document.createTextNode(" "));
-      container.appendChild(btn);
-    });
-  }
-
-  private static catalogAction(icon: string, title: string, color: string, onClick: () => void): HTMLSpanElement {
-    const span = document.createElement("span");
-    span.textContent = icon;
-    span.title = title;
-    span.style.cssText = `margin-left:6px;cursor:pointer;color:${color};font-weight:bold;`;
-    span.addEventListener("click", (e) => {
-      e.stopPropagation();
-      onClick();
-    });
-    return span;
+    notifyCatalogChanged();
   }
 
   // The catalog's custom ICs, in the shape localStorage and project files store them.
@@ -97,6 +68,7 @@ export class Ic implements PlacedPart {
       widthPin: ic.widthPin,
       heightPin: ic.heightPin,
       pinDescription: ic.pinDescription,
+      category: ic.category,
     }));
   }
 
@@ -115,10 +87,12 @@ export class Ic implements PlacedPart {
       if (data.id !== undefined && Ic.IC_CONTAINER.some(ic => String(ic.id) === String(data.id))) continue;
       const newIc = new Ic(data.widthPin, data.heightPin, {...data.pinDescription}, data.name, true);
       if (data.id !== undefined) newIc.id = data.id;
+      // Entries saved before categories existed have none, and land in ICs > Custom.
+      newIc.category = isCategoryId(data.category) ? data.category : "ics.custom";
       Ic.IC_CONTAINER.push(newIc);
       added++;
     }
-    Ic.showICs();
+    notifyCatalogChanged();
     return added;
   }
 
@@ -494,18 +468,13 @@ export class Ic implements PlacedPart {
   }
 }
 
-// Predefined IC components
-Ic.add(new Ic(4, 4, {1: "GND", 2: "TRIG", 3: "OUT", 4: "RESET", 5: "CTRL", 6: "THRESH", 7: "DISCH", 8: "VCC"}, "NE555 Timer"));
-Ic.add(new Ic(4, 7, {1: "1A", 2: "1B", 3: "1Y", 4: "2A", 5: "2B", 6: "2Y", 7: "GND", 14: "VCC"}, "DIP-14 Logic"));
-Ic.add(new Ic(4, 8, {1: "EN", 2: "1D", 3: "1Q", 4: "2D", 5: "2Q", 8: "GND", 16: "VCC"}, "DIP-16 Logic"));
-Ic.add(new Ic(4, 14, {1: "RESET", 2: "RX", 3: "TX", 7: "VCC", 8: "GND", 22: "GND", 20: "AVCC"}, "ATmega328P"));
-// Arduino Nano: 0.6" between header rows, 15 pins per side. Labels as silkscreened on the board.
-Ic.add(new Ic(7, 15, {
-  1: "D13", 2: "3V3", 3: "REF", 4: "A0", 5: "A1", 6: "A2", 7: "A3", 8: "A4",
-  9: "A5", 10: "A6", 11: "A7", 12: "5V", 13: "RST", 14: "GND", 15: "VIN",
-  16: "TX1", 17: "RX0", 18: "RST", 19: "GND", 20: "D2", 21: "D3", 22: "D4",
-  23: "D5", 24: "D6", 25: "D7", 26: "D8", 27: "D9", 28: "D10", 29: "D11", 30: "D12"
-}, "Arduino Nano"));
+// Built-in catalog templates, then the user's custom ones from localStorage
+for (const def of IC_DEFINITIONS) {
+  const ic = new Ic(def.widthPin, def.heightPin, {...def.pinDescription}, def.name);
+  ic.category = def.category;
+  ic.definitionId = def.id;
+  Ic.IC_CONTAINER.push(ic);
+}
 
 // Load custom ICs from localStorage on load
 Ic.loadCustomIcsFromLocalStorage();
@@ -513,9 +482,11 @@ Ic.loadCustomIcsFromLocalStorage();
 export function deleteCustomIc(id: number | string) {
   const index = Ic.IC_CONTAINER.findIndex(ic => String(ic.id) === String(id));
   if (index > -1) {
-    Ic.IC_CONTAINER.splice(index, 1);
+    const [removed] = Ic.IC_CONTAINER.splice(index, 1);
+    const active = ToolState.active;
+    if (active.kind === "ic" && active.template.armedFrom === removed) setActiveTool({kind: "select"});
     Ic.saveCustomIcsToLocalStorage();
-    Ic.showICs();
+    notifyCatalogChanged();
   }
 }
 
@@ -525,7 +496,16 @@ export function selectIc(id: number | string){
     console.error(`Ic with id: ${id} not found`);
     return;
   }
-  setActiveTool({kind: "ic", template: ic.clone()});
+  // Arm a copy so rotating while armed never changes the catalog template. `armedFrom` lets the
+  // panel highlight the template, and clicking it again disarms it.
+  const active = ToolState.active;
+  if (active.kind === "ic" && active.template.armedFrom === ic) {
+    setActiveTool({kind: "select"});
+    return;
+  }
+  const template = ic.clone();
+  template.armedFrom = ic;
+  setActiveTool({kind: "ic", template});
 }
 
 export function rotateSelectedIc() {

@@ -73,6 +73,24 @@ change that affects what's on screen. `redrawCanvas` redraws everything from scr
 standard components → advanced components → part labels → IC labels → in-progress placement
 previews.
 
+**Components catalog** (`src/features/catalog/`): the sidebar's single Components section — a
+search box over a category tree. It only decides where parts are *listed*; placing them is still
+done by the three systems below. `catalog-categories.ts` declares the tree (one line per
+category, `parentId` for nesting, array order = display order; `CategoryId` is derived from it so a
+bad id fails to compile). Every part definition names one `category: CategoryId` plus optional
+search `keywords`. `catalog.ts` merges all three systems into `CatalogItem`s whose
+`activate`/`isArmed`/`remove` closures hide which system backs them (they set/read
+`ToolState.active`); `catalog-search.ts` ranks by
+match quality (exact > prefix > word prefix > substring > fuzzy) with kind (component >
+subcategory > category) only as a tiebreak; `components-panel.ts` renders it. **Only `index.ts`
+may import `components-panel.ts`** — it imports every part source, so a module importing it back
+forms a cycle that runs the panel before `Ic` exists and crashes startup. Everything else talks to
+it through the import-free `catalog-events.ts`: `notifyArmedPartChanged()` after changing what's
+armed (`updateSelectionStatus()` already does, so `setActiveTool()` covers it), `notifyCatalogChanged()`
+after custom ICs change. To add a part:
+add a definition to the relevant system's definitions file with a `category` — nothing else. To
+add a category: one line in `catalog-categories.ts` (empty categories are hidden).
+
 **Board types**: a board is a perfboard (a separate pad per hole) or a stripboard (copper strips
 along every row or column, which the user can cut at a hole). `BoardState.setup` holds the type
 and strip direction; change it through `setBoardSetup()` (`src/features/board-type.ts`, which
@@ -95,9 +113,14 @@ means a new look there plus a `BoardType` in the project file.
   single anchor dot + rotation; pin/shaded-hole/body-outline offsets (in grid units, relative to
   the anchor) are rotated at render/placement time (`rotate-offset.ts`).
 - IC chips (`src/features/ic.ts`, `ic-editor-modal.ts`) are a third, older placement concept
-  (multi-pin chip with a user-editable pin-label catalog), separate from both of the above.
-  `Ic` is both the catalog entry and the placed chip; `Ic.id` identifies the catalog entry, and
-  catalog entries are saved through `Ic.customIcEntries()`, which picks its fields.
+  (dual-row multi-pin part with labelled pins), separate from both of the above. It backs both
+  DIP ICs and dual-row dev boards (Modules › Dev Boards); built-ins are data in
+  `ic-definitions.ts` (`dualRowPins()` builds DIP numbering from two top-to-bottom rows). Custom
+  ones come from the editor modal (IC or Module type → ICs › Custom / Modules › Custom) and persist
+  in localStorage `custom_ics`. `Ic` is both the catalog entry and the placed chip; `Ic.id`
+  identifies the catalog entry, and catalog entries are saved through `Ic.customIcEntries()`,
+  which picks its fields (including `category`). Loading *merges* custom ICs into the catalog —
+  never replace `Ic.IC_CONTAINER` wholesale, or built-ins added later go missing.
 
 All three placed-part classes implement `PlacedPart` (`src/interfaces/placed-part.interface.ts`):
 hit-testing, drawing, pin/occupied positions, anchor dots, `serialize()` and `ref`, the part's

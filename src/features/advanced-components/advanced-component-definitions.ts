@@ -1,4 +1,5 @@
 import {COMPONENT_ICON_DIR, ComponentUnit} from "../standard-components/component-definitions";
+import {CategoryId} from "../catalog/catalog-categories";
 
 export interface PinOffset {
   dx: number;
@@ -11,8 +12,11 @@ export interface PinOffset {
 // chosen by the user, so placement only needs an anchor point + rotation.
 export interface AdvancedComponentDefinition {
   id: string;
-  category: string;
+  // Where the part is listed in the Components panel tree (see catalog-categories.ts).
+  category: CategoryId;
   name: string;
+  // Extra search terms (abbreviations, part families) that don't appear in `name`.
+  keywords?: string[];
   // Letters of a placed part's reference designator: "Q" makes Q1, Q2...
   refPrefix: string;
   iconPath?: string;
@@ -127,24 +131,28 @@ const POT_ICON_CENTER: PinOffset = {dx: 2, dy: 0.5};
 
 export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
-    id: "transistor", refPrefix: "Q", category: "Semiconductor", name: "Transistor", fallbackLabel: "Q",
+    id: "transistor", refPrefix: "Q", category: "semiconductors.transistors", name: "Transistor (TO-92)", fallbackLabel: "Q",
+    keywords: ["bjt", "npn", "pnp", "to-92", "2n2222", "bc547"],
     pinOffsets: INLINE_3_PINS,
     bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: TRANSISTOR_PIN_LABEL_OFFSET
   },
   {
-    id: "mosfet", refPrefix: "Q", category: "Semiconductor", name: "MOSFET", fallbackLabel: "MOS",
+    id: "mosfet", refPrefix: "Q", category: "semiconductors.transistors", name: "MOSFET (TO-220)", fallbackLabel: "MOS",
+    keywords: ["fet", "to-220", "irf"],
     pinOffsets: INLINE_3_PINS,
     bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
   },
   {
-    id: "potentiometer", refPrefix: "RV", category: "Passive", name: "Potentiometer", fallbackLabel: "POT",
+    id: "potentiometer", refPrefix: "RV", category: "passives.resistors", name: "Potentiometer", fallbackLabel: "POT",
+    keywords: ["pot", "variable resistor", "trimmer", "knob"],
     pinOffsets: WIDE_INLINE_3_PINS, shadedOffsets: WIDE_INLINE_3_SHADED, bodyOutline: POT_BODY_OUTLINE,
     iconOffset: POT_ICON_CENTER, iconFillsBody: true, unit: "Ω", freeFormValue: true
   },
   {
-    id: "header-pins", refPrefix: "J", category: "Connector", name: "Header Pins", fallbackLabel: "HDR",
+    id: "header-pins", refPrefix: "J", category: "connectors", name: "Header Pins", fallbackLabel: "HDR",
+    keywords: ["header", "pin header", "jumper", "dupont"],
     // Only the 1x1 default lives here - the real lattice is the placed instance's rows/cols.
     pinOffsets: [{dx: 0, dy: 0}],
     gridSizable: true, perPinIcon: true
