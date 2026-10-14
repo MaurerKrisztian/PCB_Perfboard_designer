@@ -125,8 +125,12 @@ jumper wire, on a perfboard or stripboard sized to match yours.
 Component variants use the board's 2.54 mm hole grid. Check the
 [component footprint notes](docs/component-footprints.md) for package details, pin labels,
 and parts whose leads must be formed to fit the grid. The models are layout previews, not
-manufacturing drawings. Import the [new components showcase](examples/new-components-showcase.json)
-to explore the expanded catalog in 2D and 3D. It is a component gallery, not a working circuit.
+manufacturing drawings. To explore the expanded catalog in 2D and 3D, import one of the component
+galleries: [connectors](examples/new-components-connectors.json),
+[batteries](examples/new-components-batteries.json), [switches](examples/new-components-switches.json),
+[displays and LEDs](examples/new-components-displays-leds.json),
+[passives and sensors](examples/new-components-passives-sensors.json) and
+[DIP chips](examples/new-components-dip-chips.json). They show parts, not working circuits.
 
 <p align="center">
   <img src="assets/images/hero-board.webp" width="49%"

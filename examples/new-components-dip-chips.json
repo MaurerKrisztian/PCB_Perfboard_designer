@@ -1,0 +1,69 @@
+{
+  "version": 3,
+  "board": {"type": "perfboard", "cols": 34, "rows": 25},
+  "pads": [
+    {"at": [1, 0], "color": "#38bdf8", "note": "DIP CHIPS: 14 named presets with labelled pins, rotated 90 degrees. A component gallery, not a working circuit: wires only demonstrate routing. Enable Labels, then open 3D View."}
+  ],
+  "wires": [],
+  "placedIcs": [
+    {
+      "ref": "U1", "name": "LM358", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [2, 2],
+      "pinDescription": {"1": "OUT1", "2": "IN1-", "3": "IN1+", "4": "V-", "5": "IN2+", "6": "IN2-", "7": "OUT2", "8": "V+"}
+    },
+    {
+      "ref": "U2", "name": "LM386", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [8, 2],
+      "pinDescription": {"1": "GAIN", "2": "IN-", "3": "IN+", "4": "GND", "5": "OUT", "6": "VS", "7": "BYPASS", "8": "GAIN"}
+    },
+    {
+      "ref": "U3", "name": "LM393", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [14, 2],
+      "pinDescription": {"1": "OUT1", "2": "IN1-", "3": "IN1+", "4": "GND", "5": "IN2+", "6": "IN2-", "7": "OUT2", "8": "VCC"}
+    },
+    {
+      "ref": "U4", "name": "TL072", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [20, 2],
+      "pinDescription": {"1": "OUT1", "2": "IN1-", "3": "IN1+", "4": "VCC-", "5": "IN2+", "6": "IN2-", "7": "OUT2", "8": "VCC+"}
+    },
+    {
+      "ref": "U5", "name": "ATtiny85", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [26, 2],
+      "pinDescription": {"1": "PB5/RST", "2": "PB3", "3": "PB4", "4": "GND", "5": "PB0", "6": "PB1", "7": "PB2", "8": "VCC"}
+    },
+    {
+      "ref": "U6", "name": "PC817", "widthPin": 2, "heightPin": 4, "rotation": 90, "at": [2, 8],
+      "pinDescription": {"1": "A", "2": "K", "3": "E", "4": "C"}
+    },
+    {
+      "ref": "U7", "name": "4N35", "widthPin": 3, "heightPin": 4, "rotation": 90, "at": [6, 8],
+      "pinDescription": {"1": "A", "2": "K", "3": "NC", "4": "E", "5": "C", "6": "B"}
+    },
+    {
+      "ref": "U8", "name": "6N137", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [11, 8],
+      "pinDescription": {"1": "NC", "2": "A", "3": "K", "4": "NC", "5": "GND", "6": "VO", "7": "VE", "8": "VCC"}
+    },
+    {
+      "ref": "U9", "name": "NE556", "widthPin": 7, "heightPin": 4, "rotation": 90, "at": [17, 8],
+      "pinDescription": {"1": "DIS1", "2": "THR1", "3": "CTL1", "4": "RST1", "5": "OUT1", "6": "TRG1", "7": "GND", "8": "TRG2", "9": "OUT2", "10": "RST2", "11": "CTL2", "12": "THR2", "13": "DIS2", "14": "VCC"}
+    },
+    {
+      "ref": "U10", "name": "74HC14", "widthPin": 7, "heightPin": 4, "rotation": 90, "at": [26, 8],
+      "pinDescription": {"1": "1A", "2": "1Y", "3": "2A", "4": "2Y", "5": "3A", "6": "3Y", "7": "GND", "8": "4Y", "9": "4A", "10": "5Y", "11": "5A", "12": "6Y", "13": "6A", "14": "VCC"}
+    },
+    {
+      "ref": "U11", "name": "ULN2803A", "widthPin": 9, "heightPin": 4, "rotation": 90, "at": [2, 14],
+      "pinDescription": {"1": "1B", "2": "2B", "3": "3B", "4": "4B", "5": "5B", "6": "6B", "7": "7B", "8": "8B", "9": "GND", "10": "COM", "11": "8C", "12": "7C", "13": "6C", "14": "5C", "15": "4C", "16": "3C", "17": "2C", "18": "1C"}
+    },
+    {
+      "ref": "U12", "name": "74HC595", "widthPin": 8, "heightPin": 4, "rotation": 90, "at": [13, 14],
+      "pinDescription": {"1": "QB", "2": "QC", "3": "QD", "4": "QE", "5": "QF", "6": "QG", "7": "QH", "8": "GND", "9": "QH'", "10": "/SRCLR", "11": "SRCLK", "12": "RCLK", "13": "/OE", "14": "SER", "15": "QA", "16": "VCC"}
+    },
+    {
+      "ref": "U13", "name": "L293D", "widthPin": 8, "heightPin": 4, "rotation": 90, "at": [23, 14],
+      "pinDescription": {"1": "1,2EN", "2": "1A", "3": "1Y", "4": "GND", "5": "GND", "6": "2Y", "7": "2A", "8": "VCC2", "9": "3,4EN", "10": "3A", "11": "3Y", "12": "GND", "13": "GND", "14": "4Y", "15": "4A", "16": "VCC1"}
+    },
+    {
+      "ref": "U14", "name": "CD4017", "widthPin": 8, "heightPin": 4, "rotation": 90, "at": [2, 20],
+      "pinDescription": {"1": "Q5", "2": "Q1", "3": "Q0", "4": "Q2", "5": "Q6", "6": "Q7", "7": "Q3", "8": "VSS", "9": "Q8", "10": "Q4", "11": "Q9", "12": "CO", "13": "/EN", "14": "CLK", "15": "RST", "16": "VDD"}
+    }
+  ],
+  "placedStandardComponents": [],
+  "placedAdvancedComponents": [],
+  "customIcs": []
+}

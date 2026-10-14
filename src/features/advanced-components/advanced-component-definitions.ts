@@ -465,7 +465,8 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     id: "ir-receiver", refPrefix: "U", category: "sensors", name: "IR Receiver (TSOP38238, 38 kHz)", fallbackLabel: "IR",
     keywords: ["infrared", "remote control", "vs1838b", "tsop", "38khz", "demodulator"],
     pinOffsets: INLINE_3_PINS, pinLabels: ["OUT", "GND", "VS"],
-    bodyOutline: rectangularOutline(-0.1, -0.95, 2.1, 1.35), iconFillsBody: true,
+    bodyOutline: rectangularOutline(-0.1, -0.95, 2.1, 1.35),
+    iconOffset: {dx: 1, dy: 0.2}, iconFillsBody: true,
     pinLabelOffset: {dx: 0, dy: -1.25}
   },
   {
@@ -507,7 +508,8 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     id: `jst-xh-${count}`, refPrefix: "J", category: "connectors", name: `JST XH Connector (${count}-pin, formed)`, fallbackLabel: `XH${count}`,
     keywords: ["jst", "xh", "battery connector", "wire to board", "2.5mm", "b2b-xh"],
     pinOffsets: inlinePins(count),
-    bodyOutline: rectangularOutline(-0.965, -1.38, count - 1 + 0.965, 0.88), iconFillsBody: true,
+    bodyOutline: rectangularOutline(-0.965, -1.38, count - 1 + 0.965, 0.88),
+    iconOffset: {dx: (count - 1) / 2, dy: -0.25}, iconFillsBody: true,
     pinLabelOffset: {dx: 0, dy: 1.15}
   })),
   {
@@ -523,7 +525,8 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     id: "battery-2xaa", refPrefix: "BT", category: "batteries", name: "Battery Holder (2 × AA, Keystone 2462)", fallbackLabel: "2×AA",
     keywords: ["aa", "battery", "3v", "two cell", "keystone"],
     pinOffsets: [{dx: 0, dy: 0}, {dx: 0, dy: -5}], pinLabels: ["+", "−"],
-    bodyOutline: rectangularOutline(-22.13, -8.98, 1.3, 3.98), iconFillsBody: true,
+    bodyOutline: rectangularOutline(-22.13, -8.98, 1.3, 3.98),
+    iconOffset: {dx: -10.415, dy: -2.5}, iconFillsBody: true,
     pinLabelOffset: {dx: 0, dy: 0}
   },
   {

@@ -1,0 +1,34 @@
+{
+  "version": 3,
+  "board": {"type": "perfboard", "cols": 30, "rows": 21},
+  "pads": [
+    {"at": [1, 0], "color": "#38bdf8", "note": "CONNECTORS & POWER INPUT: screw terminals, female header, jumper cap, JST XH, 7805 and LM317 regulators, fuse holder, DC barrel jack and 3.5 mm audio jack. A component gallery, not a working circuit: wires only demonstrate routing. Enable Labels, then open 3D View."},
+    {"at": [2, 7], "color": "#ef4444", "note": "VIN: terminal wiring example."},
+    {"at": [4, 7], "color": "#94a3b8", "note": "GND: terminal wiring example."},
+    {"at": [15, 19], "color": "#ef4444", "note": "VIN: barrel jack center pin."},
+    {"at": [17, 19], "color": "#94a3b8", "note": "GND: barrel jack sleeve."}
+  ],
+  "wires": [
+    {"from": [2, 4], "to": [2, 7], "color": "#ef4444", "width": 6},
+    {"from": [4, 4], "to": [4, 7], "color": "#94a3b8", "width": 6},
+    {"from": [15, 16], "to": [15, 19], "color": "#ef4444", "width": 6},
+    {"from": [17, 16], "to": [17, 19], "color": "#94a3b8", "width": 6}
+  ],
+  "placedIcs": [],
+  "placedStandardComponents": [],
+  "placedAdvancedComponents": [
+    {"ref": "J1", "definitionId": "screw-terminal-2", "at": [2, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "2-pin"},
+    {"ref": "J2", "definitionId": "screw-terminal-3", "at": [8, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "3-pin"},
+    {"ref": "U1", "definitionId": "regulator-7805", "at": [17, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "7805"},
+    {"ref": "U2", "definitionId": "regulator-lm317", "at": [23, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "LM317"},
+    {"ref": "J3", "definitionId": "female-header", "at": [2, 9], "rotation": 0, "rows": 2, "cols": 5, "value": "2x5"},
+    {"ref": "JP1", "definitionId": "jumper-cap", "at": [9, 9], "rotation": 90, "rows": 1, "cols": 1, "value": "Jumper"},
+    {"ref": "J4", "definitionId": "jst-xh-2", "at": [13, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "XH 2"},
+    {"ref": "J5", "definitionId": "jst-xh-3", "at": [18, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "XH 3"},
+    {"ref": "J6", "definitionId": "jst-xh-4", "at": [24, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "XH 4"},
+    {"ref": "F1", "definitionId": "fuse-holder", "at": [2, 15], "rotation": 0, "rows": 1, "cols": 1, "value": "T1A"},
+    {"ref": "J7", "definitionId": "dc-barrel-jack", "at": [15, 16], "rotation": 0, "rows": 1, "cols": 1, "value": "5.5x2.1"},
+    {"ref": "J8", "definitionId": "audio-jack-3-5mm", "at": [27, 16], "rotation": 0, "rows": 1, "cols": 1, "value": "3.5mm"}
+  ],
+  "customIcs": []
+}
