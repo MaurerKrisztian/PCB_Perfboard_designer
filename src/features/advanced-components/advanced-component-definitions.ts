@@ -22,6 +22,7 @@ export interface AdvancedComponentDefinition {
   iconPath?: string;
   fallbackLabel: string;
   pinOffsets: PinOffset[];
+  pinLabels?: string[];
   // Grid holes the body physically covers but that aren't real electrical pins (e.g. the
   // skipped holes of a full-size potentiometer's wider leg spacing). Drawn dimmed, never
   // returned by getPinPositions.
@@ -129,6 +130,13 @@ const POT_BODY_OUTLINE: PinOffset[] = [
 // stretches potentiometer.svg across. That box's 4.6 x 3.6 ratio matches the SVG's viewBox.
 const POT_ICON_CENTER: PinOffset = {dx: 2, dy: 0.5};
 
+function rectangularOutline(left: number, top: number, right: number, bottom: number): PinOffset[] {
+  return [{dx: left, dy: top}, {dx: right, dy: top}, {dx: right, dy: bottom}, {dx: left, dy: bottom}];
+}
+
+const RGB_LED_PINS: PinOffset[] = [...INLINE_3_PINS, {dx: 3, dy: 0}];
+const RGB_LED_OUTLINE = rectangularOutline(-0.2, -1.16, 3.2, 1.16);
+
 export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "transistor", refPrefix: "Q", category: "semiconductors.transistors", name: "Transistor (TO-92)", fallbackLabel: "Q",
@@ -156,6 +164,102 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     // Only the 1x1 default lives here - the real lattice is the placed instance's rows/cols.
     pinOffsets: [{dx: 0, dy: 0}],
     gridSizable: true, perPinIcon: true
+  },
+  {
+    id: "screw-terminal-2", refPrefix: "J", category: "connectors", name: "Screw Terminal (2-pin, 5.08 mm)", fallbackLabel: "TB2",
+    keywords: ["terminal block", "power input", "connector", "wire"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 2, dy: 0}],
+    bodyOutline: rectangularOutline(-1, -1.6, 3, 1.6), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.9}
+  },
+  {
+    id: "screw-terminal-3", refPrefix: "J", category: "connectors", name: "Screw Terminal (3-pin, 5.08 mm)", fallbackLabel: "TB3",
+    keywords: ["terminal block", "power input", "connector", "wire"],
+    pinOffsets: WIDE_INLINE_3_PINS,
+    bodyOutline: rectangularOutline(-1, -1.6, 5, 1.6), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.9}
+  },
+  {
+    id: "push-button", refPrefix: "SW", category: "switches", name: "Push Button (KSA, 7.62 × 5.08 mm)", fallbackLabel: "BTN",
+    keywords: ["tactile", "momentary", "normally open", "spst", "ksa0m"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 3, dy: 0}, {dx: 3, dy: 2}, {dx: 0, dy: 2}],
+    bodyOutline: rectangularOutline(-0.27, -0.5, 3.27, 2.5), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -0.8}
+  },
+  {
+    id: "slide-switch", refPrefix: "SW", category: "switches", name: "Slide Switch (SPDT, formed 2.54 mm)", fallbackLabel: "SPDT",
+    keywords: ["on on", "selector", "js102011cqn", "switch"],
+    pinOffsets: INLINE_3_PINS, pinLabels: ["1", "COM", "3"],
+    bodyOutline: rectangularOutline(-0.67, -0.69, 2.67, 0.69), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1}
+  },
+  {
+    id: "regulator-7805", refPrefix: "U", category: "ics.power", name: "7805 Voltage Regulator (TO-220)", fallbackLabel: "7805",
+    keywords: ["lm7805", "lm340", "5v", "linear", "power supply"],
+    iconPath: `${COMPONENT_ICON_DIR}mosfet.svg`,
+    pinOffsets: INLINE_3_PINS, pinLabels: ["IN", "GND", "OUT"],
+    bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
+    pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
+  },
+  {
+    id: "regulator-lm317", refPrefix: "U", category: "ics.power", name: "LM317 Adjustable Regulator (TO-220)", fallbackLabel: "LM317",
+    keywords: ["voltage regulator", "linear", "power supply", "adjustable"],
+    iconPath: `${COMPONENT_ICON_DIR}mosfet.svg`,
+    pinOffsets: INLINE_3_PINS, pinLabels: ["ADJ", "OUT", "IN"],
+    bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
+    pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
+  },
+  {
+    id: "trimmer", refPrefix: "RV", category: "passives.resistors", name: "Trimmer Potentiometer (3296W)", fallbackLabel: "TRIM",
+    keywords: ["trimpot", "preset", "multiturn", "variable resistor", "adjustment"],
+    pinOffsets: INLINE_3_PINS, pinLabels: ["CCW", "W", "CW"],
+    bodyOutline: rectangularOutline(-0.88, -0.95, 2.88, 0.95), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.25}, unit: "Ω", freeFormValue: true
+  },
+  {
+    id: "female-header", refPrefix: "J", category: "connectors", name: "Female Header (2.54 mm)", fallbackLabel: "SOCK",
+    keywords: ["socket", "female pins", "receptacle", "dupont", "module"],
+    pinOffsets: [{dx: 0, dy: 0}], gridSizable: true, perPinIcon: true
+  },
+  {
+    id: "jumper-cap", refPrefix: "JP", category: "connectors", name: "Jumper Cap (2.54 mm)", fallbackLabel: "JP",
+    keywords: ["shunt", "bridge", "jumper", "header"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 1, dy: 0}],
+    bodyOutline: rectangularOutline(-0.5, -0.5, 1.5, 0.5), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -0.8}
+  },
+  {
+    id: "buzzer", refPrefix: "BZ", category: "outputs", name: "Buzzer (12 mm, formed 5.08 mm)", fallbackLabel: "BZ",
+    keywords: ["audio", "sound", "alarm", "magnetic", "transducer", "cem-1206s"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 2, dy: 0}], pinLabels: ["+", "−"],
+    bodyOutline: rectangularOutline(-1.36, -2.36, 3.36, 2.36), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -2.65}
+  },
+  {
+    id: "relay-dpdt", refPrefix: "K", category: "outputs", name: "Relay (G5V-2, DPDT)", fallbackLabel: "RELAY",
+    keywords: ["coil", "signal", "normally open", "normally closed", "omron"],
+    pinOffsets: [
+      {dx: 0, dy: 0}, {dx: 3, dy: 0}, {dx: 5, dy: 0}, {dx: 7, dy: 0},
+      {dx: 7, dy: -3}, {dx: 5, dy: -3}, {dx: 3, dy: -3}, {dx: 0, dy: -3}
+    ],
+    pinLabels: ["1 COIL", "4 COM", "6 NC", "8 NO", "9 NO", "11 NC", "13 COM", "16 COIL"],
+    bodyOutline: rectangularOutline(-0.535, -3.488, 7.535, 0.488),
+    iconOffset: {dx: 3.5, dy: -1.5}, iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -0.8}
+  },
+  {
+    id: "rgb-led-cathode", refPrefix: "D", category: "semiconductors.diodes", name: "RGB LED (Common Cathode, formed 2.54 mm)", fallbackLabel: "RGB−",
+    keywords: ["light", "red green blue", "5mm", "indicator", "cc"],
+    iconPath: `${COMPONENT_ICON_DIR}rgb-led.svg`,
+    pinOffsets: RGB_LED_PINS, pinLabels: ["R", "K", "G", "B"],
+    bodyOutline: RGB_LED_OUTLINE, iconFillsBody: true, pinLabelOffset: {dx: 0, dy: -1.45}
+  },
+  {
+    id: "rgb-led-anode", refPrefix: "D", category: "semiconductors.diodes", name: "RGB LED (Common Anode, formed 2.54 mm)", fallbackLabel: "RGB+",
+    keywords: ["light", "red green blue", "5mm", "indicator", "ca"],
+    iconPath: `${COMPONENT_ICON_DIR}rgb-led.svg`,
+    pinOffsets: RGB_LED_PINS, pinLabels: ["R", "A", "G", "B"],
+    bodyOutline: RGB_LED_OUTLINE, iconFillsBody: true, pinLabelOffset: {dx: 0, dy: -1.45}
   },
 ];
 

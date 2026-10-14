@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 167 69" width="167" height="69" role="img" aria-label="SPDT slide switch, top view">
+  <rect x="3" y="3" width="161" height="63" rx="7" fill="#a8b4c2" stroke="#e2e8f0" stroke-width="4"/>
+  <rect x="17" y="12" width="133" height="45" rx="5" fill="#131922" stroke="#667788" stroke-width="3"/>
+  <rect x="24" y="15" width="51" height="39" rx="3" fill="#313a47" stroke="#7b8796" stroke-width="2"/>
+  <path d="M34 20v29m10-29v29m10-29v29m10-29v29" stroke="#a8b4c2" stroke-width="3"/>
+  <path d="M7 23v23m153-23v23" stroke="#617080" stroke-width="3"/>
+</svg>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 404 199" width="404" height="199" role="img" aria-label="G5V-2 DPDT relay, top view">
+  <rect x="4" y="4" width="396" height="191" rx="8" fill="#174d84" stroke="#8bb5d9" stroke-width="5"/>
+  <path d="M13 181h376M388 15v164" stroke="#0c2f57" stroke-width="7"/>
+  <rect x="20" y="139" width="13" height="36" rx="2" fill="#c9deef"/>
+  <text x="45" y="77" fill="#f1f5f9" font-family="Arial,sans-serif" font-size="35" font-weight="bold">G5V-2</text>
+  <text x="46" y="111" fill="#d2e5f7" font-family="Arial,sans-serif" font-size="22">DPDT</text>
+  <g fill="none" stroke="#d2e5f7" stroke-width="4">
+    <rect x="52" y="139" width="30" height="20"/>
+    <path d="M37 149h15m30 0h15m16 0h30l24-14m-10 22h22m-22-28h22m26 20h30l24-14m-10 22h22m-22-28h22"/>
+  </g>
+</svg>

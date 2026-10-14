@@ -35,6 +35,37 @@ export const IC_DEFINITIONS: IcDefinition[] = [
     pinDescription: {1: "GND", 2: "TRIG", 3: "OUT", 4: "RESET", 5: "CTRL", 6: "THRESH", 7: "DISCH", 8: "VCC"}
   },
   {
+    id: "lm358", category: "ics.analog", name: "LM358 Dual Op Amp", keywords: ["opamp", "operational amplifier", "dip-8"],
+    widthPin: 4, heightPin: 4,
+    pinDescription: {1: "OUT1", 2: "IN1-", 3: "IN1+", 4: "V-", 5: "IN2+", 6: "IN2-", 7: "OUT2", 8: "V+"}
+  },
+  {
+    id: "lm386", category: "ics.analog", name: "LM386 Audio Amplifier", keywords: ["audio", "speaker", "dip-8"],
+    widthPin: 4, heightPin: 4,
+    pinDescription: {1: "GAIN", 2: "IN-", 3: "IN+", 4: "GND", 5: "OUT", 6: "VS", 7: "BYPASS", 8: "GAIN"}
+  },
+  {
+    id: "pc817", category: "ics.opto", name: "PC817 Optocoupler", keywords: ["photocoupler", "isolator", "dip-4"],
+    widthPin: 4, heightPin: 2,
+    pinDescription: {1: "A", 2: "K", 3: "E", 4: "C"}
+  },
+  {
+    id: "uln2803a", category: "ics.drivers", name: "ULN2803A Darlington Driver", keywords: ["transistor array", "relay", "motor", "dip-18"],
+    widthPin: 4, heightPin: 9,
+    pinDescription: dualRowPins(
+      ["1B", "2B", "3B", "4B", "5B", "6B", "7B", "8B", "GND"],
+      ["1C", "2C", "3C", "4C", "5C", "6C", "7C", "8C", "COM"]
+    )
+  },
+  {
+    id: "74hc595", category: "ics.logic", name: "74HC595 Shift Register", keywords: ["sn74hc595", "595", "serial", "parallel", "dip-16"],
+    widthPin: 4, heightPin: 8,
+    pinDescription: {
+      1: "QB", 2: "QC", 3: "QD", 4: "QE", 5: "QF", 6: "QG", 7: "QH", 8: "GND",
+      9: "QH'", 10: "/SRCLR", 11: "SRCLK", 12: "RCLK", 13: "/OE", 14: "SER", 15: "QA", 16: "VCC"
+    }
+  },
+  {
     id: "dip-14-logic", category: "ics.logic", name: "DIP-14 Logic", keywords: ["74hc", "7400", "gate"],
     widthPin: 4, heightPin: 7,
     pinDescription: {1: "1A", 2: "1B", 3: "1Y", 4: "2A", 5: "2B", 6: "2Y", 7: "GND", 14: "VCC"}

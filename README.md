@@ -61,6 +61,11 @@ device.
 - 📦 **ICs and custom chips**: drop in an NE555 timer, DIP-14 and DIP-16 logic chips, an
   ATmega328P or an Arduino Nano. You can also build your own chip with labeled pins in the custom
   IC editor and edit it again later. Chips and fixed-pin parts rotate in 90° steps.
+- 🔘 **Connectors, controls and power**: 2-pin and 3-pin screw terminals, female headers,
+  jumper caps, push buttons, slide switches, 3296W trimmers, and 7805 / LM317 regulators.
+- 🔔 **More outputs and named chips**: buzzers, DPDT relays, four-lead RGB LEDs in common-anode
+  and common-cathode variants, plus LM358, LM386, PC817, ULN2803A and 74HC595 DIP presets with
+  labeled pins. All appear in both the 2D editor and 3D preview.
 - ✏️ **Wires the way you solder them**: jumper wires in any color and three thicknesses (thin,
   normal, thick). Straight runs of the same color merge into one wire automatically.
 - 📐 **Perfboard or stripboard, any size**: start from a common board size (2×8 cm up to
@@ -107,6 +112,12 @@ jumper wire, on a perfboard or stripboard sized to match yours.
 - Drag to orbit, right-drag to pan and scroll to zoom, or jump to an angled, top or bottom view.
 - Check the solder side to see where wires and leads meet the copper.
 - Save a screenshot of the render to share or keep next to your build.
+
+Component variants use the board's 2.54 mm hole grid. Check the
+[component footprint notes](docs/component-footprints.md) for package details, pin labels,
+and parts whose leads must be formed to fit the grid. The models are layout previews, not
+manufacturing drawings. The [component sampler](examples/component-sampler.json) includes
+the expanded catalog; import it to explore the parts in 2D and 3D.
 
 <p align="center">
   <img src="assets/images/hero-board.webp" width="49%"

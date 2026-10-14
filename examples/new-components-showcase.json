@@ -1,0 +1,75 @@
+{
+  "version": 3,
+  "board": {"type": "perfboard", "cols": 43, "rows": 29},
+  "pads": [
+    {"at": [1, 1], "color": "#38bdf8", "note": "NEW: 18 component variants. Enable Labels, then open 3D View. This is a component showcase; the short wires demonstrate routing, not a working circuit."},
+    {"at": [4, 1], "color": "#fbbf24", "note": "POWER: 2-pin / 3-pin screw terminals, 7805 and LM317 regulators."},
+    {"at": [36, 1], "color": "#60a5fa", "note": "RELAY: G5V-2 DPDT, with coil, common, normally closed and normally open pins."},
+    {"at": [3, 7], "color": "#ef4444", "note": "VIN: terminal wiring example."},
+    {"at": [5, 7], "color": "#94a3b8", "note": "GND: terminal wiring example."},
+    {"at": [10, 7], "color": "#f59e0b", "note": "OUT A: first terminal."},
+    {"at": [12, 7], "color": "#38bdf8", "note": "OUT B: second terminal."},
+    {"at": [14, 7], "color": "#a78bfa", "note": "OUT C: third terminal."},
+    {"at": [3, 9], "color": "#38bdf8", "note": "I/O: resizable female header and a jumper cap with its supporting header pins."},
+    {"at": [22, 9], "color": "#fbbf24", "note": "INPUT: 3296W trimmer, KSA tactile push button and SPDT slide switch."},
+    {"at": [3, 18], "color": "#ef4444", "note": "OUT 1: female-header routing example."},
+    {"at": [4, 17], "color": "#f59e0b"},
+    {"at": [5, 16], "color": "#22c55e"},
+    {"at": [6, 17], "color": "#38bdf8"},
+    {"at": [7, 18], "color": "#a78bfa", "note": "OUT 5: female-header routing example."},
+    {"at": [15, 18], "color": "#38bdf8", "note": "18 NEW: thirteen component packages and five named DIP chips, all with 2D and 3D rendering."},
+    {"at": [26, 15], "color": "#22c55e", "note": "RGB: four-lead common-cathode and common-anode LEDs. K = cathode, A = anode."},
+    {"at": [4, 21], "color": "#a78bfa", "note": "DIP: LM358, LM386, PC817, ULN2803A and 74HC595. All are rotated 90 degrees here."}
+  ],
+  "wires": [
+    {"from": [3, 4], "to": [3, 7], "color": "#ef4444", "width": 6},
+    {"from": [5, 4], "to": [5, 7], "color": "#94a3b8", "width": 6},
+    {"from": [10, 4], "to": [10, 7], "color": "#f59e0b", "width": 4},
+    {"from": [12, 4], "to": [12, 7], "color": "#38bdf8", "width": 4},
+    {"from": [14, 4], "to": [14, 7], "color": "#a78bfa", "width": 4},
+    {"from": [3, 12], "to": [3, 18], "color": "#ef4444", "width": 4},
+    {"from": [4, 12], "to": [4, 17], "color": "#f59e0b", "width": 4},
+    {"from": [5, 12], "to": [5, 16], "color": "#22c55e", "width": 4},
+    {"from": [6, 12], "to": [6, 17], "color": "#38bdf8", "width": 4},
+    {"from": [7, 12], "to": [7, 18], "color": "#a78bfa", "width": 4}
+  ],
+  "placedIcs": [
+    {
+      "ref": "U3", "name": "LM358", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [3, 23],
+      "pinDescription": {"1": "OUT1", "2": "IN1-", "3": "IN1+", "4": "V-", "5": "IN2+", "6": "IN2-", "7": "OUT2", "8": "V+"}
+    },
+    {
+      "ref": "U4", "name": "LM386", "widthPin": 4, "heightPin": 4, "rotation": 90, "at": [10, 23],
+      "pinDescription": {"1": "GAIN", "2": "IN-", "3": "IN+", "4": "GND", "5": "OUT", "6": "VS", "7": "BYPASS", "8": "GAIN"}
+    },
+    {
+      "ref": "U5", "name": "PC817", "widthPin": 2, "heightPin": 4, "rotation": 90, "at": [17, 23],
+      "pinDescription": {"1": "A", "2": "K", "3": "E", "4": "C"}
+    },
+    {
+      "ref": "U6", "name": "ULN2803A", "widthPin": 9, "heightPin": 4, "rotation": 90, "at": [22, 23],
+      "pinDescription": {"1": "1B", "2": "2B", "3": "3B", "4": "4B", "5": "5B", "6": "6B", "7": "7B", "8": "8B", "9": "GND", "10": "COM", "11": "8C", "12": "7C", "13": "6C", "14": "5C", "15": "4C", "16": "3C", "17": "2C", "18": "1C"}
+    },
+    {
+      "ref": "U7", "name": "74HC595", "widthPin": 8, "heightPin": 4, "rotation": 90, "at": [33, 23],
+      "pinDescription": {"1": "QB", "2": "QC", "3": "QD", "4": "QE", "5": "QF", "6": "QG", "7": "QH", "8": "GND", "9": "QH'", "10": "/SRCLR", "11": "SRCLK", "12": "RCLK", "13": "/OE", "14": "SER", "15": "QA", "16": "VCC"}
+    }
+  ],
+  "placedStandardComponents": [],
+  "placedAdvancedComponents": [
+    {"ref": "J1", "definitionId": "screw-terminal-2", "at": [3, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "2-pin 5.08mm"},
+    {"ref": "J2", "definitionId": "screw-terminal-3", "at": [10, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "3-pin 5.08mm"},
+    {"ref": "U1", "definitionId": "regulator-7805", "at": [20, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "7805"},
+    {"ref": "U2", "definitionId": "regulator-lm317", "at": [27, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "LM317"},
+    {"ref": "K1", "definitionId": "relay-dpdt", "at": [33, 7], "rotation": 0, "rows": 1, "cols": 1, "value": "DPDT"},
+    {"ref": "J3", "definitionId": "female-header", "at": [3, 11], "rotation": 0, "rows": 2, "cols": 5, "value": "2x5 socket"},
+    {"ref": "JP1", "definitionId": "jumper-cap", "at": [10, 11], "rotation": 90, "rows": 1, "cols": 1, "value": "Jumper"},
+    {"ref": "RV1", "definitionId": "trimmer", "at": [15, 12], "rotation": 0, "rows": 1, "cols": 1, "value": "10kΩ"},
+    {"ref": "SW1", "definitionId": "push-button", "at": [22, 11], "rotation": 0, "rows": 1, "cols": 1, "value": "Tactile"},
+    {"ref": "SW2", "definitionId": "slide-switch", "at": [30, 12], "rotation": 0, "rows": 1, "cols": 1, "value": "SPDT"},
+    {"ref": "BZ1", "definitionId": "buzzer", "at": [37, 12], "rotation": 0, "rows": 1, "cols": 1, "value": "Buzzer"},
+    {"ref": "D1", "definitionId": "rgb-led-cathode", "at": [24, 18], "rotation": 0, "rows": 1, "cols": 1, "value": "RGB CC"},
+    {"ref": "D2", "definitionId": "rgb-led-anode", "at": [34, 18], "rotation": 0, "rows": 1, "cols": 1, "value": "RGB CA"}
+  ],
+  "customIcs": []
+}
