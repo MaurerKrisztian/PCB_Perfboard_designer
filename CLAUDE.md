@@ -151,8 +151,13 @@ validating everything and throwing `ProjectFileError` for non-projects before th
 touched; bad entries are skipped and counted, and parts without a usable ref are numbered. `save-project.ts`'s `getSaveJson()` always writes the current version (each part's
 `serialize()` returns its entry); `load-project.ts`'s `loadProject(raw)` reads and then rebuilds
 the board, pinning wires and parts to the shared dot objects, and merges (never replaces) custom
-ICs into the catalog. `save-progress.ts` / `load-from-local-storage.ts` do the same against
-`localStorage`. A format change means a new version number plus an upgrade path in the reader —
+ICs into the catalog. Projects are also kept in the browser: `project-store.ts` is the
+`localStorage` layout (two keys per project, its file and `{name, updatedAt}`, so tabs on
+different projects never write the same key), `current-project.ts` tracks which one is open
+(`ProjectState.current`), opens/creates/imports/deletes them, and autosaves the open one shortly
+after any redraw that changed it (via `onRedraw()` in `draw-canvas.ts` — every board change ends
+in a redraw) and when the tab is hidden or closed. `projects-modal.ts` is the UI (File menu
+items, header name, Projects dialog). A format change means a new version number plus an upgrade path in the reader —
 old files must keep opening. `examples/*.json` are v1 files and double as compatibility fixtures.
 
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the

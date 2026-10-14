@@ -4,7 +4,7 @@ import {HoleStamp} from "./hole-stamp";
 
 // Perfboard: a flat dark-green board with a separate copper pad around every hole.
 
-const BOARD_COLOR = "#046307";
+export const BOARD_COLOR = "#046307";
 
 const padStamp = new HoleStamp(PAD_RADIUS, (ctx, center, scale) => {
   ctx.fillStyle = COPPER_COLOR;

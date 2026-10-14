@@ -6,7 +6,6 @@ import {ViewState} from "../state/ViewState";
 // Fullscreen Focus Mode & Board Zoom Management
 let currentZoom = 1.0;
 let isFullscreenMode = false;
-let isSidebarVisible = true;
 let isFitMode = false;
 
 export function getCurrentZoom(): number {
@@ -95,22 +94,40 @@ export function fitToScreen(forcefit?: boolean) {
   if (fitBtn) { fitBtn.innerText = '✕ Reset'; fitBtn.className = 'btn-danger'; }
 }
 
-function toggleSidebar(show?: boolean) {
-  isSidebarVisible = show !== undefined ? show : !isSidebarVisible;
-  const sidebar = document.getElementById('controls');
-  const btn1 = document.getElementById('toggleSidebarBtn');
+// Whether the tools sidebar (left) and the Keyboard Shortcuts panel (right) are shown; remembered
+// between visits. Both are View menu checkboxes backed by the same helpers.
+const SIDEBAR_STORAGE_KEY = 'show_tools_sidebar';
+const SHORTCUTS_PANEL_STORAGE_KEY = 'show_shortcuts_panel';
 
-  if (sidebar) {
-    if (isSidebarVisible) {
-      sidebar.classList.remove('sidebar-collapsed');
-      if (btn1) btn1.innerText = '◀ Sidebar';
-    } else {
-      sidebar.classList.add('sidebar-collapsed');
-      if (btn1) btn1.innerText = '▶ Sidebar';
-    }
+function setPanelVisible(panelId: string, menuItemId: string, show: boolean) {
+  document.getElementById(panelId)?.classList.toggle('sidebar-collapsed', !show);
+  const item = document.getElementById(menuItemId);
+  item?.setAttribute('aria-checked', String(show));
+  const check = item?.querySelector('.menu-check');
+  if (check) check.textContent = show ? '✓' : '';
+}
+
+function togglePanel(panelId: string, menuItemId: string, storageKey: string) {
+  const show = document.getElementById(panelId)?.classList.contains('sidebar-collapsed') ?? false;
+  setPanelVisible(panelId, menuItemId, show);
+  try {
+    localStorage.setItem(storageKey, String(show));
+  } catch (e) {
+    console.error("Failed to save panel visibility to localStorage", e);
   }
   setTimeout(() => fitToScreen(true), 80);
 }
+
+function restorePanel(panelId: string, menuItemId: string, storageKey: string) {
+  try {
+    setPanelVisible(panelId, menuItemId, localStorage.getItem(storageKey) !== 'false');
+  } catch (e) {
+    console.error("Failed to load panel visibility from localStorage", e);
+  }
+}
+
+restorePanel('controls', 'toggleSidebarBtn', SIDEBAR_STORAGE_KEY);
+restorePanel('shortcutsPanel', 'toggleShortcutsBtn', SHORTCUTS_PANEL_STORAGE_KEY);
 
 function toggleFullscreenMode(enable?: boolean) {
   isFullscreenMode = enable !== undefined ? enable : !isFullscreenMode;
@@ -121,7 +138,7 @@ function toggleFullscreenMode(enable?: boolean) {
   if (isFullscreenMode) {
     document.body.classList.add('fullscreen-active');
     layout?.classList.add('fullscreen-mode');
-    if (btn1) btn1.innerText = '⛶ Exit Fullscreen';
+    if (btn1) btn1.innerText = 'Exit Fullscreen';
     if (btn2) {
       btn2.innerText = '✕ Exit Fullscreen';
       btn2.className = 'btn-danger';
@@ -132,7 +149,7 @@ function toggleFullscreenMode(enable?: boolean) {
   } else {
     document.body.classList.remove('fullscreen-active');
     layout?.classList.remove('fullscreen-mode');
-    if (btn1) btn1.innerText = '⛶ Fullscreen';
+    if (btn1) btn1.innerText = 'Fullscreen';
     if (btn2) {
       btn2.innerText = '⛶ Fullscreen';
       btn2.className = 'btn';
@@ -170,13 +187,14 @@ try {
   console.error("Failed to load part label visibility from localStorage", e);
 }
 
-// Bind Zoom, Sidebar, Part labels & Fullscreen buttons
+// Bind Zoom, Part labels & Fullscreen buttons
 document.getElementById('zoomInBtn')?.addEventListener('click', zoomIn);
 document.getElementById('zoomOutBtn')?.addEventListener('click', zoomOut);
 document.getElementById('zoomFitBtn')?.addEventListener('click', () => fitToScreen());
 document.getElementById('toggleValuesBtn')?.addEventListener('click', togglePartLabels);
 
-document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => toggleSidebar());
+document.getElementById('toggleSidebarBtn')?.addEventListener('click', () => togglePanel('controls', 'toggleSidebarBtn', SIDEBAR_STORAGE_KEY));
+document.getElementById('toggleShortcutsBtn')?.addEventListener('click', () => togglePanel('shortcutsPanel', 'toggleShortcutsBtn', SHORTCUTS_PANEL_STORAGE_KEY));
 
 document.getElementById('toggleFullscreenBtn')?.addEventListener('click', () => toggleFullscreenMode());
 document.getElementById('canvasFullscreenTrigger')?.addEventListener('click', () => toggleFullscreenMode());
