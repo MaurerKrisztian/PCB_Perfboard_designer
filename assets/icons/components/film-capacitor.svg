@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 50" width="144" height="50" role="img" aria-label="Box film capacitor, top view">
+  <rect x="3" y="3" width="138" height="44" rx="5" fill="#bd373e" stroke="#f89592" stroke-width="4"/>
+  <path d="M11 11h122" stroke="#df5e63" stroke-width="4" stroke-linecap="round"/>
+  <path d="M11 41h122" stroke="#8d222c" stroke-width="4" stroke-linecap="round"/>
+  <text x="72" y="33" text-anchor="middle" fill="#ffe8dd" font-family="Arial,sans-serif" font-size="20" font-weight="bold">MKS 2</text>
+</svg>

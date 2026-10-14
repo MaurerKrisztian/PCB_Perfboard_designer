@@ -66,6 +66,11 @@ device.
 - 🔔 **More outputs and named chips**: buzzers, DPDT relays, four-lead RGB LEDs in common-anode
   and common-cathode variants, plus LM358, LM386, PC817, ULN2803A and 74HC595 DIP presets with
   labeled pins. All appear in both the 2D editor and 3D preview.
+- 🧩 **Displays, sensors and more controls**: 2-, 4- and 8-position DIP switches, common-anode
+  and common-cathode seven-segment displays, quartz crystals, ceramic resonators, LDRs,
+  thermistors, film capacitors, 5×20 mm fuse holders, rotary encoders and DC barrel jacks.
+  Each has 2D artwork and a dedicated 3D model; check the footprint notes for parts whose
+  leads must be formed to fit the grid.
 - ✏️ **Wires the way you solder them**: jumper wires in any color and three thicknesses (thin,
   normal, thick). Straight runs of the same color merge into one wire automatically.
 - 📐 **Perfboard or stripboard, any size**: start from a common board size (2×8 cm up to
@@ -116,8 +121,8 @@ jumper wire, on a perfboard or stripboard sized to match yours.
 Component variants use the board's 2.54 mm hole grid. Check the
 [component footprint notes](docs/component-footprints.md) for package details, pin labels,
 and parts whose leads must be formed to fit the grid. The models are layout previews, not
-manufacturing drawings. The [component sampler](examples/component-sampler.json) includes
-the expanded catalog; import it to explore the parts in 2D and 3D.
+manufacturing drawings. Import the [new components showcase](examples/new-components-showcase.json)
+to explore the expanded catalog in 2D and 3D. It is a component gallery, not a working circuit.
 
 <p align="center">
   <img src="assets/images/hero-board.webp" width="49%"

@@ -8,6 +8,8 @@ const CATEGORY_LIST = [
   {id: "passives", name: "Passives", icon: "〰️", keywords: ["passive"]},
   {id: "passives.resistors", parentId: "passives", name: "Resistors", keywords: ["resistance", "ohm"]},
   {id: "passives.capacitors", parentId: "passives", name: "Capacitors", keywords: ["cap", "capacitance", "farad"]},
+  {id: "passives.timing", parentId: "passives", name: "Crystals & Resonators", keywords: ["frequency", "oscillator", "clock"]},
+  {id: "passives.protection", parentId: "passives", name: "Fuses", keywords: ["fuse", "protection", "overcurrent"]},
 
   {id: "semiconductors", name: "Semiconductors", icon: "💡", keywords: ["semiconductor", "active"]},
   {id: "semiconductors.diodes", parentId: "semiconductors", name: "Diodes"},
@@ -29,6 +31,7 @@ const CATEGORY_LIST = [
 
   {id: "connectors", name: "Connectors", icon: "🔌", keywords: ["connector", "header"]},
   {id: "switches", name: "Switches", icon: "🔘", keywords: ["switch", "button", "input", "control"]},
+  {id: "displays", name: "Displays", icon: "🔢", keywords: ["display", "seven segment", "digit", "indicator"]},
   {id: "outputs", name: "Relays & Buzzers", icon: "🔔", keywords: ["output", "relay", "buzzer", "sound"]},
 ] as const;
 

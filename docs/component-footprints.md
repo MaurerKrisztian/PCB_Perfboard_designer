@@ -36,6 +36,21 @@ The relay footprint is viewed from the component side. Its pin-1 anchor is at th
 
 Parts named **formed** describe a planned lead arrangement after bending the pins to match the perfboard grid. They do not claim that the unmodified package has a 2.54 mm or 5.08 mm pitch. The 2D artwork and 3D models show representative housings; the pin positions define the board connections.
 
+## Timing, sensors, protection, displays, and controls
+
+| Catalog part | Hole layout | Package reference and assumptions |
+| --- | --- | --- |
+| Quartz Crystal | Two pins formed to 5.08 mm spacing | HC-49/US low-profile can, about 11.4 × 4.65 mm. Its leads are 4.88 mm apart, so the grid footprint assumes they are spread slightly. The value is free text, such as `16MHz`. |
+| Ceramic Resonator | Three inline pins formed to 2.54 mm pitch | [Murata CSTLS](https://www.murata.com/en-global/products/timingdevice/ceralock) three-terminal resonator with built-in load capacitors; pins are `OUT`, `GND`, `IN`. Its original pitch is 2.5 mm. |
+| Photoresistor | Two pins formed to 5.08 mm spacing | Representative 5 mm CdS cell (e.g. Advanced Photonix PDV-P8103). Lead spacing varies by maker; the value is free text, such as `GL5528` or `10kΩ`. |
+| NTC Thermistor | Two adjacent holes, 2.54 mm pitch | Vishay NTCLE100E3 radial bead with 2.54 mm lead spacing. Uses the `RT` reference prefix. |
+| Film Capacitor | Two pins formed to 5.08 mm spacing | WIMA MKS 2 box capacitor, 7.2 × 2.5 mm body with 5.0 mm lead spacing. |
+| Fuse Holder | Two pins nine holes (22.86 mm) apart | [Schurter OGN 0031.8201](https://www.schurter.com/en/datasheet/OG__Holder__5x20) open holder for 5 × 20 mm fuses. Its 22.5 mm pin distance leaves each pin under 0.2 mm off a hole center. The 25 mm version (0031.8211) needs a different footprint. |
+| DIP Switches, 2-, 4- and 8-position | Two rows 7.62 mm apart, 2.54 mm pitch | Standard through-hole DIP switch, numbered like a DIP IC: pins 1 to *n* along the bottom row, then back along the top. Switch *k* connects pin *k* to the pin directly above it. The housing covers both rows, so the 2D pin numbers sit on the pins themselves. |
+| 7-Segment Displays | Two rows of five, 15.24 mm apart | [Kingbright SC56-11](https://www.kingbrightusa.com/images/catalog/SPEC/SC56-11EWA.pdf) (common cathode) and SA56-11 (common anode) 0.56 inch digit, 12.5 × 19.05 mm body. Pins 1–10 are `E`, `D`, common, `C`, `DP`, `B`, `A`, common, `F`, `G`; `CC` and `CA` mark the common pins. |
+| Rotary Encoder | `A`, `C`, `B` in a row; switch pins `S1`, `S2` six holes above | [Bourns PEC11R-4xxxF-S](https://www.bourns.com/docs/Product-Datasheets/PEC11R.pdf), 12.5 × 13.4 mm body with a push switch. The 2.5 mm pin pitch is formed to 2.54 mm, and the 14.5 mm row spacing to 15.24 mm. The two wide mounting lugs do not fit perfboard holes and are not part of the footprint; bend them flat or clip them. |
+| DC Barrel Jack | Center and sleeve pins two holes apart; switch pin one hole along and two holes to the side | 5.5 × 2.1 mm jack with thin, breadboard-friendly pins ([SparkFun PRT-10811](https://www.sparkfun.com/dc-barrel-jack-adapter-breadboard-compatible.html), [4UCON 18742 drawing](https://cdn.sparkfun.com/datasheets/Prototyping/18742.pdf)). The real pins are 5.8 mm apart along the barrel, and the switch pin is 2.8 mm along and 4.8 mm to the side, so all three are formed to the grid. The opening faces away from the center pin. Jacks with flat solder tabs, such as the PJ-102A, need slotted holes and do not fit this footprint. |
+
 ## TO-220 regulators
 
 The 7805 and LM317 use three inline pins at 2.54 mm pitch and share the existing upright TO-220 package artwork. Viewed from the marked front, pins run left to right:

@@ -137,6 +137,30 @@ function rectangularOutline(left: number, top: number, right: number, bottom: nu
 const RGB_LED_PINS: PinOffset[] = [...INLINE_3_PINS, {dx: 3, dy: 0}];
 const RGB_LED_OUTLINE = rectangularOutline(-0.2, -1.16, 3.2, 1.16);
 
+// DIP switch: two rows 7.62 mm (3 holes) apart, numbered like a DIP IC - pins 1..n left to
+// right along the bottom row, then n+1..2n right to left along the top - so switch k joins
+// pin k and the pin straight above it. The ~9.9 mm housing covers both rows.
+function dipSwitchPins(positions: number): PinOffset[] {
+  const bottom = Array.from({length: positions}, (_, i) => ({dx: i, dy: 0}));
+  const top = Array.from({length: positions}, (_, i) => ({dx: positions - 1 - i, dy: -3}));
+  return [...bottom, ...top];
+}
+function dipSwitchOutline(positions: number): PinOffset[] {
+  return rectangularOutline(-0.6, -3.47, positions - 0.4, 0.47);
+}
+
+// 0.56" single-digit display (Kingbright SA56-11 / SC56-11): rows 15.24 mm (6 holes) apart,
+// each 1.905 mm in from the 12.5 × 19.05 mm body's edge. Pins 1-5 run left to right along the
+// bottom, 6-10 right to left along the top; pins 3 and 8 are the common.
+const SEVEN_SEGMENT_PINS: PinOffset[] = [
+  {dx: 0, dy: 0}, {dx: 1, dy: 0}, {dx: 2, dy: 0}, {dx: 3, dy: 0}, {dx: 4, dy: 0},
+  {dx: 4, dy: -6}, {dx: 3, dy: -6}, {dx: 2, dy: -6}, {dx: 1, dy: -6}, {dx: 0, dy: -6},
+];
+const SEVEN_SEGMENT_OUTLINE = rectangularOutline(-0.46, -6.75, 4.46, 0.75);
+function sevenSegmentLabels(common: string): string[] {
+  return ["E", "D", common, "C", "DP", "B", "A", common, "F", "G"];
+}
+
 export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "transistor", refPrefix: "Q", category: "semiconductors.transistors", name: "Transistor (TO-92)", fallbackLabel: "Q",
@@ -260,6 +284,97 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     iconPath: `${COMPONENT_ICON_DIR}rgb-led.svg`,
     pinOffsets: RGB_LED_PINS, pinLabels: ["R", "A", "G", "B"],
     bodyOutline: RGB_LED_OUTLINE, iconFillsBody: true, pinLabelOffset: {dx: 0, dy: -1.45}
+  },
+  {
+    id: "crystal-hc49", refPrefix: "Y", category: "passives.timing", name: "Quartz Crystal (HC-49/US, formed 5.08 mm)", fallbackLabel: "XTAL",
+    keywords: ["crystal", "quartz", "oscillator", "clock", "frequency", "mhz"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 2, dy: 0}],
+    bodyOutline: rectangularOutline(-1.234, -0.915, 3.234, 0.915), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.22}, freeFormValue: true
+  },
+  {
+    id: "ceramic-resonator", refPrefix: "Y", category: "passives.timing", name: "Ceramic Resonator (CSTLS, formed 2.54 mm)", fallbackLabel: "RES",
+    keywords: ["clock", "oscillator", "frequency", "murata", "cstls4m00g53", "mhz"],
+    pinOffsets: INLINE_3_PINS, pinLabels: ["OUT", "GND", "IN"],
+    bodyOutline: rectangularOutline(-0.575, -0.591, 2.575, 0.591), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -0.9}, freeFormValue: true
+  },
+  {
+    id: "ldr", refPrefix: "R", category: "passives.resistors", name: "Photoresistor (PDV-P8103, formed 5.08 mm)", fallbackLabel: "LDR",
+    keywords: ["ldr", "light dependent resistor", "photocell", "sensor", "cds"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 2, dy: 0}],
+    bodyOutline: rectangularOutline(-0.004, -1.004, 2.004, 1.004), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.3}, unit: "Ω", freeFormValue: true
+  },
+  {
+    id: "thermistor", refPrefix: "RT", category: "passives.resistors", name: "NTC Thermistor (NTCLE100E3, 2.54 mm)", fallbackLabel: "NTC",
+    keywords: ["temperature", "sensor", "negative temperature coefficient", "thermal", "vishay"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 1, dy: 0}],
+    bodyOutline: rectangularOutline(-0.248, -0.591, 1.248, 0.591), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -0.9}, unit: "Ω", freeFormValue: true
+  },
+  {
+    id: "film-capacitor", refPrefix: "C", category: "passives.capacitors", name: "Film Capacitor (MKS 2, formed 5.08 mm)", fallbackLabel: "FILM",
+    keywords: ["polyester", "pet", "box", "nonpolar", "wima", "capacitor"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 2, dy: 0}],
+    bodyOutline: rectangularOutline(-0.417, -0.492, 2.417, 0.492), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -0.8}, unit: "F"
+  },
+  // The housing hides both pin rows, so the numbers sit on the pins themselves.
+  ...[2, 4, 8].map((positions): AdvancedComponentDefinition => ({
+    id: `dip-switch-${positions}`, refPrefix: "SW", category: "switches",
+    name: `DIP Switch (${positions}-position)`, fallbackLabel: `DIP${positions}`,
+    keywords: ["dip switch", "configuration", "address", "spst", "piano", "cts 206"],
+    pinOffsets: dipSwitchPins(positions),
+    bodyOutline: dipSwitchOutline(positions), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  })),
+  {
+    id: "seven-segment-cc", refPrefix: "DS", category: "displays", name: "7-Segment Display (Common Cathode, 0.56\")", fallbackLabel: "8.",
+    keywords: ["seven segment", "7seg", "led display", "digit", "numeric", "sc56-11", "5161as", "cc"],
+    iconPath: `${COMPONENT_ICON_DIR}seven-segment.svg`,
+    pinOffsets: SEVEN_SEGMENT_PINS, pinLabels: sevenSegmentLabels("CC"),
+    bodyOutline: SEVEN_SEGMENT_OUTLINE, iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    id: "seven-segment-ca", refPrefix: "DS", category: "displays", name: "7-Segment Display (Common Anode, 0.56\")", fallbackLabel: "8.",
+    keywords: ["seven segment", "7seg", "led display", "digit", "numeric", "sa56-11", "5161bs", "ca"],
+    iconPath: `${COMPONENT_ICON_DIR}seven-segment.svg`,
+    pinOffsets: SEVEN_SEGMENT_PINS, pinLabels: sevenSegmentLabels("CA"),
+    bodyOutline: SEVEN_SEGMENT_OUTLINE, iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0}
+  },
+  {
+    // Schurter OGN 0031.8201: 22.5 mm pin distance, which lands within 0.2 mm of a hole at
+    // each end of a 9-hole (22.86 mm) span.
+    id: "fuse-holder", refPrefix: "F", category: "passives.protection", name: "Fuse Holder (5×20 mm, OGN, 9-hole span)", fallbackLabel: "FUSE",
+    keywords: ["fuse", "fuseholder", "5x20", "glass fuse", "schurter", "protection", "overcurrent"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 9, dy: 0}],
+    bodyOutline: rectangularOutline(-0.6, -0.95, 9.6, 0.95), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: -1.25}, freeFormValue: true
+  },
+  {
+    // Bourns PEC11R-4xxxF-S: A/C/B at 2.5 mm pitch and the push switch's two pins on the far
+    // side, 14.5 mm away, formed to 2.54 mm and a 6-hole (15.24 mm) row spacing. The two wide
+    // mounting lugs between the rows don't fit perfboard holes and aren't drawn.
+    id: "rotary-encoder", refPrefix: "SW", category: "switches", name: "Rotary Encoder (PEC11R, push switch, formed)", fallbackLabel: "ENC",
+    keywords: ["encoder", "incremental", "quadrature", "knob", "menu", "volume", "ec11", "bourns"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 1, dy: 0}, {dx: 2, dy: 0}, {dx: 0, dy: -6}, {dx: 2, dy: -6}],
+    pinLabels: ["A", "C", "B", "S1", "S2"],
+    bodyOutline: rectangularOutline(-1.46, -5.64, 3.46, -0.36), iconFillsBody: true,
+    pinLabelOffset: {dx: 0, dy: 0.5}
+  },
+  {
+    // 5.5 × 2.1 mm jack with thin breadboard-friendly pins (SparkFun PRT-10811, 4UCON 18742),
+    // opening to the right. Its pins sit 5.8 mm apart along the barrel with the switch pin
+    // 4.8 mm to the side, formed to 2 holes along and 2 across.
+    id: "dc-barrel-jack", refPrefix: "J", category: "connectors", name: "DC Barrel Jack (5.5 × 2.1 mm, formed)", fallbackLabel: "DC",
+    keywords: ["power jack", "dc jack", "barrel", "power input", "wall adapter", "2.1mm", "5.5mm"],
+    pinOffsets: [{dx: 0, dy: 0}, {dx: 2, dy: 0}, {dx: 1, dy: -2}],
+    pinLabels: ["CTR", "SLV", "SW"],
+    bodyOutline: rectangularOutline(-0.354, -1.772, 5.354, 1.772),
+    iconOffset: {dx: 2.5, dy: 0}, iconFillsBody: true
   },
 ];
 

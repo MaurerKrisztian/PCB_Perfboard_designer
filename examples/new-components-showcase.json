@@ -1,8 +1,8 @@
 {
   "version": 3,
-  "board": {"type": "perfboard", "cols": 43, "rows": 29},
+  "board": {"type": "perfboard", "cols": 43, "rows": 58},
   "pads": [
-    {"at": [1, 1], "color": "#38bdf8", "note": "NEW: 18 component variants. Enable Labels, then open 3D View. This is a component showcase; the short wires demonstrate routing, not a working circuit."},
+    {"at": [1, 1], "color": "#38bdf8", "note": "NEW: 31 component variants - the first 18 above row 29, 13 more below it. Enable Labels, then open 3D View. This is a component showcase; the short wires demonstrate routing, not a working circuit."},
     {"at": [4, 1], "color": "#fbbf24", "note": "POWER: 2-pin / 3-pin screw terminals, 7805 and LM317 regulators."},
     {"at": [36, 1], "color": "#60a5fa", "note": "RELAY: G5V-2 DPDT, with coil, common, normally closed and normally open pins."},
     {"at": [3, 7], "color": "#ef4444", "note": "VIN: terminal wiring example."},
@@ -19,7 +19,16 @@
     {"at": [7, 18], "color": "#a78bfa", "note": "OUT 5: female-header routing example."},
     {"at": [15, 18], "color": "#38bdf8", "note": "18 NEW: thirteen component packages and five named DIP chips, all with 2D and 3D rendering."},
     {"at": [26, 15], "color": "#22c55e", "note": "RGB: four-lead common-cathode and common-anode LEDs. K = cathode, A = anode."},
-    {"at": [4, 21], "color": "#a78bfa", "note": "DIP: LM358, LM386, PC817, ULN2803A and 74HC595. All are rotated 90 degrees here."}
+    {"at": [4, 21], "color": "#a78bfa", "note": "DIP: LM358, LM386, PC817, ULN2803A and 74HC595. All are rotated 90 degrees here."},
+    {"at": [1, 30], "color": "#38bdf8", "note": "13 MORE: crystals, resonators, sensors, film capacitors, fuse holders, DIP switches, seven-segment displays, rotary encoders and DC barrel jacks."},
+    {"at": [3, 31], "color": "#fbbf24", "note": "TIMING: HC-49/US quartz crystal and 3-pin ceramic resonator (OUT, GND, IN) for microcontroller clocks."},
+    {"at": [15, 31], "color": "#22c55e", "note": "SENSORS: photoresistor (LDR) for light and NTC thermistor for temperature, plus a WIMA-style box film capacitor."},
+    {"at": [32, 31], "color": "#ef4444", "note": "PROTECTION: 5x20 mm fuse holder, pins nine holes apart."},
+    {"at": [3, 38], "color": "#a78bfa", "note": "DIP SWITCHES: 2-, 4- and 8-position. Switch k joins pin k (bottom row) to the pin straight above it."},
+    {"at": [26, 38], "color": "#f59e0b", "note": "DISPLAYS: 0.56 inch seven-segment, common cathode (CC) and common anode (CA). Pins 3 and 8 are the common."},
+    {"at": [10, 48], "color": "#38bdf8", "note": "CONTROLS: rotary encoder with push switch (A, C, B / S1, S2) and a 5.5 x 2.1 mm DC barrel jack (CTR, SLV, SW)."},
+    {"at": [12, 56], "color": "#ef4444", "note": "VIN: barrel jack center pin wiring example."},
+    {"at": [14, 56], "color": "#94a3b8", "note": "GND: barrel jack sleeve wiring example."}
   ],
   "wires": [
     {"from": [3, 4], "to": [3, 7], "color": "#ef4444", "width": 6},
@@ -31,7 +40,9 @@
     {"from": [4, 12], "to": [4, 17], "color": "#f59e0b", "width": 4},
     {"from": [5, 12], "to": [5, 16], "color": "#22c55e", "width": 4},
     {"from": [6, 12], "to": [6, 17], "color": "#38bdf8", "width": 4},
-    {"from": [7, 12], "to": [7, 18], "color": "#a78bfa", "width": 4}
+    {"from": [7, 12], "to": [7, 18], "color": "#a78bfa", "width": 4},
+    {"from": [12, 53], "to": [12, 56], "color": "#ef4444", "width": 6},
+    {"from": [14, 53], "to": [14, 56], "color": "#94a3b8", "width": 6}
   ],
   "placedIcs": [
     {
@@ -69,7 +80,20 @@
     {"ref": "SW2", "definitionId": "slide-switch", "at": [30, 12], "rotation": 0, "rows": 1, "cols": 1, "value": "SPDT"},
     {"ref": "BZ1", "definitionId": "buzzer", "at": [37, 12], "rotation": 0, "rows": 1, "cols": 1, "value": "Buzzer"},
     {"ref": "D1", "definitionId": "rgb-led-cathode", "at": [24, 18], "rotation": 0, "rows": 1, "cols": 1, "value": "RGB CC"},
-    {"ref": "D2", "definitionId": "rgb-led-anode", "at": [34, 18], "rotation": 0, "rows": 1, "cols": 1, "value": "RGB CA"}
+    {"ref": "D2", "definitionId": "rgb-led-anode", "at": [34, 18], "rotation": 0, "rows": 1, "cols": 1, "value": "RGB CA"},
+    {"ref": "Y1", "definitionId": "crystal-hc49", "at": [3, 34], "rotation": 0, "rows": 1, "cols": 1, "value": "16MHz"},
+    {"ref": "Y2", "definitionId": "ceramic-resonator", "at": [9, 34], "rotation": 0, "rows": 1, "cols": 1, "value": "4MHz"},
+    {"ref": "R1", "definitionId": "ldr", "at": [15, 34], "rotation": 0, "rows": 1, "cols": 1, "value": "GL5528"},
+    {"ref": "RT1", "definitionId": "thermistor", "at": [21, 34], "rotation": 0, "rows": 1, "cols": 1, "value": "10kΩ"},
+    {"ref": "C1", "definitionId": "film-capacitor", "at": [26, 34], "rotation": 0, "rows": 1, "cols": 1, "value": "100nF"},
+    {"ref": "F1", "definitionId": "fuse-holder", "at": [32, 34], "rotation": 0, "rows": 1, "cols": 1, "value": "T1A"},
+    {"ref": "SW3", "definitionId": "dip-switch-2", "at": [3, 44], "rotation": 0, "rows": 1, "cols": 1, "value": "2-pos"},
+    {"ref": "SW4", "definitionId": "dip-switch-4", "at": [8, 44], "rotation": 0, "rows": 1, "cols": 1, "value": "4-pos"},
+    {"ref": "SW5", "definitionId": "dip-switch-8", "at": [15, 44], "rotation": 0, "rows": 1, "cols": 1, "value": "8-pos"},
+    {"ref": "DS1", "definitionId": "seven-segment-cc", "at": [26, 46], "rotation": 0, "rows": 1, "cols": 1, "value": "CC"},
+    {"ref": "DS2", "definitionId": "seven-segment-ca", "at": [33, 46], "rotation": 0, "rows": 1, "cols": 1, "value": "CA"},
+    {"ref": "SW6", "definitionId": "rotary-encoder", "at": [4, 55], "rotation": 0, "rows": 1, "cols": 1, "value": "Encoder"},
+    {"ref": "J4", "definitionId": "dc-barrel-jack", "at": [12, 53], "rotation": 0, "rows": 1, "cols": 1, "value": "5.5x2.1"}
   ],
   "customIcs": []
 }

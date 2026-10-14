@@ -3,13 +3,23 @@ import {AdvancedComponentDefinition, PinOffset} from "../features/advanced-compo
 import {ViewerAdvancedPart} from "./project-data";
 import {SceneKit} from "./scene-kit";
 import {buildBuzzer} from "./parts/buzzer";
+import {buildCeramicResonator} from "./parts/ceramic-resonator";
+import {buildCrystal} from "./parts/crystal";
+import {buildDcBarrelJack} from "./parts/dc-barrel-jack";
+import {buildDipSwitch} from "./parts/dip-switch";
 import {buildFemaleHeader} from "./parts/female-header";
+import {buildFilmCapacitor} from "./parts/film-capacitor";
+import {buildFuseHolder} from "./parts/fuse-holder";
 import {buildJumperCap} from "./parts/jumper-cap";
+import {buildLdr} from "./parts/ldr";
 import {buildPushButton} from "./parts/push-button";
 import {buildRelay} from "./parts/relay";
 import {buildRgbLed} from "./parts/rgb-led";
+import {buildRotaryEncoder} from "./parts/rotary-encoder";
 import {buildScrewTerminal} from "./parts/screw-terminal";
+import {buildSevenSegment} from "./parts/seven-segment";
 import {buildSlideSwitch} from "./parts/slide-switch";
+import {buildThermistor} from "./parts/thermistor";
 import {buildTrimmer} from "./parts/trimmer";
 
 export function buildCatalogPart(kit: SceneKit, part: ViewerAdvancedPart, definition: AdvancedComponentDefinition | undefined, offsets: PinOffset[]): Group | null {
@@ -26,6 +36,19 @@ export function buildCatalogPart(kit: SceneKit, part: ViewerAdvancedPart, defini
     case "relay-dpdt": return buildRelay(kit, definition, part.value);
     case "rgb-led-cathode":
     case "rgb-led-anode": return buildRgbLed(kit, definition);
+    case "crystal-hc49": return buildCrystal(kit, definition, part.value);
+    case "ceramic-resonator": return buildCeramicResonator(kit, definition, part.value);
+    case "ldr": return buildLdr(kit, definition);
+    case "thermistor": return buildThermistor(kit, definition);
+    case "film-capacitor": return buildFilmCapacitor(kit, definition, part.value);
+    case "dip-switch-2":
+    case "dip-switch-4":
+    case "dip-switch-8": return buildDipSwitch(kit, definition);
+    case "seven-segment-cc":
+    case "seven-segment-ca": return buildSevenSegment(kit, definition);
+    case "fuse-holder": return buildFuseHolder(kit, definition, part.value);
+    case "rotary-encoder": return buildRotaryEncoder(kit, definition);
+    case "dc-barrel-jack": return buildDcBarrelJack(kit, definition);
     default: return null;
   }
 }
