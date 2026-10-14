@@ -1,6 +1,7 @@
 import {Group, Material, MeshStandardMaterial, Object3D, Vector3} from "three";
 import {fitFont, LABEL_FONT, LEAD_TIP_Y, PITCH, paintedTexture, PX_PER_PITCH, SceneKit} from "./scene-kit";
 import {ViewerIc} from "./project-data";
+import {isModuleName} from "../project-file/ic-package";
 
 type Side = "left" | "right" | "top" | "bottom";
 
@@ -199,9 +200,6 @@ function buildDip(kit: SceneKit, ic: ViewerIc, pins: IcPin[]): Group {
   return group;
 }
 
-// Catalog parts that are really small boards on header pins rather than molded chips.
-const MODULE_NAME = /arduino|nano|pico|esp\s?-?\d|esp32|esp8266|module|breakout|board/i;
-
 function buildModule(kit: SceneKit, ic: ViewerIc, pins: IcPin[]): Group {
   const group = new Group();
   const columns = ic.rotationAngle === 0 || ic.rotationAngle === 180;
@@ -251,5 +249,5 @@ export function buildIc(kit: SceneKit, ic: ViewerIc): Object3D | null {
   const pins = icPins(kit, ic);
   if (pins.length === 0) return null;
   for (const pin of pins) kit.solder(pin.px, pin.py);
-  return MODULE_NAME.test(ic.name) ? buildModule(kit, ic, pins) : buildDip(kit, ic, pins);
+  return isModuleName(ic.name) ? buildModule(kit, ic, pins) : buildDip(kit, ic, pins);
 }

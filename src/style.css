@@ -788,6 +788,13 @@ kbd {
   margin-top: 0.5rem;
 }
 
+/* The small generic DIP shown on each chip's catalog button. */
+#ic-items .ic-icon {
+  height: 1.1em;
+  width: auto;
+  vertical-align: -0.2em;
+}
+
 /* Shared catalog button container styling (Standard Components, etc.) */
 .catalog-items {
   display: flex;

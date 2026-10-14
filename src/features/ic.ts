@@ -16,6 +16,8 @@ import {SavedCustomIc, SavedIc} from "../project-file/project-file";
 import {toGridPos} from "../project-file/grid";
 import {readCustomIcs} from "../project-file/read-project-file";
 import {ViewState} from "../state/ViewState";
+import {isModuleName} from "../project-file/ic-package";
+import {DIP_INSET, DIP_OVERHANG, dipIconSvg, drawDip} from "./ic-package/dip-shape";
 
 
 // Both a catalog entry (IC_CONTAINER, the clone armed for placement) and a chip placed on the
@@ -44,6 +46,9 @@ export class Ic implements PlacedPart {
   get kind(): "ic" { return "ic"; }
   get layer(): "under-board" { return "under-board"; }
 
+  // Boards on header pins (Arduino Nano…) keep a plain box; every other chip is drawn as a DIP.
+  get isModule(): boolean { return isModuleName(this.name); }
+
   static add(ic: Ic, saveToStorage: boolean = false){
     this.IC_CONTAINER.push(ic);
     if (saveToStorage) {
@@ -65,7 +70,14 @@ export class Ic implements PlacedPart {
       const btn = document.createElement("button");
       btn.className = "btn btn-accent";
       btn.style.cssText = "padding:0.3rem 0.6rem; font-size:0.75rem;";
-      btn.textContent = `📦 ${item.name}`;
+      if (item.isModule) {
+        btn.textContent = `📦 ${item.name}`;
+      } else {
+        // The icon is a fixed string with no catalog data in it, so it is safe as markup.
+        const icon = document.createElement("span");
+        icon.innerHTML = dipIconSvg();
+        btn.append(icon, ` ${item.name}`);
+      }
       btn.addEventListener("click", () => selectIc(item.id));
       if (item.isCustom) {
         btn.appendChild(Ic.catalogAction("✎", "Edit custom component", "#38bdf8", () => Ic.onEditCustomIc?.(item)));
@@ -136,8 +148,29 @@ export class Ic implements PlacedPart {
     this.topLeftDot = findNearestDot(x, y) ?? null;
   }
 
+  private get title(): string {
+    return ViewState.showPartLabels && this.ref ? `${this.ref} ${this.name}` : this.name;
+  }
+
+  // Pin rows run along y at 0°/180° and along x at 90°/270°; a DIP's body sticks out past the end pins.
+  private get overhang(): number {
+    return this.isModule ? 0 : DIP_OVERHANG;
+  }
+
   drawBody(isSelected: boolean){
     if (!this.topLeftDot) return;
+    if (!this.isModule) {
+      drawDip(Canvas.ctx, {
+        x: this.topLeftDot.x,
+        y: this.topLeftDot.y,
+        widthPin: this.widthPin,
+        heightPin: this.heightPin,
+        rotation: this.rotationAngle as Rotation,
+        selected: isSelected,
+        title: this.title,
+      });
+      return;
+    }
     Canvas.ctx.beginPath();
     
     Canvas.ctx.fillStyle = isSelected ? "rgba(30,58,138,0.9)" : "rgba(17,24,39,0.85)";
@@ -200,6 +233,14 @@ export class Ic implements PlacedPart {
     Canvas.ctx.font = "600 9px monospace, sans-serif";
     Canvas.ctx.fillStyle = "#cbd5e1";
 
+    // A DIP's body starts DIP_INSET inside the pin rows, so its labels start inside that.
+    const side = this.isModule ? 10 : DIP_INSET + 4;
+    const end = this.isModule ? 16 : DIP_INSET + 11;
+    const endBottom = this.isModule ? 10 : DIP_INSET + 2;
+    // Keep each side's labels on its half of the body, clear of the name printed down the middle.
+    const sideMax = this.isModule ? 1e6 : Math.max(20, (50 * (this.widthPin - 1)) / 2 - side - 12);
+    const endMax = this.isModule ? 1e6 : 46;
+
     if (this.rotationAngle === 0) {
       // 0°: Vertical (Left: 1..N, Right: 2N..N+1)
       const pinsPerSide = this.heightPin;
@@ -209,12 +250,12 @@ export class Ic implements PlacedPart {
         const leftPinNum = i + 1;
         const leftDesc = this.pinDescription[leftPinNum];
         Canvas.ctx.textAlign = "left";
-        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + 10, py + 3);
+        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
 
         const rightPinNum = pinsPerSide * 2 - i;
         const rightDesc = this.pinDescription[rightPinNum];
         Canvas.ctx.textAlign = "right";
-        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - 10, py + 3);
+        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
       }
     } else if (this.rotationAngle === 90) {
       // 90°: Top: 1..N, Bottom: 2N..N+1
@@ -225,12 +266,12 @@ export class Ic implements PlacedPart {
         const topPinNum = i + 1;
         const topDesc = this.pinDescription[topPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + 16);
+        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
 
         const bottomPinNum = pinsPerSide * 2 - i;
         const bottomDesc = this.pinDescription[bottomPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - 10);
+        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
       }
     } else if (this.rotationAngle === 180) {
       // 180°: Left: 2N..N+1, Right: 1..N
@@ -241,12 +282,12 @@ export class Ic implements PlacedPart {
         const leftPinNum = pinsPerSide * 2 - i;
         const leftDesc = this.pinDescription[leftPinNum];
         Canvas.ctx.textAlign = "left";
-        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + 10, py + 3);
+        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
 
         const rightPinNum = i + 1;
         const rightDesc = this.pinDescription[rightPinNum];
         Canvas.ctx.textAlign = "right";
-        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - 10, py + 3);
+        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
       }
     } else if (this.rotationAngle === 270) {
       // 270°: Top: 2N..N+1, Bottom: 1..N
@@ -257,12 +298,12 @@ export class Ic implements PlacedPart {
         const topPinNum = pinsPerSide * 2 - i;
         const topDesc = this.pinDescription[topPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + 16);
+        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
 
         const bottomPinNum = i + 1;
         const bottomDesc = this.pinDescription[bottomPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - 10);
+        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
       }
     }
 
@@ -315,12 +356,18 @@ export class Ic implements PlacedPart {
 
   drawLabel(isSelected: boolean){
     if (!this.topLeftDot) return;
+    // A DIP prints its name on the package itself (see drawBody) instead of a badge.
+    if (!this.isModule) {
+      this.drawPinMarkers();
+      this.drawPinLabels();
+      return;
+    }
     const w = 50 * (this.widthPin - 1);
     const h = 50 * (this.heightPin - 1);
     const centerX = this.topLeftDot.x + (w / 2);
     const centerY = this.topLeftDot.y + (h / 2);
 
-    const title = ViewState.showPartLabels && this.ref ? `${this.ref} ${this.name}` : this.name;
+    const title = this.title;
 
     Canvas.ctx.save();
     Canvas.ctx.font = "bold 15px Inter, Arial";
@@ -402,11 +449,14 @@ export class Ic implements PlacedPart {
     if (!this.topLeftDot) return false;
     const w = 50 * (this.widthPin - 1);
     const h = 50 * (this.heightPin - 1);
+    // A DIP's body runs past the end pins, along the pin rows.
+    const alongX = this.rotationAngle === 90 || this.rotationAngle === 270 ? this.overhang : 0;
+    const alongY = this.overhang - alongX;
     return (
-      x >= this.topLeftDot.x &&
-      x <= this.topLeftDot.x + w &&
-      y >= this.topLeftDot.y &&
-      y <= this.topLeftDot.y + h
+      x >= this.topLeftDot.x - alongX &&
+      x <= this.topLeftDot.x + w + alongX &&
+      y >= this.topLeftDot.y - alongY &&
+      y <= this.topLeftDot.y + h + alongY
     );
   }
 

@@ -1,6 +1,7 @@
 import {Canvas} from "../../state/Canvas";
 import {GridConfig} from "../../state/GridConfig";
-import {ActiveTool, ToolState} from "../../state/ToolState";
+import {ActiveTool, Rotation, ToolState} from "../../state/ToolState";
+import {drawDip} from "../ic-package/dip-shape";
 import {placePart} from "../placed-parts";
 import {ToolBehavior} from "./tool";
 
@@ -18,6 +19,24 @@ export const icTool: ToolBehavior<IcTool> = {
   },
 
   drawPreview(tool, hoverDot) {
+    const template = tool.template;
+    if (!template.isModule) {
+      // The chip itself, translucent, where it will land.
+      Canvas.ctx.save();
+      Canvas.ctx.globalAlpha = 0.65;
+      drawDip(Canvas.ctx, {
+        x: hoverDot.x,
+        y: hoverDot.y,
+        widthPin: template.widthPin,
+        heightPin: template.heightPin,
+        rotation: template.rotationAngle as Rotation,
+        selected: false,
+        title: template.name,
+      });
+      Canvas.ctx.restore();
+      return;
+    }
+
     const w = GridConfig.dotSpace * (tool.template.widthPin - 1);
     const h = GridConfig.dotSpace * (tool.template.heightPin - 1);
 

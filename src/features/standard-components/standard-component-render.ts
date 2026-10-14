@@ -101,7 +101,8 @@ const RESISTOR_BAND_X = [19.5, 34.3, 49, 71.5]; // viewBox units, decorative ban
 const RESISTOR_BAND_BASE_WIDTH = 5.6; // viewBox units, decorative band width
 const RESISTOR_BAND_MARGIN = 1.2; // viewBox units added on each side
 const RESISTOR_BAND_WIDTH = RESISTOR_BAND_BASE_WIDTH + RESISTOR_BAND_MARGIN * 2;
-const RESISTOR_BAND_VIEWBOX_HEIGHT = 26; // slightly taller than the body's 40..60 span
+// Mirrors the body path baked into resistor.svg; bands are clipped to it so they span the full body height.
+const RESISTOR_BODY_PATH = "M7 62c-5.5-6-5.5-18 0-24 8-7 77-7 85 0 5.5 6 5.5 18 0 24-8 7-77 7-85 0z";
 
 const CERAMIC_CODE_COLOR = "#3a2410";
 // Scales with the body so the code keeps the same proportions on any body size.
@@ -124,10 +125,15 @@ function drawResistorBands(value: string, bodyStart: number, bodySize: number) {
 
   const scale = bodySize / 100;
   const colors = [bandColors.digit1, bandColors.digit2, bandColors.multiplier, bandColors.tolerance];
-  const bandHeight = RESISTOR_BAND_VIEWBOX_HEIGHT * scale;
+  const bandHeight = bodySize;
   const bandTop = -bandHeight / 2;
 
   Canvas.ctx.save();
+  Canvas.ctx.translate(bodyStart, -bodySize / 2);
+  Canvas.ctx.scale(scale, scale);
+  Canvas.ctx.clip(new Path2D(RESISTOR_BODY_PATH));
+  Canvas.ctx.scale(1 / scale, 1 / scale);
+  Canvas.ctx.translate(-bodyStart, bodySize / 2);
   for (let i = 0; i < RESISTOR_BAND_X.length; i++) {
     Canvas.ctx.fillStyle = colors[i];
     const x = bodyStart + (RESISTOR_BAND_X[i] - RESISTOR_BAND_MARGIN) * scale;
@@ -152,7 +158,7 @@ function drawCeramicCapacitorCode(value: string, bodyStart: number, bodySize: nu
 
 // Mirrors the flat-cathode-edge body path baked into led.svg - keep these in sync so the
 // color fill lines up with the artwork's silhouette instead of spilling past its edges.
-const LED_BODY_PATH = "M8 24.08A46 46 0 1 1 8 75.92Z";
+const LED_BODY_PATH = "M6 23.47A48 48 0 1 1 6 76.53Z";
 export const LED_SOLID_COLORS: Record<string, string> = {
   red: "#ef4444",
   green: "#22c55e",
