@@ -19,6 +19,7 @@ import {readCustomIcs} from "../project-file/read-project-file";
 import {ViewState} from "../state/ViewState";
 import {isModuleName} from "../project-file/ic-package";
 import {DIP_INSET, DIP_OVERHANG, dipIconSvg, drawDip} from "./ic-package/dip-shape";
+import {MODULE_EDGE, MODULE_END, drawModule, moduleIconSvg} from "./ic-package/module-shape";
 
 
 // Both a catalog entry (IC_CONTAINER, the clone armed for placement) and a chip placed on the
@@ -47,7 +48,7 @@ export class Ic implements PlacedPart {
   get kind(): "ic" { return "ic"; }
   get layer(): "under-board" { return "under-board"; }
 
-  // Boards on header pins (Arduino Nano…) keep a plain box; every other chip is drawn as a DIP.
+  // Boards on header pins (Arduino Nano…) are drawn as a dev board; every other chip is a DIP.
   get isModule(): boolean { return isModuleName(this.name); }
 
   static add(ic: Ic, saveToStorage: boolean = false){
@@ -71,14 +72,10 @@ export class Ic implements PlacedPart {
       const btn = document.createElement("button");
       btn.className = "btn btn-accent";
       btn.style.cssText = "padding:0.3rem 0.6rem; font-size:0.75rem;";
-      if (item.isModule) {
-        btn.textContent = `📦 ${item.name}`;
-      } else {
-        // The icon is a fixed string with no catalog data in it, so it is safe as markup.
-        const icon = document.createElement("span");
-        icon.innerHTML = dipIconSvg();
-        btn.append(icon, ` ${item.name}`);
-      }
+      // The icon is a fixed string with no catalog data in it, so it is safe as markup.
+      const icon = document.createElement("span");
+      icon.innerHTML = item.isModule ? moduleIconSvg() : dipIconSvg();
+      btn.append(icon, ` ${item.name}`);
       btn.addEventListener("click", () => selectIc(item.id));
       if (item.isCustom) {
         btn.appendChild(Ic.catalogAction("✎", "Edit custom component", "#38bdf8", () => Ic.onEditCustomIc?.(item)));
@@ -153,79 +150,29 @@ export class Ic implements PlacedPart {
     return ViewState.showPartLabels && this.ref ? `${this.ref} ${this.name}` : this.name;
   }
 
-  // Pin rows run along y at 0°/180° and along x at 90°/270°; a DIP's body sticks out past the end pins.
+  // Pin rows run along y at 0°/180° and along x at 90°/270°; the body sticks out past the end pins.
   private get overhang(): number {
-    return this.isModule ? 0 : DIP_OVERHANG;
+    return this.isModule ? MODULE_END : DIP_OVERHANG;
+  }
+
+  // A module's board also runs past the pin rows on the outside; a DIP's body stays inside them.
+  private get sideOverhang(): number {
+    return this.isModule ? MODULE_EDGE : 0;
   }
 
   drawBody(isSelected: boolean){
     if (!this.topLeftDot) return;
-    if (!this.isModule) {
-      drawDip(Canvas.ctx, {
-        x: this.topLeftDot.x,
-        y: this.topLeftDot.y,
-        widthPin: this.widthPin,
-        heightPin: this.heightPin,
-        rotation: this.rotationAngle as Rotation,
-        selected: isSelected,
-        title: this.title,
-      });
-      return;
-    }
-    Canvas.ctx.beginPath();
-    
-    Canvas.ctx.fillStyle = isSelected ? "rgba(30,58,138,0.9)" : "rgba(17,24,39,0.85)";
-    Canvas.ctx.strokeStyle = isSelected ? "#38bdf8" : "#475569";
-    Canvas.ctx.lineWidth = isSelected ? 3 : 2;
-
-    const w = 50 * (this.widthPin - 1);
-    const h = 50 * (this.heightPin - 1);
-    Canvas.ctx.rect(this.topLeftDot.x, this.topLeftDot.y, w, h);
-    Canvas.ctx.stroke();
-    Canvas.ctx.fill();
-
-    // Draw Pin 1 orientation notch
-    const notchRadius = 6;
-    Canvas.ctx.beginPath();
-    Canvas.ctx.fillStyle = "#38bdf8";
-    if (this.rotationAngle === 0) {
-      Canvas.ctx.arc(this.topLeftDot.x + (w / 2), this.topLeftDot.y, notchRadius, 0, Math.PI);
-    } else if (this.rotationAngle === 90) {
-      Canvas.ctx.arc(this.topLeftDot.x + w, this.topLeftDot.y + (h / 2), notchRadius, 0.5 * Math.PI, 1.5 * Math.PI);
-    } else if (this.rotationAngle === 180) {
-      Canvas.ctx.arc(this.topLeftDot.x + (w / 2), this.topLeftDot.y + h, notchRadius, Math.PI, 2 * Math.PI);
-    } else if (this.rotationAngle === 270) {
-      Canvas.ctx.arc(this.topLeftDot.x, this.topLeftDot.y + (h / 2), notchRadius, 1.5 * Math.PI, 0.5 * Math.PI);
-    }
-    Canvas.ctx.fill();
-    Canvas.ctx.stroke();
-
-    // Draw Pin 1 dot marker
-    Canvas.ctx.beginPath();
-    let p1x = this.topLeftDot.x + 10;
-    let p1y = this.topLeftDot.y + 10;
-    if (this.rotationAngle === 90) {
-      p1x = this.topLeftDot.x + w - 10;
-      p1y = this.topLeftDot.y + 10;
-    } else if (this.rotationAngle === 180) {
-      p1x = this.topLeftDot.x + w - 10;
-      p1y = this.topLeftDot.y + h - 10;
-    } else if (this.rotationAngle === 270) {
-      p1x = this.topLeftDot.x + 10;
-      p1y = this.topLeftDot.y + h - 10;
-    }
-    Canvas.ctx.arc(p1x, p1y, 3, 0, Math.PI * 2);
-    Canvas.ctx.fillStyle = "#38bdf8";
-    Canvas.ctx.fill();
-
-    if (isSelected) {
-      // Draw selection corner handles
-      Canvas.ctx.fillStyle = "#38bdf8";
-      Canvas.ctx.fillRect(this.topLeftDot.x - 4, this.topLeftDot.y - 4, 8, 8);
-      Canvas.ctx.fillRect(this.topLeftDot.x + w - 4, this.topLeftDot.y - 4, 8, 8);
-      Canvas.ctx.fillRect(this.topLeftDot.x - 4, this.topLeftDot.y + h - 4, 8, 8);
-      Canvas.ctx.fillRect(this.topLeftDot.x + w - 4, this.topLeftDot.y + h - 4, 8, 8);
-    }
+    const paint = {
+      x: this.topLeftDot.x,
+      y: this.topLeftDot.y,
+      widthPin: this.widthPin,
+      heightPin: this.heightPin,
+      rotation: this.rotationAngle as Rotation,
+      selected: isSelected,
+      title: this.title,
+    };
+    if (this.isModule) drawModule(Canvas.ctx, paint);
+    else drawDip(Canvas.ctx, paint);
   }
 
   drawPinLabels() {
@@ -355,45 +302,9 @@ export class Ic implements PlacedPart {
     Canvas.ctx.restore();
   }
 
-  drawLabel(isSelected: boolean){
+  drawLabel(){
     if (!this.topLeftDot) return;
-    // A DIP prints its name on the package itself (see drawBody) instead of a badge.
-    if (!this.isModule) {
-      this.drawPinMarkers();
-      this.drawPinLabels();
-      return;
-    }
-    const w = 50 * (this.widthPin - 1);
-    const h = 50 * (this.heightPin - 1);
-    const centerX = this.topLeftDot.x + (w / 2);
-    const centerY = this.topLeftDot.y + (h / 2);
-
-    const title = this.title;
-
-    Canvas.ctx.save();
-    Canvas.ctx.font = "bold 15px Inter, Arial";
-    const textWidth = Canvas.ctx.measureText(title).width;
-    const badgeW = textWidth + 20;
-    const badgeH = 26;
-
-    // Draw background badge pill behind label
-    Canvas.ctx.beginPath();
-    Canvas.ctx.fillStyle = "#0f172a";
-    Canvas.ctx.strokeStyle = isSelected ? "#38bdf8" : "#334155";
-    Canvas.ctx.lineWidth = 1.5;
-    const rectX = centerX - (badgeW / 2);
-    const rectY = centerY - (badgeH / 2);
-    Canvas.ctx.rect(rectX, rectY, badgeW, badgeH);
-    Canvas.ctx.fill();
-    Canvas.ctx.stroke();
-
-    // Draw high-contrast text
-    Canvas.ctx.fillStyle = isSelected ? "#38bdf8" : "#ffffff";
-    Canvas.ctx.textAlign = "center";
-    Canvas.ctx.textBaseline = "middle";
-    fillCrispText(Canvas.ctx, title, centerX, centerY + 1);
-    Canvas.ctx.restore();
-
+    // Chips and boards print their name on the package itself (see drawBody) instead of a badge.
     this.drawPinMarkers();
     this.drawPinLabels();
   }
@@ -403,8 +314,8 @@ export class Ic implements PlacedPart {
     this.drawBody(selected);
   }
 
-  drawOverlay(selected: boolean){
-    this.drawLabel(selected);
+  drawOverlay(){
+    this.drawLabel();
   }
 
   getPinPositions(): Point[] {
@@ -450,14 +361,15 @@ export class Ic implements PlacedPart {
     if (!this.topLeftDot) return false;
     const w = 50 * (this.widthPin - 1);
     const h = 50 * (this.heightPin - 1);
-    // A DIP's body runs past the end pins, along the pin rows.
-    const alongX = this.rotationAngle === 90 || this.rotationAngle === 270 ? this.overhang : 0;
-    const alongY = this.overhang - alongX;
+    // The body runs past the end pins, along the pin rows (and a board past the rows too).
+    const sideways = this.rotationAngle === 90 || this.rotationAngle === 270;
+    const padX = sideways ? this.overhang : this.sideOverhang;
+    const padY = sideways ? this.sideOverhang : this.overhang;
     return (
-      x >= this.topLeftDot.x - alongX &&
-      x <= this.topLeftDot.x + w + alongX &&
-      y >= this.topLeftDot.y - alongY &&
-      y <= this.topLeftDot.y + h + alongY
+      x >= this.topLeftDot.x - padX &&
+      x <= this.topLeftDot.x + w + padX &&
+      y >= this.topLeftDot.y - padY &&
+      y <= this.topLeftDot.y + h + padY
     );
   }
 

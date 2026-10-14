@@ -14,8 +14,8 @@ import {activeBoardLook} from "./board-looks";
 import {PAD_RADIUS} from "./board-looks/board-look";
 import {GridConfig} from "../state/GridConfig";
 
-// How strongly a hole shows through a module's body sitting on top of it. A DIP hides them.
-const MODULE_COVERED_PAD_OPACITY = 0.1;
+// How strongly a hole shows through a chip or board sitting on top of it: not at all.
+const COVERED_PAD_OPACITY = 0;
 
 const holeKey = (x: number, y: number) => `${x},${y}`;
 
@@ -28,11 +28,10 @@ function holesUnderIcBodies(): Map<string, number> {
   for (const ic of PartState.parts) {
     if (ic.kind !== "ic" || !ic.topLeftDot) continue;
     const pins = new Set(ic.getRealPinPositions().map(p => holeKey(p.x, p.y)));
-    const opacity = ic.isModule ? MODULE_COVERED_PAD_OPACITY : 0;
     const {x: left, y: top} = ic.topLeftDot;
     for (let x = left; x <= left + step * (ic.widthPin - 1); x += step) {
       for (let y = top; y <= top + step * (ic.heightPin - 1); y += step) {
-        if (!pins.has(holeKey(x, y))) covered.set(holeKey(x, y), opacity);
+        if (!pins.has(holeKey(x, y))) covered.set(holeKey(x, y), COVERED_PAD_OPACITY);
       }
     }
   }
