@@ -8,9 +8,11 @@ export function applyCanvasResolution(zoom: number): void {
 
   Canvas.c.width = targetW;
   Canvas.c.height = targetH;
-  Canvas.c.style.width = `${Canvas.gridWidth * zoom}px`;
-  Canvas.c.style.height = `${Canvas.gridHeight * zoom}px`;
-  Canvas.ctx.setTransform(effectiveScale, 0, 0, effectiveScale, 0, 0);
+  // Size the element to a whole number of device pixels, so the browser shows the backing store
+  // 1:1 instead of resampling it (which blurs it whenever zoom x dpr is fractional, e.g. 63%).
+  Canvas.c.style.width = `${targetW / dpr}px`;
+  Canvas.c.style.height = `${targetH / dpr}px`;
+  Canvas.ctx.setTransform(targetW / Canvas.gridWidth, 0, 0, targetH / Canvas.gridHeight, 0, 0);
 }
 
 function watchDevicePixelRatio(onChange: () => void): void {

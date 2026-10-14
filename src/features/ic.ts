@@ -1,3 +1,4 @@
+import {fillCrispText} from "../utils/crisp-text";
 import {Canvas} from "../state/Canvas";
 import {DotState} from "../state/DotState";
 import {IDot} from "../interfaces/dot.interface";
@@ -250,12 +251,12 @@ export class Ic implements PlacedPart {
         const leftPinNum = i + 1;
         const leftDesc = this.pinDescription[leftPinNum];
         Canvas.ctx.textAlign = "left";
-        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
+        fillCrispText(Canvas.ctx, leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
 
         const rightPinNum = pinsPerSide * 2 - i;
         const rightDesc = this.pinDescription[rightPinNum];
         Canvas.ctx.textAlign = "right";
-        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
+        fillCrispText(Canvas.ctx, rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
       }
     } else if (this.rotationAngle === 90) {
       // 90°: Top: 1..N, Bottom: 2N..N+1
@@ -266,12 +267,12 @@ export class Ic implements PlacedPart {
         const topPinNum = i + 1;
         const topDesc = this.pinDescription[topPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
+        fillCrispText(Canvas.ctx, topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
 
         const bottomPinNum = pinsPerSide * 2 - i;
         const bottomDesc = this.pinDescription[bottomPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
+        fillCrispText(Canvas.ctx, bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
       }
     } else if (this.rotationAngle === 180) {
       // 180°: Left: 2N..N+1, Right: 1..N
@@ -282,12 +283,12 @@ export class Ic implements PlacedPart {
         const leftPinNum = pinsPerSide * 2 - i;
         const leftDesc = this.pinDescription[leftPinNum];
         Canvas.ctx.textAlign = "left";
-        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
+        fillCrispText(Canvas.ctx, leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
 
         const rightPinNum = i + 1;
         const rightDesc = this.pinDescription[rightPinNum];
         Canvas.ctx.textAlign = "right";
-        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
+        fillCrispText(Canvas.ctx, rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
       }
     } else if (this.rotationAngle === 270) {
       // 270°: Top: 2N..N+1, Bottom: 1..N
@@ -298,12 +299,12 @@ export class Ic implements PlacedPart {
         const topPinNum = pinsPerSide * 2 - i;
         const topDesc = this.pinDescription[topPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
+        fillCrispText(Canvas.ctx, topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
 
         const bottomPinNum = i + 1;
         const bottomDesc = this.pinDescription[bottomPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
+        fillCrispText(Canvas.ctx, bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
       }
     }
 
@@ -390,7 +391,7 @@ export class Ic implements PlacedPart {
     Canvas.ctx.fillStyle = isSelected ? "#38bdf8" : "#ffffff";
     Canvas.ctx.textAlign = "center";
     Canvas.ctx.textBaseline = "middle";
-    Canvas.ctx.fillText(title, centerX, centerY + 1);
+    fillCrispText(Canvas.ctx, title, centerX, centerY + 1);
     Canvas.ctx.restore();
 
     this.drawPinMarkers();
