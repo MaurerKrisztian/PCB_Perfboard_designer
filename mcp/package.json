@@ -1,0 +1,29 @@
+{
+  "name": "perfboard-designer-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Perfboard Designer: lets AI agents look up parts, check perfboard and stripboard layouts, and hand back a link that opens the board in the editor.",
+  "license": "ISC",
+  "type": "module",
+  "bin": {
+    "perfboard-designer-mcp": "dist/server.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/server.js",
+    "inspect": "npx @modelcontextprotocol/inspector node dist/server.js"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "zod": "^4.6.7"
+  }
+}

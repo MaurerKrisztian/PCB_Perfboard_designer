@@ -49,6 +49,7 @@ device.
 - [FAQ](#faq)
 - [Run it locally](#run-it-locally)
 - [Project file format](#project-file-format)
+- [Design boards with AI (MCP server)](#design-boards-with-ai-mcp-server)
 - [Contributing](#contributing)
 
 ---
@@ -234,6 +235,14 @@ in [`src/project-file/project-file.ts`](src/project-file/project-file.ts), and t
 [`examples/`](examples) folder has sample projects to open with **File → Import Project from File**.
 Share links carry the same file, and can be made by other programs (an AI agent designing a board,
 say): see [docs/share-links.md](docs/share-links.md).
+
+## Design boards with AI (MCP server)
+
+The [`mcp/`](mcp) folder is an [MCP](https://modelcontextprotocol.io) server that lets Claude
+or another AI agent lay out a board for you. It looks up parts and their pins, writes the
+project, checks it for mistakes such as pins off the board or strips shorting a chip, and hands
+you a share link that opens the board in the editor. See [mcp/README.md](mcp/README.md) to set
+it up.
 
 ## Contributing
 

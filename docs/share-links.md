@@ -6,7 +6,9 @@ inside the link itself, so there's no account, no upload and no server. In the e
 
 This page is the link format, written so that people and programs can make links too, including
 AI agents that design a board and hand the user a link to open it. The code is
-[`src/project-file/share-link.ts`](../src/project-file/share-link.ts).
+[`src/project-file/share-link.ts`](../src/project-file/share-link.ts). An agent that can use MCP
+can skip most of this page: the [MCP server](../mcp/README.md) looks up parts, checks the project
+and makes the link for it.
 
 ## What happens when a link is opened
 
@@ -124,7 +126,9 @@ opens, but write the current one, version 3. It's documented field by field in
   doesn't connect anything.
 - `wires`: `{"from": [c, r], "to": [c, r]}`, with optional `color` (`"#rrggbb"`) and `width`.
 - `placedStandardComponents`: two-lead parts placed between two holes: `definitionId`, `from`,
-  `to`, optional `value` (`"10k"`, `"100n"`) and `color` (LEDs).
+  `to`, optional `value` (`"10k"`, `"100n"`) and `color` (LEDs). On polarized parts, `from` is
+  an LED's cathode, a diode's anode and an electrolytic capacitor's − lead (`leadLabels` in the
+  definitions).
 - `placedAdvancedComponents`: fixed-footprint parts: `definitionId`, the anchor pin `at`,
   `rotation` (0, 90, 180 or 270), `rows` and `cols` (1 except for sizable parts such as header
   pins), optional `value`.

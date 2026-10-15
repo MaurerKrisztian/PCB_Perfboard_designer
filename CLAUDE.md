@@ -165,6 +165,17 @@ incoming link as a new stored project (after startup's reopen, via `afterStartup
 `hashchange`), then clears the fragment. A format change means a new version number plus an upgrade path in the reader —
 old files must keep opening. `examples/*.json` are v1 files and double as compatibility fixtures.
 
+**MCP server** (`mcp/`): a separate npm package (`perfboard-designer-mcp`, own `package.json`,
+Node 22+, stdio) that lets AI agents design boards: list parts, get pin positions, validate a
+project, make and read share links. Stateless — every tool takes the whole project file. It
+imports the editor's pure code directly (`src/project-file/`, the three definitions files,
+`catalog-categories.ts`, `rotate-offset.ts`) and esbuild bundles it with the SDK into one
+`mcp/dist/server.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer
+TypeScript). So those modules must stay free of DOM and editor state, and anything they import
+too. Facts the server tells agents belong in the definitions (e.g. `leadLabels`, which lead of a
+polarized part is which), not in `mcp/`. Its pin geometry (`mcp/src/pins.ts`) mirrors
+`placed-advanced-component.ts` and `Ic.getRealPinPositions` — change them together.
+
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the
 editor on purpose. It only consumes project-file JSON, read by the shared `src/project-file/`
 reader and laid out in pixels by its own `project-data.ts`, and never imports editor state classes
