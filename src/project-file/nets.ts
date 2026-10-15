@@ -47,13 +47,26 @@ const POWER_NAME = /^([ADP]?GND|V(CC|DD|SS|EE|IN|BAT|BUS)\d*|V[+-]|[+-]?\d+(\.\d
 
 const isPowerName = (name: string) => POWER_NAME.test(name);
 
+// A name listing more than three, cut short: "GND/VCC/VDD/…".
+const MORE = "…";
+
 // A supply rail. One named after two rails ("GND/VCC") shorts them together.
 export function isPowerNet(net: Net): boolean {
-  return !!net.name && net.name.split("/").every(isPowerName);
+  return !!net.name && net.name.split("/").every(name => name === MORE || isPowerName(name));
 }
 
 export function comparePins(a: NetPin, b: NetPin): number {
   return a.ref.localeCompare(b.ref, undefined, {numeric: true, sensitivity: "base"}) || a.pin - b.pin;
+}
+
+// A pin as people and programs name it: "D1.K" for a polarized lead, else "U1.8".
+export function pinId(pin: NetPin): string {
+  return pin.kind === "standard-component" && pin.label ? `${pin.ref}.${pin.label}` : `${pin.ref}.${pin.pin}`;
+}
+
+// With its name when it has one: "U1.8 VCC", "D1.K", "R1.1".
+export function pinName(pin: NetPin): string {
+  return pin.label && pin.kind !== "standard-component" ? `${pinId(pin)} ${pin.label}` : pinId(pin);
 }
 
 // A polarized part's lead label ("K", "+", a battery's "−") says which lead it is, not what the
@@ -70,7 +83,7 @@ function netName(pins: NetPin[]): string | undefined {
   const power = distinct.filter(isPowerName);
   const shown = power.length ? power : distinct;
   if (!shown.length) return undefined;
-  return shown.length > 3 ? `${shown.slice(0, 3).join("/")}/…` : shown.join("/");
+  return shown.length > 3 ? `${shown.slice(0, 3).join("/")}/${MORE}` : shown.join("/");
 }
 
 export function computeNets(project: ProjectFile): Netlist {

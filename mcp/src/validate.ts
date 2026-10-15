@@ -1,12 +1,18 @@
 import {GridPos} from "../../src/project-file/grid";
 import {ProjectFile} from "../../src/project-file/project-file";
 import {ProjectFileError, readProjectFile} from "../../src/project-file/read-project-file";
-import {Box, PartPins, partPins} from "../../src/project-file/pin-positions";
+import {Box, PartPins, partPins, PlacedPin} from "../../src/project-file/pin-positions";
+import {comparePins, computeNets, isPowerNet, Net, Netlist, NetPin, pinName} from "../../src/project-file/nets";
+import {layoutProjectWires} from "../../src/project-file/wire-crossings";
+import {isModulePart} from "../../src/project-file/ic-package";
 import {similarPartIds} from "./parts";
+import {holeContents, WireIndex, wireName} from "./nets-report";
+import {checkExpectedNets} from "./expected-nets";
 
 // Checks a project file the way a person looking at the board would: beyond what the reader
 // accepts (it quietly skips what it can't read), it names each problem and where it is, so an
-// agent can fix it and try again. Errors make a board wrong; warnings are likely mistakes.
+// agent can fix it and try again. Errors make a board wrong; warnings are likely mistakes; notes
+// are worth knowing but fine, such as wires crossing.
 
 export interface Problem {
   severity: "error" | "warning";
@@ -18,7 +24,10 @@ export interface Validation {
   ok: boolean;
   // The project as the editor will read it (refs filled in, unreadable entries left out).
   project?: ProjectFile;
+  // Where each of project.wires is in the file as given.
+  wireIndex: WireIndex;
   problems: Problem[];
+  notes: string[];
 }
 
 const PART_LISTS = ["placedIcs", "placedStandardComponents", "placedAdvancedComponents"] as const;
@@ -31,10 +40,13 @@ const asEntry = (value: unknown): Entry | undefined =>
 const key = ([c, r]: GridPos) => `${c},${r}`;
 const show = ([c, r]: GridPos) => `[${c}, ${r}]`;
 
-export function validateProject(raw: unknown): Validation {
+// expectNets: the nets the board should make, as lists of "REF.pin" names (see expected-nets.ts).
+export function validateProject(raw: unknown, expectNets?: string[][]): Validation {
   const problems: Problem[] = [];
+  const notes: string[] = [];
   const error = (message: string) => problems.push({severity: "error", message});
   const warn = (message: string) => problems.push({severity: "warning", message});
+  const note = (message: string) => notes.push(message);
 
   let project: ProjectFile;
   let skipped: number;
@@ -44,7 +56,7 @@ export function validateProject(raw: unknown): Validation {
     error(err instanceof ProjectFileError
       ? `${err.message} A project needs at least {"version": 3, "board": {"type": "perfboard", "cols": <n>, "rows": <n>}}.`
       : `It couldn't be read: ${String(err)}`);
-    return {ok: false, problems};
+    return {ok: false, wireIndex: i => i, problems, notes};
   }
 
   const data = asEntry(raw) ?? {};
@@ -113,9 +125,12 @@ export function validateProject(raw: unknown): Validation {
     }
   });
 
-  if (project.board.type === "stripboard") checkStrips(project, parts, warn, wireIndex);
+  const nets = computeNets(project);
+  if (project.board.type === "stripboard") checkStrips(project, parts, nets, warn, wireIndex);
+  checkConnections(project, nets, warn, note, wireIndex);
+  if (expectNets) checkExpectedNets(nets, expectNets, error);
 
-  return {ok: !problems.some(p => p.severity === "error"), project, problems};
+  return {ok: !problems.some(p => p.severity === "error"), project, wireIndex, problems, notes};
 }
 
 // Entries the reader dropped, each read on its own to find which, with a reason. Returns how
@@ -204,41 +219,86 @@ function reportRenamedRefs(data: Entry, project: ProjectFile, warn: (message: st
 
 // Stripboard mistakes: two pins of one part left on the same strip (shorted), and leads in cut
 // holes (connected to nothing).
-function checkStrips(project: ProjectFile, parts: PartPins[], warn: (message: string) => void, wireIndex: (i: number) => number) {
+function checkStrips(project: ProjectFile, parts: PartPins[], nets: Netlist, warn: (message: string) => void, wireIndex: WireIndex) {
   const board = project.board;
   if (board.type !== "stripboard") return;
-  const cuts = new Set(board.cuts.map(key));
-  const horizontal = board.strips === "horizontal";
-  // The strip segment a hole is on: its strip, and how many cuts come before it along the strip.
-  const segment = ([c, r]: GridPos): string | undefined => {
-    if (cuts.has(key([c, r]))) return undefined;
-    const before = board.cuts.filter(([cc, cr]) => horizontal ? cr === r && cc < c : cc === c && cr < r).length;
-    return horizontal ? `row ${r}#${before}` : `column ${c}#${before}`;
-  };
+  // What the strips join with no wires: pins of one part on one of these nets are shorted by the
+  // copper, not joined by a wire on purpose (a 555's pins 4 and 8 often are).
+  const copper = computeNets({...project, wires: []});
+  const strip = ([c, r]: GridPos) => board.strips === "horizontal" ? `row ${r}` : `column ${c}`;
 
   for (const part of parts) {
-    const bySegment = new Map<string, number[]>();
+    const byNet = new Map<Net, PlacedPin[]>();
     const seen = new Set<string>();
     for (const pin of part.pins) {
       // Pins sharing a hole are reported as a clash already.
       if (seen.has(key(pin.at))) continue;
       seen.add(key(pin.at));
-      const seg = segment(pin.at);
-      if (seg === undefined) {
+      // A cut hole has no copper, so no net.
+      const net = copper.netAt(pin.at);
+      if (!net) {
         warn(`${part.ref} pin ${pin.pin} is in cut hole ${show(pin.at)}, so it connects to nothing.`);
         continue;
       }
-      bySegment.set(seg, [...(bySegment.get(seg) ?? []), pin.pin]);
+      byNet.set(net, [...(byNet.get(net) ?? []), pin]);
     }
-    const shorted = [...bySegment.entries()].filter(([, pins]) => pins.length > 1);
+    const shorted = [...byNet.values()].filter(pins => pins.length > 1);
     if (shorted.length) {
-      const groups = shorted.map(([seg, pins]) => `pins ${pins.join(" & ")} (${seg.split("#")[0]})`);
+      const groups = shorted.map(pins => `pins ${pins.map(p => p.pin).join(" & ")} (${strip(pins[0].at)})`);
       warn(`${part.ref}: ${groups.join(", ")} share a strip with no cut between, so they're shorted together. Add cuts between them (board.cuts) or turn the part across the strips.`);
     }
   }
   project.wires.forEach((wire, i) => {
     for (const end of [wire.from, wire.to]) {
-      if (cuts.has(key(end))) warn(`wires[${wireIndex(i)}] ends in cut hole ${show(end)}, so that end connects to nothing.`);
+      if (!nets.netAt(end)) warn(`wires[${wireIndex(i)}] ends in cut hole ${show(end)}, so that end connects to nothing.`);
     }
   });
+}
+
+// An IC pin marked as not connected inside: "NC", "N.C.", "N/C".
+const NO_CONNECT = /^N\.?\/?C\.?$/i;
+
+// Wiring mistakes the nets show: a wire running over a pin it doesn't join, IC pins left
+// unconnected, supply rails shorted together. Wires are insulated jumpers joined only at their
+// ends, so wires crossing are fine: only noted.
+function checkConnections(project: ProjectFile, nets: Netlist, warn: (message: string) => void, note: (message: string) => void, wireIndex: WireIndex) {
+  const inHole = holeContents(project, nets);
+  const wire = (i: number) => wireName(wireIndex(i));
+
+  for (const hop of layoutProjectWires(project).hops) {
+    if (hop.over === "wire" && hop.under !== undefined) {
+      const at = hop.at.map(n => Math.round(n * 100) / 100) as GridPos;
+      note(`${wire(hop.wire)} crosses over ${wire(hop.under)} at ${show(at)}. That's fine: wires are insulated and join only at their ends.`);
+      continue;
+    }
+    const {pins, wires} = inHole(hop.at);
+    if (pins.length) {
+      const what = pins.map(pinName).join(" and ");
+      warn(`${wire(hop.wire)} passes over hole ${show(hop.at)}, which holds ${what}, without ending there, so it isn't connected to ${pins.length === 1 ? "it" : "them"}. If it should be, end a wire in that hole.`);
+    } else {
+      note(`${wire(hop.wire)} passes over the end of ${wires.map(wire).join(" and ")} at ${show(hop.at)} without joining ${wires.length === 1 ? "it" : "them"}.`);
+    }
+  }
+
+  // Dev boards are left out: most of their pins go unused.
+  const modules = new Set(project.placedIcs.filter(ic => isModulePart(ic.category, ic.name)).map(ic => ic.ref));
+  const loose = nets.nets
+    .filter(net => net.pins.length === 1 && net.pins[0].kind === "ic")
+    .map(net => net.pins[0])
+    // In a cut hole is reported already; a no-connect pin is meant to be left alone.
+    .filter(pin => !modules.has(pin.ref) && nets.netAt(pin.at) && !NO_CONNECT.test(pin.label ?? ""))
+    .sort(comparePins);
+  const byChip = new Map<string, NetPin[]>();
+  for (const pin of loose) byChip.set(pin.ref, [...(byChip.get(pin.ref) ?? []), pin]);
+  for (const [ref, pins] of byChip) {
+    const one = pins.length === 1;
+    warn(`${ref}: ${pins.map(pinName).join(", ")} ${one ? "is" : "are"} connected to nothing. Wire ${one ? "it" : "them"} up, unless ${one ? "it's" : "they're"} meant to be unused.`);
+  }
+
+  for (const net of nets.nets) {
+    if (!isPowerNet(net) || !net.name?.includes("/")) continue;
+    const rails = net.name.split("/").filter(name => name !== "…");
+    const railPins = net.pins.filter(pin => rails.some(rail => rail.toLowerCase() === pin.label?.toLowerCase()));
+    warn(`Short circuit: one net joins the supply rails ${rails.slice(0, -1).join(", ")} and ${rails[rails.length - 1]}${net.name.endsWith("…") ? " and more" : ""} (${railPins.map(pinName).join(", ")}). Separate them, unless they're meant to be one rail; get_nets lists all ${net.pins.length} pins on it.`);
+  }
 }

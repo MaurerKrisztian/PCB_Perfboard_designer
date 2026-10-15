@@ -2,7 +2,7 @@ import {Utils} from "../utils/utils";
 import {onRedraw, redrawCanvas} from "./draw-canvas";
 import {getSaveJson} from "./project/save-project";
 import {onProjectChange} from "./project/current-project";
-import {comparePins, computeNets, isPowerNet, Net, NetPin} from "../project-file/nets";
+import {comparePins, computeNets, isPowerNet, Net, NetPin, pinId} from "../project-file/nets";
 import {ProjectFile} from "../project-file/project-file";
 import {NetHighlightState} from "../state/NetHighlightState";
 import {ProjectState} from "../state/ProjectState";
@@ -29,11 +29,6 @@ let nets: Net[] = [];
 let highlighted: Net | undefined;
 
 const pinKey = (pin: NetPin) => `${pin.ref}.${pin.pin}`;
-
-// "D1.K" for a polarized lead, else "U1.8" (its name, "VCC", shown beside it).
-function pinId(pin: NetPin): string {
-  return pin.kind === "standard-component" && pin.label ? `${pin.ref}.${pin.label}` : pinKey(pin);
-}
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string): HTMLElementTagNameMap[K] {
   const element = document.createElement(tag);
@@ -81,6 +76,7 @@ function makePickable(element: HTMLElement, net: Net) {
   });
 }
 
+// "D1.K" or "U1.8", with a chip's pin name ("VCC") shown beside it.
 function pinChip(pin: NetPin): HTMLElement {
   const chip = el("span", "net-pin", pinId(pin));
   chip.title = `${pin.ref} pin ${pin.pin}${pin.label ? ` (${pin.label})` : ""}`;
