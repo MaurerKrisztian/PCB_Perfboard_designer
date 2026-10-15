@@ -19,10 +19,10 @@ export const expectNetsInput = z.array(z.array(z.string())).optional().describe(
 // The project a tool was given, not yet read: the raw file, and the copy kept here if it's one.
 export type ProjectSource = {raw: unknown; held?: HeldProject} | {error: string};
 
-export function projectSource({project, projectId}: {project?: unknown; projectId?: string}): ProjectSource {
+export async function projectSource({project, projectId}: {project?: unknown; projectId?: string}): Promise<ProjectSource> {
   if (project !== undefined && projectId) return {error: "Give either `project` or `projectId`, not both."};
   if (projectId) {
-    const held = heldProject(projectId);
+    const held = await heldProject(projectId);
     return held ? {raw: held.project, held} : {error: unknownProjectId(projectId)};
   }
   if (project === undefined) return {error: "Give the project: its `projectId`, or the whole file as `project`."};
@@ -43,8 +43,8 @@ export function readSource(raw: unknown): {project: ProjectFile} | {error: strin
   }
 }
 
-// expectNets for a check: the ones given (remembered for a kept project; [] forgets them), else
-// the ones remembered.
+// expectNets for a check: the ones given (remembered for a kept project once it's saved; []
+// forgets them), else the ones remembered.
 export function expectedNets(given: string[][] | undefined, held: HeldProject | undefined): string[][] | undefined {
   if (held && given) held.expectNets = given.length ? given : undefined;
   return given?.length ? given : held?.expectNets;

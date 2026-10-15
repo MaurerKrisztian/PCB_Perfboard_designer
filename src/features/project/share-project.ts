@@ -6,6 +6,7 @@ import {
 } from "../../project-file/share-link";
 import {getSaveJson} from "./save-project";
 import {afterStartup, importSharedProject} from "./current-project";
+import {fitToScreen} from "../view-controls";
 
 // Share links in the editor: the Share dialog, which makes a link carrying the board as it is now,
 // and opening a link, which adds its project to the receiver's projects as a new one. The link
@@ -51,6 +52,8 @@ async function openShareDialog() {
   }
   linkInput.focus();
   linkInput.select();
+  // Selecting scrolls to the link's tail; show its start, the address, instead.
+  linkInput.scrollLeft = 0;
 }
 
 function closeShareDialog() {
@@ -93,7 +96,7 @@ async function fetchHostedProject(link: Extract<ShareLink, {kind: "hosted"}>): P
     throw new ProjectFileError("The link's project address isn't a web address.");
   }
   if (url.protocol !== 'https:' && url.protocol !== 'http:') throw new ProjectFileError("The link's project address isn't a web address.");
-  if (!confirm(`This link opens a project file from another website:\n\n${url.href}\n\nDownload and open it?`)) return undefined;
+  if (!confirm(`This link opens a project file from ${url.host}:\n\n${url.href}\n\nDownload and open it?`)) return undefined;
 
   let response: Response;
   try {
@@ -137,6 +140,8 @@ async function openLinkedProject() {
   }
   if (raw === undefined) return;
   importSharedProject(raw, link.name ?? (link.kind === 'hosted' ? hostedFileName(link.url) : undefined));
+  // Someone else's board may not fit the view at the zoom it was left at: show all of it.
+  fitToScreen(true);
 }
 
 afterStartup(openLinkedProject);

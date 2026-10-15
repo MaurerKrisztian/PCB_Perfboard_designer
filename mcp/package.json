@@ -17,13 +17,16 @@
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
     "start": "node dist/server.js",
-    "inspect": "npx @modelcontextprotocol/inspector node dist/server.js"
+    "inspect": "npx @modelcontextprotocol/inspector node dist/server.js",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy"
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@types/node": "^26.6.5",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
+    "wrangler": "^4.151.1",
     "zod": "^4.6.7"
   }
 }

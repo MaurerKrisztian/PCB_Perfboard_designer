@@ -35,6 +35,11 @@ Keep all in-site URLs relative — never `/...` — so it also works under the g
   publicDir) are served from the site root, so from the editor they're `../icons/...` etc.
 - `contributors/index.html` — standalone page (`src/contributors/`) listing contributors live from
   the GitHub API; imports nothing from the editor.
+- `mcp-server/index.html` — how to connect AI agents (Claude Code, claude.ai, ChatGPT, Cursor…) to
+  the hosted MCP server at `https://mcp.perfboarddesigner.com/mcp` (see MCP server below). Reuses
+  the landing's styles plus `src/mcp-page/` (its own styles and copy buttons; imports nothing from
+  the editor). Named `mcp-server/` because `mcp/` is the server's package. Keep its setup steps in
+  step with `mcp/README.md`.
 - `assets/404.html` — GitHub Pages' not-found page, copied as-is (not a Vite input). It's served at
   whatever missing URL was requested, so it's fully self-contained (inline CSS/SVG) and is the one
   page that uses root-based links (`/app/`, `/`).
@@ -171,7 +176,10 @@ fixtures; the two `*-555-blinker.json` are v3 and are the MCP server's examples.
 round**: the editor must not import anything from `mcp/` (an ESLint `no-restricted-imports` rule
 enforces it) nor know the server exists, and inside `mcp/` only `mcp/src/editor.ts` imports the
 editor's source — every other server file takes editor code from it, so the whole dependency is
-listed in one place. Layout: `server.ts` only wires things up; the tools live in `mcp/src/tools/`
+listed in one place. Layout: `create-server.ts` only wires things up, for two entry points:
+`server.ts` (stdio) and `worker.ts` (Cloudflare Workers, stateless Streamable HTTP at `/mcp`,
+`mcp/wrangler.toml`; `npm run worker:dev` / `worker:deploy`), so tool code must not use Node
+APIs; the tools live in `mcp/src/tools/`
 by group (`catalog-tools.ts`: list/get parts; `project-tools.ts`: new/edit/get project;
 `board-tools.ts`: validate, nets, pin positions, render; `share-link-tools.ts`), resources in
 `resources.ts`; shared tool inputs (`projectId`/`project`, `expectNets`) in `project-source.ts`,
@@ -179,8 +187,10 @@ reply formatting in `reply.ts`, wording helpers (holes, plurals, lists) in `text
 It can: list parts, start a project (`new_project`, blank or
 from an example), change it with small ops (`edit_project`, whose wire ends can be pins by name),
 get pin positions, draw it as text (`render_board`, `mcp/src/render-board.ts`), list the board's
-nets (`get_nets`), validate it, make and read share links. Projects being worked on are kept in
-memory under a `projectId` (`mcp/src/project-handles.ts`), only a cache of the project file:
+nets (`get_nets`), validate it, make and read share links. Projects being worked on are kept under a
+`projectId` (`mcp/src/project-handles.ts`, behind an async `ProjectStore`: in memory for stdio, a
+Durable Object per project on the Worker, so a tool that changes a kept entry calls
+`saveHeldProject`), only a cache of the project file:
 `get_project` returns it, and every tool takes `projectId` or the whole file as `project`.
 `edit_project`'s ops (schema in `mcp/src/edit-ops.ts`, one function per op in `edit-project.ts`) only change file entries, all or none, and refuse
 a change the reader would drop (e.g. a part pushed off a shrunk board); its reply, like
@@ -194,8 +204,8 @@ served as `perfboard://docs/guide`), keeping the two in step. Example projects
 `mcp/build.mjs` (described in `mcp/src/examples.ts`) and served as `perfboard://examples/...`
 resources; keep them valid with their `expectNets`. Through `editor.ts` it uses the editor's pure
 code (`src/project-file/`, the three definitions files, `catalog-categories.ts`, `rotate-offset.ts`),
-which esbuild bundles with the SDK into one
-`mcp/dist/server.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer TypeScript).
+which esbuild bundles with the SDK into
+`mcp/dist/server.js` and `mcp/dist/worker.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer TypeScript).
 So those modules must stay free of DOM and editor state, and anything they import too. Facts the
 server tells agents belong in the definitions (e.g. `leadLabels`, which lead of a polarized part is
 which), not in `mcp/`. Pin geometry from a project file (`src/project-file/pin-positions.ts`, shared
@@ -205,7 +215,7 @@ together. What's connected comes only from the shared `computeNets()` and `layou
 missing to those modules without reshaping their output, which the Nets panel and canvas use.
 `get_nets` (`mcp/src/nets-report.ts`) names pins as agents write them, via `pinName()` in `nets.ts`
 ("U1.8 VCC", "D1.K", "C1.+", "R1.1"). Beyond the format, `validate_project` (`mcp/src/validate.ts`, one function per check)
-warns about a wire passing over a pin without ending there, IC pins and two-lead parts' leads
+warns about a wire passing over a pin without ending there, duplicate wires, a two-lead part with both leads on one net, IC pins and two-lead parts' leads
 connected to nothing (not dev boards' or NC pins), wires that connect no pins, supply rails shorted
 together (a power net named like "GND/VCC"), and on a stripboard, pins of one part shorted by a
 strip or sitting in a cut hole. Wires crossing are only listed in its `notes`, never warned about.
@@ -222,7 +232,7 @@ joins only its two end holes; things in one hole are joined; on a stripboard a s
 holes up to the next cut, and a cut hole joins nothing. Nets are derived — never saved in the file.
 The editor shows them live in the right sidebar above the shortcuts (`src/features/nets-panel.ts`),
 recomputed from `getSaveJson()` shortly after a redraw that changed the board. Unconnected pins
-and wires connecting no pins are in folds below the nets. Clicking a net, an unconnected pin or
+and wires connecting no pins are in folds above the nets (likely mistakes, kept in sight). Clicking a net, an unconnected pin or
 such wires lights it up on the board until clicked again: `NetHighlightState` holds its holes and
 wires, drawn by `redrawCanvas()` via `src/features/net-highlight.ts`, and the panel moves it to whichever net holds most of its pins
 after each change (most of its wires, for wires connecting no pins).

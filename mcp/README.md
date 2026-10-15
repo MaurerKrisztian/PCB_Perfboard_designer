@@ -8,8 +8,8 @@ the editor, where you can look at it and change it.
 
 > "Lay out a 555 LED blinker on a small perfboard and send me the link."
 
-It runs on your computer (stdio), needs no account and saves nothing to disk. While it runs it
-keeps the projects an agent is working on in memory, each under a `projectId`, so the agent sends
+It runs on your computer (stdio), needs no account and saves nothing to disk; or it can be hosted
+on Cloudflare Workers ([below](#hosting-it-on-cloudflare-workers)). While it runs it keeps the projects an agent is working on in memory, each under a `projectId`, so the agent sends
 a project at most once and then changes it with small edits. The project file stays the source of
 truth: `get_project` returns it, and every tool also takes a whole file instead of an id.
 
@@ -79,7 +79,8 @@ Once the package is published to npm, `npx -y perfboard-designer-mcp` replaces
 | `read_share_link` | Reads the project out of a link you share with the agent (`z=`, `json=` or `src=`) and keeps it under a `projectId`, so the agent can change an existing board. |
 
 Every tool that reads a project takes either `projectId` or the whole file as `project`. Kept
-projects last as long as the server process (the 200 most recently used).
+projects last as long as the server process (the 200 most recently used); on Cloudflare, 30 days
+after they were last used.
 
 Its instructions to agents are kept short (clients cut them off at about 2 KB); the full guide is
 the resource `perfboard://docs/guide` (`src/guide.ts`).
@@ -90,6 +91,42 @@ format, field by field), `perfboard://docs/share-links` (the link format), `perf
 555 LED blinker on a perfboard, all wired with jumpers) and
 `perfboard://examples/555-led-blinker-stripboard` (the same circuit on a stripboard), read from
 `../examples/`.
+
+## Hosting it on Cloudflare Workers
+
+The public copy runs at `https://mcp.perfboarddesigner.com/mcp`; how to add it to Claude Code,
+claude.ai, ChatGPT, Cursor and other clients is on https://perfboarddesigner.com/mcp-server/
+(`../mcp-server/index.html`).
+
+The same server also runs as a [Cloudflare Worker](https://developers.cloudflare.com/workers/),
+so an MCP client can reach it over the web with nothing installed: Streamable HTTP at `/mcp`
+(`src/worker.ts`). It's stateless, every request getting a fresh server, so kept projects can't
+live in memory: each is kept in its own Durable Object (`ProjectHolder`), named by its
+`projectId`, and forgotten after 30 days unused. Project ids are random, so they can't be guessed.
+There's no sign-in: anyone with the address can use it.
+
+Try it locally (at http://localhost:8787/mcp):
+
+```bash
+npm run worker:dev
+```
+
+Publish it to your Cloudflare account (`npx wrangler login` once first):
+
+```bash
+npm run worker:deploy
+```
+
+Both build first. `wrangler.toml` is the Worker's config: its name, the Durable Object binding
+and, in `[vars]`, `PERFBOARD_EDITOR_URL` for where links open. Then add it to a client by its
+address:
+
+```bash
+claude mcp add --transport http perfboard https://perfboard-designer-mcp.<your-subdomain>.workers.dev/mcp
+```
+
+On the Workers Free plan a request gets 10 ms of CPU time, which checking a big board can run
+over; the Paid plan allows far more.
 
 ## How things connect
 
@@ -104,19 +141,22 @@ editor's Nets panel, so they agree with what you see there.
 
 ## How it's built
 
-`src/` is the server: `server.ts` starts it, `tools/` holds the tools by group, `resources.ts`
-the documents it serves, `project-handles.ts` the kept projects, `edit-ops.ts` and
+`src/` is the server: `create-server.ts` puts it together, `server.ts` runs it over stdio and
+`worker.ts` on Cloudflare, `tools/` holds the tools by group, `resources.ts`
+the documents it serves, `project-handles.ts` the kept projects (and where they're stored), `edit-ops.ts` and
 `edit-project.ts` `edit_project`'s ops, `validate.ts` the checks, `guide.ts` its instructions and
 guide. It builds on the editor's own pure code, all of it taken through `editor.ts`, the one file
 that imports from `../src/`: the project file reader, share-link code, pin positions, nets
 (`nets.ts`) and wire crossings (`wire-crossings.ts`) in `../src/project-file/`, and the part
 definitions. That way it always agrees with the editor about the format, the parts and what's
 connected. The editor never imports anything from here. `npm run build` bundles that code and the MCP SDK into
-a single `dist/server.js` with no runtime dependencies, and bakes in the docs and examples it
-serves.
+a single `dist/server.js` (and `dist/worker.js` for Cloudflare) with no runtime dependencies,
+and bakes in the docs and examples it serves.
 
 | Command | What it does |
 | --- | --- |
-| `npm run build` | Bundle `dist/server.js` |
+| `npm run build` | Bundle `dist/server.js` and `dist/worker.js` |
 | `npm run typecheck` | Type-check the server and the editor code it imports |
+| `npm run worker:dev` | Run the Cloudflare Worker locally, at http://localhost:8787/mcp |
+| `npm run worker:deploy` | Publish the Worker to Cloudflare |
 | `npm run inspect` | Open the server in the [MCP Inspector](https://github.com/modelcontextprotocol/inspector) to try the tools by hand |

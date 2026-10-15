@@ -4,7 +4,7 @@ import {computeNets, layoutProjectWires, PROJECT_FILE_VERSION, ProjectFile, Proj
 import {EXAMPLE_IDS, EXAMPLES, exampleProject} from "../examples";
 import {editOp} from "../edit-ops";
 import {applyEdits, isEditError, pinsOf} from "../edit-project";
-import {HeldProject, heldProject, holdProject, replaceHeldProject, unknownProjectId} from "../project-handles";
+import {HeldProject, heldProject, holdProject, replaceHeldProject, saveHeldProject, unknownProjectId} from "../project-handles";
 import {expectedNets, expectNetsInput, projectIdInput, projectInput, projectSource} from "../project-source";
 import {boardSummary, partCount} from "../project-summary";
 import {netsReport} from "../nets-report";
@@ -39,7 +39,7 @@ export function registerProjectTools(server: McpServer) {
       if (strips && type !== "stripboard") return failure("`strips` is for a stripboard: add type \"stripboard\".");
       project = blankProject(cols ?? DEFAULT_COLS, rows ?? DEFAULT_ROWS, type === "stripboard" ? strips ?? "horizontal" : undefined);
     }
-    const held = holdProject(project, {name: name ?? (example ? EXAMPLES[example].title : undefined)});
+    const held = await holdProject(project, {name: name ?? (example ? EXAMPLES[example].title : undefined)});
     return reply({...checkedProject(held), project: held.project});
   });
 
@@ -54,7 +54,7 @@ export function registerProjectTools(server: McpServer) {
     },
     annotations: {readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false},
   }, async ({projectId, project, ops, expectNets}) => {
-    const from = projectSource({project, projectId});
+    const from = await projectSource({project, projectId});
     if ("error" in from) return failure(from.error);
     let held = from.held;
     if (!held) {
@@ -63,7 +63,7 @@ export function registerProjectTools(server: McpServer) {
       if (given.unreadable.length) {
         return failure("Some of the project's entries couldn't be read. Fix them first (validate_project lists them), or edit what's left: pass its projectId from validate_project.", given.problems);
       }
-      held = holdProject(given.project);
+      held = await holdProject(given.project);
     }
 
     let result;
@@ -87,6 +87,7 @@ export function registerProjectTools(server: McpServer) {
 
     replaceHeldProject(held, read.project);
     expectedNets(expectNets, held);
+    await saveHeldProject(held);
     return reply({
       changes: result.changes,
       ...(result.placed.length ? {pins: pinsOf(held.project, result.placed)} : {}),
@@ -100,7 +101,7 @@ export function registerProjectTools(server: McpServer) {
     inputSchema: {projectId: z.string()},
     annotations: {readOnlyHint: true, openWorldHint: false},
   }, async ({projectId}) => {
-    const held = heldProject(projectId);
+    const held = await heldProject(projectId);
     if (!held) return failure(unknownProjectId(projectId));
     return reply({projectId: held.id, revision: held.revision, ...(held.name ? {name: held.name} : {}), project: held.project});
   });

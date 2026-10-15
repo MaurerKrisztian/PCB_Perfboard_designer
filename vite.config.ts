@@ -9,11 +9,12 @@ const config: UserConfig = {
   build: {
     rollupOptions: {
       // Multi-page build: the landing page at the root, the designer at /app/ and the
-      // standalone contributors page at /contributors/.
+      // standalone contributors (/contributors/) and MCP server (/mcp-server/) pages.
       input: {
         main: "index.html",
         app: "app/index.html",
         contributors: "contributors/index.html",
+        mcpServer: "mcp-server/index.html",
       },
     },
   },

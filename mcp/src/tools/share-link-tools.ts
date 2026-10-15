@@ -3,7 +3,7 @@ import * as z from "zod";
 import {
   decodeEmbeddedProject, makeShareFragment, MAX_SHARED_PROJECT_BYTES, ProjectFileError, readProjectFile, readShareFragment,
 } from "../editor";
-import {holdProject} from "../project-handles";
+import {holdProject, saveHeldProject} from "../project-handles";
 import {expectedNets, expectNetsInput, projectIdInput, projectInput, projectSource} from "../project-source";
 import {validateProject} from "../validate";
 import {failure, reply} from "../reply";
@@ -12,13 +12,11 @@ import {errorMessage} from "../text";
 // Share links, in the editor's own format (src/project-file/share-link.ts): make_share_link hands
 // the user a board, read_share_link takes one they shared.
 
-const PUBLIC_EDITOR_URL = "https://perfboarddesigner.com/app/";
+export const PUBLIC_EDITOR_URL = "https://perfboarddesigner.com/app/";
 
-// The editor address links open in: PERFBOARD_EDITOR_URL (set in the MCP client's config) or the
-// public site.
-const DEFAULT_EDITOR_URL = process.env.PERFBOARD_EDITOR_URL?.trim() || PUBLIC_EDITOR_URL;
-
-export function registerShareLinkTools(server: McpServer) {
+// DEFAULT_EDITOR_URL: the editor address links open in, PERFBOARD_EDITOR_URL from the server's
+// environment (the MCP client's config, or the Worker's vars) or the public site.
+export function registerShareLinkTools(server: McpServer, DEFAULT_EDITOR_URL: string) {
   server.registerTool("make_share_link", {
     title: "Make share link",
     description: "Turns a project into a link that opens it in Perfboard Designer: the project travels inside the link, nothing is uploaded. Give the link to the user. The project is validated first (against expectNets too, given or remembered for its projectId); a project with errors gets the list of problems instead of a link, unless allowErrors is set.",
@@ -32,7 +30,7 @@ export function registerShareLinkTools(server: McpServer) {
     },
     annotations: {readOnlyHint: true, openWorldHint: false},
   }, async ({project, projectId, name, expectNets, allowErrors, editorUrl}) => {
-    const from = projectSource({project, projectId});
+    const from = await projectSource({project, projectId});
     if ("error" in from) return failure(from.error);
     const {ok, project: read, problems} = validateProject(from.raw, expectedNets(expectNets, from.held));
     if (!read || (!ok && !allowErrors)) {
@@ -41,6 +39,7 @@ export function registerShareLinkTools(server: McpServer) {
     const base = editorBase(editorUrl ?? DEFAULT_EDITOR_URL);
     if (!base) return failure(`editorUrl "${editorUrl ?? DEFAULT_EDITOR_URL}" isn't an http(s) address.`);
     if (from.held && name) from.held.name = name;
+    if (from.held && (name || expectNets)) await saveHeldProject(from.held);
     const link = `${base.href}#${await makeShareFragment(read, name ?? from.held?.name)}`;
     return reply({link, characters: link.length, ...(problems.length ? {problems} : {})});
   });
@@ -68,7 +67,7 @@ export function registerShareLinkTools(server: McpServer) {
         raw = JSON.parse(text);
       }
       const {project, skipped} = readProjectFile(raw);
-      const held = holdProject(project, {...(share.name ? {name: share.name} : {})});
+      const held = await holdProject(project, {...(share.name ? {name: share.name} : {})});
       return reply({projectId: held.id, ...(share.name ? {name: share.name} : {}), ...(skipped ? {skipped} : {}), project});
     } catch (err) {
       return failure(err instanceof ProjectFileError ? err.message : `It couldn't be read: ${errorMessage(err)}`);

@@ -22,6 +22,7 @@ export const MAX_SHARED_PROJECT_BYTES = 5_000_000;
 
 const DAMAGED = "This link's project data is damaged. It may have been cut off when the link was copied.";
 const TOO_BIG = "This link's project is too big to open.";
+const NOT_JSON = "This link's project isn't valid JSON. In a json= link, json= has to come last, with nothing after the project.";
 
 // The share link in a URL fragment (`location.hash`, with or without its "#"), or undefined when
 // the fragment isn't one.
@@ -56,7 +57,7 @@ export async function decodeEmbeddedProject(link: Extract<ShareLink, {kind: "emb
   try {
     return JSON.parse(json);
   } catch {
-    throw new ProjectFileError(DAMAGED);
+    throw new ProjectFileError(link.format === "json" ? NOT_JSON : DAMAGED);
   }
 }
 

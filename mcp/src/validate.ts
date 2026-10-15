@@ -53,6 +53,8 @@ interface Board {
   report: Report;
   // Wires with a problem at an end reported already, so they aren't reported again as stray.
   badEnds: Set<number>;
+  // Parts with pins shorted by a stripboard's strips, reported already.
+  stripShorted: Set<string>;
 }
 
 interface HoleUser {
@@ -96,7 +98,8 @@ export function validateProject(raw: unknown, expectNets?: string[][]): Validati
   const wireIndex = (i: number) => entries.kept.wires?.[i] ?? i;
   const parts = partPins(project);
   const board: Board = {
-    project, parts, holes: holeUsers(parts), nets: computeNets(project), wireIndex, report, badEnds: new Set(),
+    project, parts, holes: holeUsers(parts), nets: computeNets(project), wireIndex, report,
+    badEnds: new Set(), stripShorted: new Set(),
   };
   checkParts(board);
   checkHoles(board);
@@ -224,17 +227,24 @@ function checkHoles({parts, holes, report}: Board) {
   }));
 }
 
-// Wires of no length, ending under a part's body, or (on a perfboard) ending in an empty hole.
+// Wires of no length, running between the same holes as another, ending under a part's body, or
+// (on a perfboard) ending in an empty hole.
 function checkWireEnds({project, parts, holes, wireIndex, report, badEnds}: Board) {
   const pinHoles = new Set(parts.flatMap(part => part.pins.map(pin => holeKey(pin.at))));
   const wireEnds = new Map<string, number>();
   for (const wire of project.wires) for (const end of [wire.from, wire.to]) wireEnds.set(holeKey(end), (wireEnds.get(holeKey(end)) ?? 0) + 1);
+  // The first wire between each pair of holes, either way round.
+  const runs = new Map<string, number>();
   project.wires.forEach((wire, i) => {
     const name = wireName(wireIndex(i));
     if (holeKey(wire.from) === holeKey(wire.to)) {
       report.error(`${name} starts and ends in hole ${showHole(wire.from)}.`);
       badEnds.add(i);
     }
+    const run = [holeKey(wire.from), holeKey(wire.to)].sort().join("|");
+    const first = runs.get(run);
+    if (first === undefined) runs.set(run, i);
+    else if (holeKey(wire.from) !== holeKey(wire.to)) report.warn(`${name} runs between the same holes as ${wireName(wireIndex(first))}, ${showHole(wire.from)} and ${showHole(wire.to)}: remove one.`);
     for (const end of [wire.from, wire.to]) {
       const body = holes.get(holeKey(end))?.find(user => user.body);
       if (body) {
@@ -250,7 +260,7 @@ function checkWireEnds({project, parts, holes, wireIndex, report, badEnds}: Boar
 
 // Stripboard mistakes: two pins of one part left on the same strip (shorted), and leads in cut
 // holes (connected to nothing).
-function checkStrips({project, parts, nets, wireIndex, report, badEnds}: Board) {
+function checkStrips({project, parts, nets, wireIndex, report, badEnds, stripShorted}: Board) {
   const board = project.board;
   if (board.type !== "stripboard") return;
   // What the strips join with no wires: pins of one part on one of these nets are shorted by the
@@ -275,6 +285,7 @@ function checkStrips({project, parts, nets, wireIndex, report, badEnds}: Board) 
     }
     const shorted = [...byNet.values()].filter(pins => pins.length > 1);
     if (shorted.length) {
+      stripShorted.add(part.ref);
       const groups = shorted.map(pins => `pins ${pins.map(p => p.pin).join(" & ")} (${strip(pins[0].at)})`);
       report.warn(`${part.ref}: ${groups.join(", ")} share a strip with no cut between, so they're shorted together. Add cuts between them (board.cuts) or turn the part across the strips.`);
     }
@@ -295,6 +306,7 @@ const NO_CONNECT = /^N\.?\/?C\.?$/i;
 // crossing are fine: only noted.
 function checkConnections(board: Board) {
   checkWiresOverHoles(board);
+  checkShortedParts(board);
   const loose = checkLoosePins(board);
   checkStrayWires(board, loose);
   checkShortedRails(board);
@@ -316,6 +328,22 @@ function checkWiresOverHoles({project, nets, wireIndex, report}: Board) {
       report.warn(`${wire(hop.wire)} passes over hole ${showHole(hop.at)}, which holds ${what}, without ending there, so it isn't connected to ${pins.length === 1 ? "it" : "them"}. If it should be, end a wire in that hole.`);
     } else {
       report.note(`${wire(hop.wire)} passes over the end of ${wires.map(wire).join(" and ")} at ${showHole(hop.at)} without joining ${wires.length === 1 ? "it" : "them"}.`);
+    }
+  }
+}
+
+// A two-lead part whose leads are on one net is shorted out: it does nothing. (A chip's or
+// module's pins often share a net on purpose, a 555's 2 and 6 say.) A strip shorting them is
+// reported already, by checkStrips.
+function checkShortedParts({nets, report, stripShorted}: Board) {
+  for (const net of nets.nets) {
+    const byPart = new Map<string, NetPin[]>();
+    for (const pin of net.pins) {
+      if (pin.kind === "standard-component") byPart.set(pin.ref, [...(byPart.get(pin.ref) ?? []), pin]);
+    }
+    for (const [ref, pins] of byPart) {
+      if (pins.length < 2 || stripShorted.has(ref)) continue;
+      report.warn(`${ref}: both leads (${joinList(pins.map(pinName))}) are on one net, so ${ref} is shorted out and does nothing in the circuit. A wire likely ends in the wrong hole: check the wires on that net.`);
     }
   }
 }

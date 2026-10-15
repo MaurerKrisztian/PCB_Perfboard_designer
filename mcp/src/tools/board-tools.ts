@@ -1,7 +1,7 @@
 import {McpServer} from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod";
 import {computeNets, GridPos, layoutProjectWires, partPins} from "../editor";
-import {holdProject} from "../project-handles";
+import {holdProject, saveHeldProject} from "../project-handles";
 import {expectedNets, expectNetsInput, holeInput, projectIdInput, projectInput, projectSource, readSource} from "../project-source";
 import {boardSummary, partCount} from "../project-summary";
 import {netsReport} from "../nets-report";
@@ -19,15 +19,16 @@ const MAX_RENDERED_HOLES = 6000;
 export function registerBoardTools(server: McpServer) {
   server.registerTool("validate_project", {
     title: "Validate project",
-    description: "Checks a project file and lists every problem with where it is: entries the editor would leave out, unknown parts, pins off the board, two parts' pins or leads in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), a wire passing over a pin or lead without ending there (so not joined to it), IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or sitting in a cut hole. With expectNets, every connection missing from the board or extra on it is an error. Wires crossing each other are fine (insulated jumpers) and only listed in notes. Fix all errors before making a link. A project sent whole is kept here: the reply's projectId stands for it in every other tool.",
+    description: "Checks a project file and lists every problem with where it is: entries the editor would leave out, unknown parts, pins off the board, two parts' pins or leads in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), duplicate wires, a two-lead part with both leads on one net (shorted out), a wire passing over a pin or lead without ending there (so not joined to it), IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or sitting in a cut hole. With expectNets, every connection missing from the board or extra on it is an error. Wires crossing each other are fine (insulated jumpers) and only listed in notes. Fix all errors before making a link. A project sent whole is kept here: the reply's projectId stands for it in every other tool.",
     inputSchema: {project: projectInput, projectId: projectIdInput, expectNets: expectNetsInput},
     annotations: {readOnlyHint: false, destructiveHint: false, openWorldHint: false},
   }, async ({project, projectId, expectNets}) => {
-    const from = projectSource({project, projectId});
+    const from = await projectSource({project, projectId});
     if ("error" in from) return failure(from.error);
     const {ok, project: read, leftOut, problems, notes} = validateProject(from.raw, expectedNets(expectNets, from.held));
     // A file sent whole is kept as the editor reads it.
-    const held = from.held ?? (read ? holdProject(read, {...(expectNets?.length ? {expectNets} : {})}) : undefined);
+    if (from.held && expectNets) await saveHeldProject(from.held);
+    const held = from.held ?? (read ? await holdProject(read, {...(expectNets?.length ? {expectNets} : {})}) : undefined);
     const keptPartly = !from.held && read && leftOut > 0;
     return reply({
       ok,
@@ -45,7 +46,7 @@ export function registerBoardTools(server: McpServer) {
     inputSchema: {project: projectInput, projectId: projectIdInput},
     annotations: {readOnlyHint: true, openWorldHint: false},
   }, async ({project, projectId}) => {
-    const from = projectSource({project, projectId});
+    const from = await projectSource({project, projectId});
     if ("error" in from) return failure(from.error);
     const {project: read, wireIndex, problems} = validateProject(from.raw);
     if (!read) return failure("The project couldn't be read.", problems);
@@ -67,7 +68,7 @@ export function registerBoardTools(server: McpServer) {
     },
     annotations: {readOnlyHint: true, openWorldHint: false},
   }, async ({project, projectId, refs}) => {
-    const from = projectSource({project, projectId});
+    const from = await projectSource({project, projectId});
     if ("error" in from) return failure(from.error);
     const read = readSource(from.raw);
     if ("error" in read) return failure(read.error);
@@ -91,7 +92,7 @@ export function registerBoardTools(server: McpServer) {
     },
     annotations: {readOnlyHint: true, openWorldHint: false},
   }, async ({project, projectId, area}) => {
-    const from = projectSource({project, projectId});
+    const from = await projectSource({project, projectId});
     if ("error" in from) return failure(from.error);
     const read = readSource(from.raw);
     if ("error" in read) return failure(read.error);

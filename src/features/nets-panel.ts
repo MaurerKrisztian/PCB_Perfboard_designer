@@ -141,17 +141,20 @@ function render() {
   const unconnected = nets.filter(net => net.pins.length === 1).sort((a, b) => comparePins(a.pins[0], b.pins[0]));
   const stray = nets.filter(net => !net.pins.length);
 
-  countEl.textContent = connected.length ? String(connected.length) : "";
-  netsEl.replaceChildren(...connected.map(renderNet));
-  if (!connected.length) netsEl.append(el("div", "nets-empty", "No pins are connected yet. Wire two pins together and their net shows up here."));
-
+  // The folds come first: they're likely mistakes, and below a long list of nets they'd be
+  // scrolled out of sight.
+  const folds: HTMLElement[] = [];
   if (unconnected.length) {
-    netsEl.append(renderFold("unconnected", `Not connected · ${plural(unconnected.length, "pin")}`, unconnected.map(net => [net, pinChip(net.pins[0])])));
+    folds.push(renderFold("unconnected", `Not connected · ${plural(unconnected.length, "pin")}`, unconnected.map(net => [net, pinChip(net.pins[0])])));
   }
   if (stray.length) {
     const wires = stray.reduce((n, net) => n + net.wires.length, 0);
-    netsEl.append(renderFold("stray", `Connecting no pins · ${plural(wires, "wire")}`, stray.map(net => [net, wireChip(net)])));
+    folds.push(renderFold("stray", `Connecting no pins · ${plural(wires, "wire")}`, stray.map(net => [net, wireChip(net)])));
   }
+
+  countEl.textContent = connected.length ? String(connected.length) : "";
+  netsEl.replaceChildren(...folds, ...connected.map(renderNet));
+  if (!connected.length) netsEl.append(el("div", "nets-empty", "No pins are connected yet. Wire two pins together and their net shows up here."));
 }
 
 function refresh() {

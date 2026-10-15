@@ -849,9 +849,10 @@ input[type="number"]:focus, input[type="text"]:focus, input[type="search"]:focus
   line-height: 1.5;
 }
 
+/* Amber, like the Share dialog's warning: unconnected pins and stray wires are likely mistakes. */
 .nets-fold summary {
   cursor: pointer;
-  color: var(--text-muted);
+  color: #fbbf24;
   user-select: none;
 }
 
