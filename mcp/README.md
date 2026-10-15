@@ -69,16 +69,20 @@ Once the package is published to npm, `npx -y perfboard-designer-mcp` replaces
 | `list_parts` | Lists the parts a project can place (79 today). Without a query, every part by category, one line each (its id, name and pin count). With words such as `"capacitor"` or `"555"`, the parts matching all of them, or the closest ones when none do. |
 | `get_part` | Parts in full, as many as you name in `ids`: which list each goes in, its pins and pin labels, polarity, value unit, holes its body covers, and an example entry to copy. |
 | `new_project` | Starts a project kept in memory and returns its `projectId`: a blank perfboard or stripboard of the size you give, or a copy of an example (`example: "555-led-blinker"`). |
-| `edit_project` | Changes a kept project with a list of ops, all or none: `add_part` (by part id, with `at`, or `from`/`to` for two-lead parts; refs are numbered if left out), `update_part` (move, turn, change value or ref), `remove_parts`, `add_wire` (`from`/`to`, or a `path` of holes made into one wire per leg), `update_wire`, `remove_wires`, `set_board`, `add_cuts`/`remove_cuts`, `set_pad`. Returns what changed, where the new or moved parts' pins landed, and the board checked as `validate_project` does; when it has no errors, also its nets. |
+| `edit_project` | Changes a kept project with a list of ops, all or none: `add_part` (by part id, with `at`, or `from`/`to` for two-lead parts; refs are numbered if left out), `update_part` (move, turn, change value or ref), `remove_parts`, `add_wire` (`from`/`to`, or a `path` of holes made into one wire per leg; any end can be a pin by name, e.g. `"U1.7"` or `"D1.K"`, for the hole it's in), `update_wire` (ends by hole or pin too), `remove_wires`, `set_board`, `add_cuts`/`remove_cuts`, `set_pad`. Returns what changed, where the new or moved parts' pins landed, and the board checked as `validate_project` does; when it has no errors, also its nets. |
 | `get_project` | The whole project file of a kept project. |
 | `get_pin_positions` | Where every placed part's pins land on the board after rotation, e.g. `U1 pin 8 (VCC) at [9, 3]`, so wires can be routed to the right holes. |
+| `render_board` | Draws the board as text, one cell per hole with column and row numbers: pins by part key and number (`a1`), holes under a body, wire ends, holes a wire runs over without joining them, strip cuts and marked holes, then which part each key is and every wire with its net. `area` draws only part of the board (needed above 6000 holes). |
 | `get_nets` | Which pins the board connects: each net with its name (e.g. `GND`), its pins (`U1.8 VCC` for a chip pin, `D1.K` or `C1.+` for a polarized lead, `R1.1` otherwise) and its wires, plus pins connected to nothing, junctions (holes where three or more things join) and crossings (where a wire goes over another wire or a hole without joining it). |
-| `validate_project` | Lists every problem, with where it is: unreadable entries, unknown parts, pins off the board, two things in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), a wire passing over a pin without ending there, IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or in a cut hole. Wires crossing are listed as notes, not problems. Pass `expectNets` (the netlist you meant, e.g. `[["U1.8", "U1.4", "R1.1", "J1.1"], ["U1.2", "U1.6", "C1.+"]]`) and every missing or extra connection is an error; for a kept project it's remembered, so `edit_project` and `make_share_link` check against it too (`[]` forgets it). A whole project sent here is kept, and the reply gives its `projectId`. |
+| `validate_project` | Lists every problem, with where it is: unreadable entries, unknown parts, pins off the board, two parts' pins or leads in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), a wire passing over a pin without ending there, IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or in a cut hole. Wires crossing are listed as notes, not problems. Pass `expectNets` (the netlist you meant, e.g. `[["U1.8", "U1.4", "R1.1", "J1.1"], ["U1.2", "U1.6", "C1.+"]]`) and every missing or extra connection is an error; for a kept project it's remembered, so `edit_project` and `make_share_link` check against it too (`[]` forgets it). A whole project sent here is kept, and the reply gives its `projectId`. |
 | `make_share_link` | Validates the project (with `expectNets`, given or remembered) and returns the link that opens it. It refuses a project with errors unless `allowErrors` is set. `editorUrl` points it at another copy of the editor, e.g. `http://localhost:3000/app/`; it defaults to `PERFBOARD_EDITOR_URL`. |
 | `read_share_link` | Reads the project out of a link you share with the agent (`z=`, `json=` or `src=`) and keeps it under a `projectId`, so the agent can change an existing board. |
 
 Every tool that reads a project takes either `projectId` or the whole file as `project`. Kept
 projects last as long as the server process (the 200 most recently used).
+
+Its instructions to agents are kept short (clients cut them off at about 2 KB); the full guide is
+the resource `perfboard://docs/guide` (`src/guide.ts`).
 
 It also serves the format as **resources**: `perfboard://docs/project-file` (the project file
 format, field by field), `perfboard://docs/share-links` (the link format), `perfboard://parts`
@@ -91,9 +95,11 @@ format, field by field), `perfboard://docs/share-links` (the link format), `perf
 
 Wires are insulated jumpers: a wire joins only the holes at its two ends. Running over a hole
 doesn't connect it, and two wires crossing aren't shorted, so a crossing is fine (the editor marks
-it so it doesn't pass for a joint, and the 3D view arches the upper wire). Things in the same hole
-are joined. On a stripboard, every hole along a strip is joined up to the next cut, and a cut hole
-connects to nothing. `get_nets` and `validate_project` work this out with the same code as the
+it so it doesn't pass for a joint, and the 3D view arches the upper wire). A hole takes one part's
+pin or lead at most (a second part there is an error, as on a real board) plus any number of wire
+ends, and everything in a hole is joined: to connect two parts, run a wire between their pins.
+On a stripboard, every hole along a strip is joined up to the next cut, and a cut hole connects to
+nothing. `get_nets` and `validate_project` work this out with the same code as the
 editor's Nets panel, so they agree with what you see there.
 
 ## How it's built

@@ -15,6 +15,8 @@ import {PROJECT_FILE_VERSION, ProjectFile} from "../../src/project-file/project-
 import {validateProject} from "./validate";
 import {netsReport} from "./nets-report";
 import {applyEdits, editOp, isEditError, pinsOf} from "./edit-project";
+import {renderBoard} from "./render-board";
+import {GUIDE} from "./guide";
 import {HeldProject, heldProject, holdProject, replaceHeldProject, unknownProjectId} from "./project-handles";
 
 // The Perfboard Designer MCP server: lets an AI agent design a perfboard or stripboard layout as a
@@ -24,17 +26,18 @@ import {HeldProject, heldProject, holdProject, replaceHeldProject, unknownProjec
 
 const PUBLIC_EDITOR_URL = "https://perfboarddesigner.com/app/";
 
-const INSTRUCTIONS = `Perfboard Designer (https://perfboarddesigner.com) is a browser editor for perfboard and stripboard layouts. With these tools you design a board as a project file (JSON, format version 3) and give the user a link that opens it in the editor, where they can see and change it.
+// Kept short: clients cut instructions off at about 2 KB. The rest is in the guide (guide.ts).
+const INSTRUCTIONS = `Perfboard Designer (https://perfboarddesigner.com) is a browser editor for perfboard and stripboard layouts. You design a board here as a project file and give the user a link that opens it in the editor.
 
-Workflow:
-1. list_parts with no query: every part, by category, in one call. Then get_part with ids: every part you use, in one call: its pins, polarity and footprint.
-2. new_project (cols, rows, type): a blank board, kept here under a projectId. Pass the projectId to every other tool instead of the whole project file. (new_project with example starts from an example project; see the perfboard://examples resources.)
-3. edit_project with a list of ops: place parts (add_part with the part's id and "at", or "from" and "to" for a two-lead part) and route wires (add_wire with "from" and "to", or a "path" of holes for a wire with corners). Each reply says where the new parts' pins landed and checks the board; once it has no errors, the reply lists its nets too. Positions are [column, row] holes counted from the top-left hole, both from 0. Neighbouring holes are 2.54 mm (0.1") apart. Wires are insulated jumpers: a wire joins only the holes at its two ends (and a path's corners), never a hole it passes over, and wires may cross each other (that's fine, not a short). Things in the same hole are joined. On a stripboard, every hole along a strip is already connected: cut strips (add_cuts) to separate them.
-4. Check the circuit is the one you meant: the nets in edit_project's reply (pins named like "U1.8 VCC", "D1.K", "R1.1"), or get_nets for junctions and crossings too. Give expectNets (your netlist, e.g. [["U1.8", "U1.4", "R1.1", "J1.1"], ...]) once, to edit_project or validate_project, and every missing or extra connection is reported as an error from then on.
-5. Fix every error. Warnings are likely mistakes, such as two pins of one part shorted by a strip, a wire passing over a pin without joining it, a lead or wires connected to nothing, or two supply rails shorted. validate_project lists notes too.
-6. make_share_link with the projectId: give the user the link it returns.
+1. list_parts with no query: every part. Then get_part with ids: every part you use, in one call.
+2. new_project (cols, rows, type) returns a projectId: pass it to every other tool.
+3. edit_project: place parts (add_part) and route wires (add_wire with from/to, or a path with corners; ends can be pins by name, "U1.7", "D1.K"), all ops or none. Its reply gives where pins landed, the board's problems and, once there are no errors, its nets. Give expectNets (your netlist, e.g. [["U1.8", "R1.1"], ...]) once and every missing or extra connection is an error from then on. render_board draws the board as text to show free space.
+4. Fix every error; warnings are likely mistakes.
+5. make_share_link: give the user the link.
 
-get_project returns the whole file. Projects are kept only while the server runs; a whole project file works in place of a projectId everywhere. To change a board the user shares with you, read it with read_share_link: it returns a projectId to edit. The format is documented in the resource perfboard://docs/project-file, links in perfboard://docs/share-links.`;
+Rules: holes are [column, row] from the top-left hole, from 0, 2.54 mm apart. A hole holds one part's pin or lead at most (two parts in one hole is an error) plus any number of wire ends, and everything in it is joined: to connect two parts, run a wire between their pins. A wire joins only the holes at its ends and corners, never a hole it passes over; wires may cross. On a stripboard each strip joins its holes up to a cut (add_cuts).
+
+The full guide, with more on all this and on changing a board the user shares (read_share_link): the resource perfboard://docs/guide.`;
 
 // JSON for replies: indented, but anything short enough (a hole, a wire, a part entry) on one
 // line, so a project file reads one entry per line and costs far fewer tokens.
@@ -54,6 +57,7 @@ const projectInput = z.union([z.record(z.string(), z.unknown()), z.string()]).op
   .describe("The whole project file: a version 3 project object, or its JSON text (see the perfboard://docs/project-file resource). Give this or projectId.");
 const projectIdInput = z.string().optional()
   .describe("The id of a project kept here (from new_project, validate_project, edit_project or read_share_link), instead of sending the whole project.");
+const hole = z.array(z.number().int()).length(2).describe("A hole, [column, row].");
 const expectNetsInput = z.array(z.array(z.string())).optional().describe('The nets the board should make: each a list of pins written REF.pin, e.g. [["U1.8", "U1.4", "R1.1", "J1.1"], ["U1.2", "U1.6", "C1.+"]]. A pin can also be named by its label ("U1.VCC", "D1.K") or as get_nets writes it ("U1.8 VCC"). List every net of two or more pins: a pin in none of them should connect to nothing. With a projectId it\'s remembered for that project, so later checks use it too; [] forgets it.');
 
 function parseProject(value: unknown): unknown {
@@ -281,7 +285,7 @@ server.registerTool("get_project", {
 
 server.registerTool("validate_project", {
   title: "Validate project",
-  description: "Checks a project file and lists every problem with where it is: entries the editor would leave out, unknown parts, pins off the board, two things in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), a wire passing over a pin or lead without ending there (so not joined to it), IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or sitting in a cut hole. With expectNets, every connection missing from the board or extra on it is an error. Wires crossing each other are fine (insulated jumpers) and only listed in notes. Fix all errors before making a link. A project sent whole is kept here: the reply's projectId stands for it in every other tool.",
+  description: "Checks a project file and lists every problem with where it is: entries the editor would leave out, unknown parts, pins off the board, two parts' pins or leads in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), a wire passing over a pin or lead without ending there (so not joined to it), IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or sitting in a cut hole. With expectNets, every connection missing from the board or extra on it is an error. Wires crossing each other are fine (insulated jumpers) and only listed in notes. Fix all errors before making a link. A project sent whole is kept here: the reply's projectId stands for it in every other tool.",
   inputSchema: {project: projectInput, projectId: projectIdInput, expectNets: expectNetsInput},
   annotations: {readOnlyHint: false, destructiveHint: false, openWorldHint: false},
 }, async ({project, projectId, expectNets}) => {
@@ -349,6 +353,41 @@ server.registerTool("get_pin_positions", {
   return reply({board: boardSummary(read.board), parts});
 });
 
+// Above this many holes, render_board asks for an area instead of drawing the whole board.
+const MAX_RENDERED_HOLES = 6000;
+
+server.registerTool("render_board", {
+  title: "Render board",
+  description: "Draws the board as text, one cell per hole with column and row numbers: each part's pins by a key letter and pin number (a1, a2...), holes under a part's body, wire ends, the holes a wire runs over without joining them, strip cuts and marked holes. Below it, which part each key is and every wire with its ends and net. Use it to see where there's free space and how wires run before placing parts or routing more.",
+  inputSchema: {
+    project: projectInput,
+    projectId: projectIdInput,
+    area: z.object({from: hole, to: hole}).optional()
+      .describe("Only this part of the board: two opposite corner holes. The whole board when left out."),
+  },
+  annotations: {readOnlyHint: true, openWorldHint: false},
+}, async ({project, projectId, area}) => {
+  const from = source({project, projectId});
+  if ("error" in from) return failure(from.error);
+  let read;
+  try {
+    read = readProjectFile(from.raw).project;
+  } catch (err) {
+    return failure(err instanceof ProjectFileError ? err.message : String(err));
+  }
+  const {cols, rows} = read.board;
+  const pick = area && {from: [area.from[0], area.from[1]] as [number, number], to: [area.to[0], area.to[1]] as [number, number]};
+  const size = pick ? (Math.abs(pick.to[0] - pick.from[0]) + 1) * (Math.abs(pick.to[1] - pick.from[1]) + 1) : cols * rows;
+  if (size > MAX_RENDERED_HOLES) {
+    return failure(`That's ${size} holes, too many to draw at once (up to ${MAX_RENDERED_HOLES}): give \`area\`, e.g. {"from": [0, 0], "to": [59, 39]}.`);
+  }
+  const misses = (a: number, b: number, size: number) => Math.max(a, b) < 0 || Math.min(a, b) >= size;
+  if (pick && (misses(pick.from[0], pick.to[0], cols) || misses(pick.from[1], pick.to[1], rows))) {
+    return failure(`\`area\` is off the ${cols}×${rows} board (columns 0-${cols - 1}, rows 0-${rows - 1}).`);
+  }
+  return {content: [{type: "text" as const, text: renderBoard(read, pick)}]};
+});
+
 server.registerTool("make_share_link", {
   title: "Make share link",
   description: "Turns a project into a link that opens it in Perfboard Designer: the project travels inside the link, nothing is uploaded. Give the link to the user. The project is validated first (against expectNets too, given or remembered for its projectId); a project with errors gets the list of problems instead of a link, unless allowErrors is set.",
@@ -410,6 +449,12 @@ server.registerTool("read_share_link", {
     return failure(err instanceof ProjectFileError ? err.message : `It couldn't be read: ${err instanceof Error ? err.message : String(err)}`);
   }
 });
+
+server.registerResource("guide", "perfboard://docs/guide", {
+  title: "Guide",
+  description: "How to design a board with these tools, step by step, and the rules: what can share a hole, how wires and strips connect.",
+  mimeType: "text/markdown",
+}, async uri => ({contents: [{uri: uri.href, mimeType: "text/markdown", text: GUIDE}]}));
 
 server.registerResource("project-file-format", "perfboard://docs/project-file", {
   title: "Project file format",

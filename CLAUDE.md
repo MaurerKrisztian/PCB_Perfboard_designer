@@ -168,7 +168,8 @@ fixtures; the two `*-555-blinker.json` are v3 and are the MCP server's examples.
 
 **MCP server** (`mcp/`): a separate npm package (`perfboard-designer-mcp`, own `package.json`, Node
 22+, stdio) that lets AI agents design boards: list parts, start a project (`new_project`, blank or
-from an example), change it with small ops (`edit_project`), get pin positions, list the board's
+from an example), change it with small ops (`edit_project`, whose wire ends can be pins by name),
+get pin positions, draw it as text (`render_board`, `mcp/src/render-board.ts`), list the board's
 nets (`get_nets`), validate it, make and read share links. Projects being worked on are kept in
 memory under a `projectId` (`mcp/src/project-handles.ts`), only a cache of the project file:
 `get_project` returns it, and every tool takes `projectId` or the whole file as `project`.
@@ -176,7 +177,10 @@ memory under a `projectId` (`mcp/src/project-handles.ts`), only a cache of the p
 a change the reader would drop (e.g. a part pushed off a shrunk board); its reply, like
 `new_project`'s, checks the board as `validate_project` does and lists the nets once there are no
 errors. `expectNets` given for a projectId is remembered for later checks. Link base URL defaults
-to `PERFBOARD_EDITOR_URL` (set in the client's MCP config), else the public site. Example projects
+to `PERFBOARD_EDITOR_URL` (set in the client's MCP config), else the public site. The server's
+`INSTRUCTIONS` (`server.ts`) must stay under about 2 KB, since clients cut off the rest: keep them
+to the workflow and the rules, and put detail in the guide (`mcp/src/guide.ts`, served as
+`perfboard://docs/guide`), keeping the two in step. Example projects
 (`examples/perfboard-555-blinker.json`, `examples/stripboard-555-blinker.json`) are baked in by
 `mcp/build.mjs` and served as `perfboard://examples/...` resources; keep them valid with their
 `expectNets`. It imports the editor's pure code directly (`src/project-file/`, the three definitions

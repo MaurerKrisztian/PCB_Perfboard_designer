@@ -8,9 +8,16 @@ import {joinList} from "./nets-report";
 // Signs written either way: a battery's "−" is also "-".
 const norm = (text: string) => text.trim().replace(/[−–]/g, "-").toLowerCase();
 
+// The board's pins by ref, for findPin.
+export function pinsByRef(pins: NetPin[]): Map<string, NetPin[]> {
+  const byRef = new Map<string, NetPin[]>();
+  for (const pin of [...pins].sort(comparePins)) byRef.set(norm(pin.ref), [...(byRef.get(norm(pin.ref)) ?? []), pin]);
+  return byRef;
+}
+
 // A pin by any name an agent may write it: "U1.8", "U1.8 VCC", "U1.VCC", "D1.K", "D1.1", "C1.+".
 // Returns why not when it can't be found.
-function findPin(name: string, pinsByRef: Map<string, NetPin[]>): NetPin | string {
+export function findPin(name: string, pinsByRef: Map<string, NetPin[]>): NetPin | string {
   const dot = name.indexOf(".");
   if (dot < 1) return `"${name}" isn't a pin: write REF.pin, e.g. "U1.8", "R1.1" or "D1.K"`;
   const ref = name.slice(0, dot).trim();
@@ -37,11 +44,10 @@ const pinSet = (pins: NetPin[]) => `{${pins.map(pinName).join(", ")}}`;
 
 export function checkExpectedNets(netlist: Netlist, expected: string[][], error: (message: string) => void): void {
   const netOf = new Map<NetPin, Net>();
-  const pinsByRef = new Map<string, NetPin[]>();
   for (const net of netlist.nets) {
     for (const pin of net.pins) netOf.set(pin, net);
   }
-  for (const pin of [...netOf.keys()].sort(comparePins)) pinsByRef.set(norm(pin.ref), [...(pinsByRef.get(norm(pin.ref)) ?? []), pin]);
+  const byRef = pinsByRef([...netOf.keys()]);
 
   // Which listed net each pin is in.
   const listedIn = new Map<NetPin, number>();
@@ -49,7 +55,7 @@ export function checkExpectedNets(netlist: Netlist, expected: string[][], error:
   const listed = expected.map((names, i) => {
     const pins: NetPin[] = [];
     names.forEach((name, j) => {
-      const pin = findPin(name, pinsByRef);
+      const pin = findPin(name, byRef);
       if (typeof pin === "string") {
         unreadable++;
         error(`expectNets[${i}][${j}] ${pin}.`);

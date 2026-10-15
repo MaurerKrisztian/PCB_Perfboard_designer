@@ -50,6 +50,17 @@ function interiorCrossing(a: WireEnds, b: WireEnds): {at: [number, number]; alon
   return {at: [ax + t * rx, ay + t * ry], along: u};
 }
 
+// The holes a wire runs straight over between its ends (it joins none of them), from its `from`
+// end, with how far along it each is (0 to 1).
+export function holesAlong(wire: WireEnds): {at: GridPos; along: number}[] {
+  const [x1, y1] = wire.from;
+  const [x2, y2] = wire.to;
+  const steps = gcd(Math.abs(x2 - x1), Math.abs(y2 - y1));
+  const holes: {at: GridPos; along: number}[] = [];
+  for (let k = 1; k < steps; k++) holes.push({at: [x1 + (x2 - x1) / steps * k, y1 + (y2 - y1) / steps * k], along: k / steps});
+  return holes;
+}
+
 export function layoutWires(wires: WireEnds[], pinHoles: GridPos[]): WireLayout {
   const pins = new Set(pinHoles.map(key));
   const ends = new Map<string, number>();
@@ -59,13 +70,9 @@ export function layoutWires(wires: WireEnds[], pinHoles: GridPos[]): WireLayout 
 
   const hops: (WireHop & {along: number})[] = [];
   wires.forEach((wire, i) => {
-    const [x1, y1] = wire.from;
-    const [x2, y2] = wire.to;
-    const steps = gcd(Math.abs(x2 - x1), Math.abs(y2 - y1));
-    for (let k = 1; k < steps; k++) {
-      const hole: GridPos = [x1 + (x2 - x1) / steps * k, y1 + (y2 - y1) / steps * k];
-      if (pins.has(key(hole)) || ends.has(key(hole))) hops.push({wire: i, at: hole, over: "hole", along: k / steps});
-    }
+    holesAlong(wire).forEach(({at, along}) => {
+      if (pins.has(key(at)) || ends.has(key(at))) hops.push({wire: i, at, over: "hole", along});
+    });
   });
   for (let i = 0; i < wires.length; i++) {
     for (let j = i + 1; j < wires.length; j++) {

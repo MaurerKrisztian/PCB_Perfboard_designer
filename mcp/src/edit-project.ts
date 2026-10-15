@@ -3,13 +3,18 @@ import {GridPos} from "../../src/project-file/grid";
 import {ProjectFile, Rotation, SavedWire} from "../../src/project-file/project-file";
 import {BoardRefs} from "../../src/project-file/part-refs";
 import {partPins} from "../../src/project-file/pin-positions";
+import {NetPin, pinName} from "../../src/project-file/nets";
 import {findPart, icEntry, similarPartIds} from "./parts";
+import {findPin, pinsByRef} from "./expected-nets";
 
 // edit_project's operations: small changes to a project (add a part, route a wire, cut a strip)
 // so an agent never rewrites the whole file to change one thing. They only edit the file's
 // entries: what's connected is still worked out by the shared nets code afterwards.
 
 const hole = z.array(z.number().int()).length(2).describe("A hole, [column, row].");
+// A wire end: a hole, or a pin by name, which stands for the hole it's in.
+const wireEnd = z.union([z.array(z.number().int()).length(2), z.string()])
+  .describe('A hole [column, row], or a pin by name: "U1.7", "U1.DISCH", "D1.K", "R2.1" (the hole that pin is in).');
 const rotation = z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]);
 const wireSelector = z.union([z.number().int().min(0), z.array(hole).length(2)])
   .describe("A wire by its index in wires, or by its two end holes [[c, r], [c, r]] (either way round).");
@@ -45,18 +50,18 @@ export const editOp = z.discriminatedUnion("op", [
   z.object({op: z.literal("remove_parts"), refs: z.array(z.string()).min(1)}),
   z.object({
     op: z.literal("add_wire"),
-    from: hole.optional(),
-    to: hole.optional(),
-    path: z.array(hole).min(2).optional()
-      .describe("Instead of from/to: holes to run through in order, made into one wire per leg. Each corner is a wire end, so it joins whatever is in that hole."),
+    from: wireEnd.optional(),
+    to: wireEnd.optional(),
+    path: z.array(wireEnd).min(2).optional()
+      .describe("Instead of from/to: holes (or pins) to run through in order, made into one wire per leg. Each corner is a wire end, so it joins whatever is in that hole."),
     color: z.string().optional(),
     width: z.number().positive().optional(),
   }),
   z.object({
     op: z.literal("update_wire"),
     wire: wireSelector,
-    from: hole.optional(),
-    to: hole.optional(),
+    from: wireEnd.optional(),
+    to: wireEnd.optional(),
     color: z.string().optional(),
     width: z.number().positive().optional(),
   }),
@@ -158,6 +163,20 @@ function notFor(kind: string, op: Record<string, unknown>, fields: string[]) {
   if (given.length) throw new OpError(`${given.map(f => `\`${f}\``).join(", ")} ${given.length === 1 ? "doesn't" : "don't"} apply to ${kind}.`);
 }
 
+// Where a wire end goes: the hole given, or the hole of the pin named, as of this op (so a part
+// added earlier in the same edit can be wired to). `said` is how the reply names it.
+function wireEndAt(project: ProjectFile, end: readonly number[] | string, what: string): {at: GridPos; said: string} {
+  if (typeof end !== "string") {
+    checkOnBoard(project, end, what);
+    return {at: pos(end), said: show(end)};
+  }
+  const pins: NetPin[] = partPins(project).flatMap(part => part.pins.map(({pin, label, at}) =>
+    ({ref: part.ref, kind: part.kind, pin, ...(label ? {label} : {}), at})));
+  const pin = findPin(end, pinsByRef(pins));
+  if (typeof pin === "string") throw new OpError(`${what} ${pin}.`);
+  return {at: pin.at, said: `${pinName(pin)} ${show(pin.at)}`};
+}
+
 function findWire(project: ProjectFile, selector: number | number[][]): number {
   if (typeof selector === "number") {
     if (selector >= project.wires.length) throw new OpError(`There's no wires[${selector}]: the board has ${project.wires.length} wire${project.wires.length === 1 ? "" : "s"}.`);
@@ -183,37 +202,37 @@ function applyOne(project: ProjectFile, op: EditOp, placed: Set<string>): string
     }
     case "add_wire": {
       if (op.path && (op.from || op.to)) throw new OpError("Give either `path` or `from` and `to`, not both.");
-      const points = op.path ?? (op.from && op.to ? [op.from, op.to] : undefined);
-      if (!points) throw new OpError("A wire needs `from` and `to`, or a `path` of two or more holes.");
-      points.forEach((at, i) => checkOnBoard(project, at, op.path ? `path[${i}]` : i ? "`to`" : "`from`"));
+      const given = op.path ?? (op.from && op.to ? [op.from, op.to] : undefined);
+      if (!given) throw new OpError("A wire needs `from` and `to`, or a `path` of two or more holes.");
+      const points = given.map((end, i) => wireEndAt(project, end, op.path ? `path[${i}]` : i ? "`to`" : "`from`"));
       // Holes repeated back to back would make wires of no length.
-      const corners = points.filter((at, i) => i === 0 || !same(at, points[i - 1]));
+      const corners = points.filter((end, i) => i === 0 || !same(end.at, points[i - 1].at));
       if (corners.length < 2) throw new OpError("The wire starts and ends in the same hole.");
       const first = project.wires.length;
       for (let i = 1; i < corners.length; i++) {
         project.wires.push({
-          from: pos(corners[i - 1]), to: pos(corners[i]),
+          from: corners[i - 1].at, to: corners[i].at,
           ...(op.color ? {color: op.color} : {}), ...(op.width ? {width: op.width} : {}),
         });
       }
       const made = corners.length - 1;
       return made === 1
-        ? `Added wires[${first}] from ${show(corners[0])} to ${show(corners[1])}.`
-        : `Added wires[${first}]-[${first + made - 1}] along ${corners.map(show).join(" → ")}.`;
+        ? `Added wires[${first}] from ${corners[0].said} to ${corners[1].said}.`
+        : `Added wires[${first}]-[${first + made - 1}] along ${corners.map(end => end.said).join(" → ")}.`;
     }
     case "update_wire": {
       const i = findWire(project, op.wire);
       const wire: SavedWire = project.wires[i];
-      if (op.from) checkOnBoard(project, op.from, "`from`");
-      if (op.to) checkOnBoard(project, op.to, "`to`");
+      const from = op.from === undefined ? undefined : wireEndAt(project, op.from, "`from`");
+      const to = op.to === undefined ? undefined : wireEndAt(project, op.to, "`to`");
       const updated: SavedWire = {
-        ...wire, ...(op.from ? {from: pos(op.from)} : {}), ...(op.to ? {to: pos(op.to)} : {}),
+        ...wire, ...(from ? {from: from.at} : {}), ...(to ? {to: to.at} : {}),
         ...(op.color !== undefined ? {color: op.color} : {}), ...(op.width !== undefined ? {width: op.width} : {}),
       };
       if (!updated.color) delete updated.color;
       if (same(updated.from, updated.to)) throw new OpError(`The wire would start and end in hole ${show(updated.from)}.`);
       project.wires[i] = updated;
-      return `wires[${i}] now runs from ${show(updated.from)} to ${show(updated.to)}.`;
+      return `wires[${i}] now runs from ${from?.said ?? show(updated.from)} to ${to?.said ?? show(updated.to)}.`;
     }
     case "remove_wires": {
       const indexes = new Set(op.wires.map(selector => findWire(project, selector)));

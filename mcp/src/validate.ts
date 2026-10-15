@@ -101,7 +101,7 @@ export function validateProject(raw: unknown, expectNets?: string[][]): Validati
     const partsHere = new Set(users.map(u => u.part));
     if (partsHere.size < 2) continue;
     users.forEach(a => users.forEach(b => clashing.add(`${a.part.ref}|${b.part.ref}`)));
-    error(`Hole [${hole.replace(",", ", ")}] is used twice: ${users.map(u => u.what).join(" and ")}.`);
+    error(`Hole [${hole.replace(",", ", ")}] is used twice: ${users.map(u => u.what).join(" and ")}. A hole takes one part's pin or lead: move one, and to connect them, run a wire between their pins.`);
   }
   const overlaps = (a: Box, b: Box) =>
     a.left < b.right - 0.01 && b.left < a.right - 0.01 && a.top < b.bottom - 0.01 && b.top < a.bottom - 0.01;
