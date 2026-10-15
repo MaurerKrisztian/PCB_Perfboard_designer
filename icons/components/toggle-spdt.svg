@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 160" width="260" height="160" role="img" aria-label="SPDT miniature toggle switch, top view">
+  <rect x="3" y="3" width="254" height="154" rx="6" fill="#aab3bd" stroke="#e2e8f0" stroke-width="4"/>
+  <rect x="14" y="14" width="232" height="132" rx="4" fill="#1f242b" stroke="#4b5563" stroke-width="3"/>
+  <polygon points="84.0,80.0 107.0,40.0 153.0,40.0 176.0,80.0 153.0,120.0 107.0,120.0" fill="#cfd5db" stroke="#f1f5f9" stroke-width="3"/>
+  <circle cx="130.0" cy="80.0" r="27" fill="#b9c1ca" stroke="#e2e8f0" stroke-width="3"/>
+  <path d="M130.0 80.0h78.0" stroke="#dfe3e8" stroke-width="16" stroke-linecap="round"/>
+  <circle cx="208.0" cy="80.0" r="12" fill="#eef2f5" stroke="#9ca3af" stroke-width="2"/>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 992 375" width="992" height="375" role="img" aria-label="Four-digit seven-segment LED display, top view">
+  <rect x="3" y="3" width="986" height="369" rx="6" fill="#ece7df" stroke="#ffffff" stroke-width="4"/>
+  <rect x="13" y="58" width="966" height="259" rx="4" fill="#29282b" stroke="#55535a" stroke-width="3"/>
+  <g transform="translate(30 0) skewX(-6)" fill="#e0303f" stroke="#ff8a94" stroke-width="2">
+    <rect x="74" y="78" width="80" height="16" rx="7"/>
+    <rect x="74" y="179" width="80" height="16" rx="7"/>
+    <rect x="74" y="280" width="80" height="16" rx="7"/>
+    <rect x="57" y="94" width="16" height="84" rx="7"/>
+    <rect x="155" y="94" width="16" height="84" rx="7"/>
+    <rect x="57" y="196" width="16" height="83" rx="7"/>
+    <rect x="155" y="196" width="16" height="83" rx="7"/>
+  </g>
+  <circle cx="215" cy="288" r="9" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <g transform="translate(268 0) skewX(-6)" fill="#e0303f" stroke="#ff8a94" stroke-width="2">
+    <rect x="74" y="78" width="80" height="16" rx="7"/>
+    <rect x="74" y="179" width="80" height="16" rx="7"/>
+    <rect x="74" y="280" width="80" height="16" rx="7"/>
+    <rect x="57" y="94" width="16" height="84" rx="7"/>
+    <rect x="155" y="94" width="16" height="84" rx="7"/>
+    <rect x="57" y="196" width="16" height="83" rx="7"/>
+    <rect x="155" y="196" width="16" height="83" rx="7"/>
+  </g>
+  <circle cx="453" cy="288" r="9" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <g transform="translate(506 0) skewX(-6)" fill="#e0303f" stroke="#ff8a94" stroke-width="2">
+    <rect x="74" y="78" width="80" height="16" rx="7"/>
+    <rect x="74" y="179" width="80" height="16" rx="7"/>
+    <rect x="74" y="280" width="80" height="16" rx="7"/>
+    <rect x="57" y="94" width="16" height="84" rx="7"/>
+    <rect x="155" y="94" width="16" height="84" rx="7"/>
+    <rect x="57" y="196" width="16" height="83" rx="7"/>
+    <rect x="155" y="196" width="16" height="83" rx="7"/>
+  </g>
+  <circle cx="691" cy="288" r="9" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+  <g transform="translate(744 0) skewX(-6)" fill="#e0303f" stroke="#ff8a94" stroke-width="2">
+    <rect x="74" y="78" width="80" height="16" rx="7"/>
+    <rect x="74" y="179" width="80" height="16" rx="7"/>
+    <rect x="74" y="280" width="80" height="16" rx="7"/>
+    <rect x="57" y="94" width="16" height="84" rx="7"/>
+    <rect x="155" y="94" width="16" height="84" rx="7"/>
+    <rect x="57" y="196" width="16" height="83" rx="7"/>
+    <rect x="155" y="196" width="16" height="83" rx="7"/>
+  </g>
+  <circle cx="929" cy="288" r="9" fill="#e0303f" stroke="#ff8a94" stroke-width="2"/>
+</svg>

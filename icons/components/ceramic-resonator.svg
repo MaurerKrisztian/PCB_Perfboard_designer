@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 60" width="160" height="60" role="img" aria-label="Three-pin ceramic resonator, top view">
+  <path d="M12 3h136l9 12v30l-9 12H12L3 45V15Z" fill="#d87b28" stroke="#f7b66e" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M17 11h126" stroke="#f6a04e" stroke-width="5" stroke-linecap="round"/>
+  <path d="M17 49h126" stroke="#965017" stroke-width="4" stroke-linecap="round"/>
+  <text x="80" y="38" text-anchor="middle" fill="#382717" font-family="Arial,sans-serif" font-size="23" font-weight="bold">RES</text>
+</svg>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 510 95" width="510" height="95" role="img" aria-label="5x20 mm fuse holder with a glass fuse, top view">
+  <rect x="3" y="3" width="504" height="89" rx="6" fill="#23272e" stroke="#7b8796" stroke-width="4"/>
+  <rect x="16" y="14" width="40" height="67" rx="4" fill="#3a4049"/>
+  <rect x="454" y="14" width="40" height="67" rx="4" fill="#3a4049"/>
+  <rect x="104" y="29" width="302" height="37" rx="4" fill="#cfe7f2" fill-opacity="0.55" stroke="#e8f6fc" stroke-width="3"/>
+  <path d="M136 47.5c30-14 52 14 82 0s52-14 82 0 52 14 76 0" fill="none" stroke="#9aa6b2" stroke-width="3"/>
+  <path d="M118 36h274" stroke="#ffffff" stroke-opacity="0.6" stroke-width="3" stroke-linecap="round"/>
+  <g fill="#c8cfd6" stroke="#eef2f5" stroke-width="3">
+    <rect x="64" y="22" width="52" height="51" rx="4"/>
+    <rect x="394" y="22" width="52" height="51" rx="4"/>
+  </g>
+  <path d="M78 22v51m18-51v51M414 22v51m18-51v51" stroke="#8e98a3" stroke-width="3"/>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 453" width="460" height="453" role="img" aria-label="CR2032 coin cell holder, top view">
+  <circle cx="230" cy="226.5" r="223" fill="#1c1f23" stroke="#6b7684" stroke-width="5"/>
+  <circle cx="250" cy="226.5" r="196" fill="#c3c9d0" stroke="#eef2f5" stroke-width="5"/>
+  <circle cx="250" cy="226.5" r="170" fill="none" stroke="#9aa3ad" stroke-width="3"/>
+  <text x="250" y="210" text-anchor="middle" fill="#5b6570" font-family="Arial,sans-serif" font-size="64" font-weight="bold">CR2032</text>
+  <text x="250" y="290" text-anchor="middle" fill="#5b6570" font-family="Arial,sans-serif" font-size="72" font-weight="bold">+</text>
+  <path d="M12 196h120l40 30-40 30H12Z" fill="#d8dde3" stroke="#f1f5f9" stroke-width="4" stroke-linejoin="round"/>
+</svg>
