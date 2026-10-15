@@ -8,6 +8,8 @@ const CATEGORY_LIST = [
   {id: "passives", name: "Passives", icon: "〰️", keywords: ["passive"]},
   {id: "passives.resistors", parentId: "passives", name: "Resistors", keywords: ["resistance", "ohm"]},
   {id: "passives.capacitors", parentId: "passives", name: "Capacitors", keywords: ["cap", "capacitance", "farad"]},
+  {id: "passives.timing", parentId: "passives", name: "Crystals & Resonators", keywords: ["frequency", "oscillator", "clock"]},
+  {id: "passives.protection", parentId: "passives", name: "Fuses", keywords: ["fuse", "protection", "overcurrent"]},
 
   {id: "semiconductors", name: "Semiconductors", icon: "💡", keywords: ["semiconductor", "active"]},
   {id: "semiconductors.diodes", parentId: "semiconductors", name: "Diodes"},
@@ -17,6 +19,10 @@ const CATEGORY_LIST = [
   {id: "ics.timers", parentId: "ics", name: "Timers"},
   {id: "ics.logic", parentId: "ics", name: "Logic", keywords: ["gate", "74"]},
   {id: "ics.microcontrollers", parentId: "ics", name: "Microcontrollers", keywords: ["mcu", "avr"]},
+  {id: "ics.analog", parentId: "ics", name: "Amplifiers", keywords: ["analog", "op amp", "audio"]},
+  {id: "ics.power", parentId: "ics", name: "Voltage Regulators", keywords: ["power", "supply", "linear"]},
+  {id: "ics.drivers", parentId: "ics", name: "Drivers", keywords: ["darlington", "motor"]},
+  {id: "ics.opto", parentId: "ics", name: "Optocouplers", keywords: ["isolator", "opto"]},
   {id: "ics.custom", parentId: "ics", name: "Custom"},
 
   {id: "modules", name: "Modules", icon: "📟", keywords: ["module", "board", "breakout"]},
@@ -24,6 +30,11 @@ const CATEGORY_LIST = [
   {id: "modules.custom", parentId: "modules", name: "Custom"},
 
   {id: "connectors", name: "Connectors", icon: "🔌", keywords: ["connector", "header"]},
+  {id: "switches", name: "Switches", icon: "🔘", keywords: ["switch", "button", "input", "control"]},
+  {id: "displays", name: "Displays", icon: "🔢", keywords: ["display", "seven segment", "digit", "indicator"]},
+  {id: "sensors", name: "Sensors & Audio", icon: "🌡️", keywords: ["sensor", "temperature", "humidity", "infrared", "microphone", "audio"]},
+  {id: "batteries", name: "Batteries", icon: "🔋", keywords: ["battery", "cell", "holder", "power"]},
+  {id: "outputs", name: "Relays & Buzzers", icon: "🔔", keywords: ["output", "relay", "buzzer", "sound"]},
 ] as const;
 
 export type CategoryId = typeof CATEGORY_LIST[number]["id"];

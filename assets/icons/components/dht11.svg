@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236 108" width="236" height="108" role="img" aria-label="DHT11 humidity and temperature sensor, top view">
+  <rect x="3" y="3" width="230" height="102" rx="5" fill="#3d8fd1" stroke="#f8fafc" stroke-width="4"/>
+  <path d="M10 68h216" stroke="#164a78" stroke-width="3" stroke-opacity="0.6"/>
+  <rect x="22" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <rect x="44" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <rect x="66" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <rect x="88" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <rect x="110" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <rect x="132" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <rect x="154" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <rect x="176" y="78" width="12" height="16" rx="2" fill="#164a78"/>
+  <text x="118.0" y="50.0" text-anchor="middle" fill="#164a78" font-family="Arial,sans-serif" font-size="23" font-weight="bold">DHT11</text>
+</svg>

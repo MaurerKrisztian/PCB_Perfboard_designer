@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 224 92" width="224" height="92" role="img" aria-label="HC-49 quartz crystal, top view">
+  <rect x="3" y="3" width="218" height="86" rx="41" fill="#7b8795" stroke="#e2e8f0" stroke-width="4"/>
+  <rect x="11" y="11" width="202" height="70" rx="34" fill="#b9c5cf" stroke="#f1f5f9" stroke-width="3"/>
+  <path d="M46 18h130" stroke="#e9f0f5" stroke-width="5" stroke-linecap="round"/>
+  <path d="M46 74h130" stroke="#8c9ba9" stroke-width="4" stroke-linecap="round"/>
+  <text x="112" y="55" text-anchor="middle" fill="#465464" font-family="Arial,sans-serif" font-size="24" font-weight="bold">XTAL</text>
+</svg>

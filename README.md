@@ -61,6 +61,20 @@ device.
 - 📦 **ICs and custom chips**: drop in an NE555 timer, DIP-14 and DIP-16 logic chips, an
   ATmega328P or an Arduino Nano. You can also build your own chip with labeled pins in the custom
   IC editor and edit it again later. Chips and fixed-pin parts rotate in 90° steps.
+- 🔘 **Connectors, controls and power**: 2-pin and 3-pin screw terminals, female headers,
+  jumper caps, push buttons, slide switches, 3296W trimmers, and 7805 / LM317 regulators.
+- 🔔 **More outputs and named chips**: buzzers, DPDT relays, four-lead RGB LEDs in common-anode
+  and common-cathode variants, plus LM358, LM386, PC817, ULN2803A and 74HC595 DIP presets with
+  labeled pins. All appear in both the 2D editor and 3D preview.
+- 🧩 **Displays, sensors and more controls**: 2-, 4- and 8-position DIP switches, common-anode
+  and common-cathode seven-segment displays, quartz crystals, ceramic resonators, LDRs,
+  thermistors, film capacitors, 5×20 mm fuse holders, rotary encoders and DC barrel jacks.
+  Each has 2D artwork and a dedicated 3D model; check the footprint notes for parts whose
+  leads must be formed to fit the grid.
+- 🔋 **Everyday hobby parts**: ATtiny85, L293D, CD4017, NE556, LM393, TL072, 74HC14, 4N35 and
+  6N137 DIP presets; 6×6 mm tactile, latching and toggle switches; 3 mm LEDs; 10-segment bar
+  graphs and 4-digit seven-segment displays; DS18B20, DHT11/DHT22, IR receiver and electret
+  microphone; 3.5 mm audio jacks, JST XH connectors, and CR2032, 2×AA and 18650 battery holders.
 - ✏️ **Wires the way you solder them**: jumper wires in any color and three thicknesses (thin,
   normal, thick). Straight runs of the same color merge into one wire automatically.
 - 📐 **Perfboard or stripboard, any size**: start from a common board size (2×8 cm up to
@@ -107,6 +121,16 @@ jumper wire, on a perfboard or stripboard sized to match yours.
 - Drag to orbit, right-drag to pan and scroll to zoom, or jump to an angled, top or bottom view.
 - Check the solder side to see where wires and leads meet the copper.
 - Save a screenshot of the render to share or keep next to your build.
+
+Component variants use the board's 2.54 mm hole grid. Check the
+[component footprint notes](docs/component-footprints.md) for package details, pin labels,
+and parts whose leads must be formed to fit the grid. The models are layout previews, not
+manufacturing drawings. To explore the expanded catalog in 2D and 3D, import one of the component
+galleries: [connectors](examples/new-components-connectors.json),
+[batteries](examples/new-components-batteries.json), [switches](examples/new-components-switches.json),
+[displays and LEDs](examples/new-components-displays-leds.json),
+[passives and sensors](examples/new-components-passives-sensors.json) and
+[DIP chips](examples/new-components-dip-chips.json). They show parts, not working circuits.
 
 <p align="center">
   <img src="assets/images/hero-board.webp" width="49%"

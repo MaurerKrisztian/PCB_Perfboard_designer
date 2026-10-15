@@ -1,5 +1,5 @@
 import {redrawCanvas} from "../draw-canvas";
-import {ComponentUnit} from "./component-definitions";
+import {ComponentUnit, isLed} from "./component-definitions";
 import {formatComponentValue, parseComponentValue} from "./component-value";
 import {SelectionState} from "../../state/SelectionState";
 
@@ -17,7 +17,7 @@ const LED_COLOR_LABELS: Record<LedColor, string> = {
 
 export function setSelectedLedColor(color: LedColor | undefined) {
   const component = SelectionState.part;
-  if (component?.kind !== "standard-component" || component.definitionId !== "led") return;
+  if (component?.kind !== "standard-component" || !isLed(component.definitionId)) return;
   component.color = color;
   component.value = color ? LED_COLOR_LABELS[color] : undefined;
   redrawCanvas();

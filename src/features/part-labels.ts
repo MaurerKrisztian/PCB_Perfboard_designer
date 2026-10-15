@@ -5,7 +5,7 @@ import type {PlacedStandardComponent} from "./standard-components/placed-standar
 import type {PlacedAdvancedComponent} from "./advanced-components/placed-advanced-component";
 import {GridConfig} from "../state/GridConfig";
 import {IDot} from "../interfaces/dot.interface";
-import {getComponentBodySize} from "./standard-components/component-definitions";
+import {getComponentBodySize, isLed} from "./standard-components/component-definitions";
 import {PinOffset} from "./advanced-components/advanced-component-definitions";
 import {rotateOffset} from "./advanced-components/rotate-offset";
 
@@ -21,11 +21,9 @@ const LABEL_HALO_COLOR = "rgba(2,6,23,0.9)";
 const LABEL_HALO_WIDTH = 3;
 const LABEL_GAP = 3;
 
-// LEDs store their color name as the value, which the body tint already shows.
-const VALUE_HIDDEN_DEFINITION_IDS = ["led"];
-
 function getLabelText(part: PlacedStandardComponent | PlacedAdvancedComponent): string | undefined {
-  const value = VALUE_HIDDEN_DEFINITION_IDS.indexOf(part.definitionId) === -1 ? part.value?.trim() : undefined;
+  // LEDs store their color name as the value, which the body tint already shows.
+  const value = part.kind === "standard-component" && isLed(part.definitionId) ? undefined : part.value?.trim();
   const text = [part.ref, value].filter(Boolean).join(" ");
   return text ? text : undefined;
 }

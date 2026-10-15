@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 285 177" width="285" height="177" role="img" aria-label="DC barrel jack opening to the right, top view">
+  <rect x="3" y="3" width="279" height="171" rx="6" fill="#1c1f23" stroke="#6b7684" stroke-width="4"/>
+  <rect x="3" y="3" width="70" height="171" rx="6" fill="#2b3037" stroke="#6b7684" stroke-width="4"/>
+  <rect x="210" y="14" width="64" height="149" rx="4" fill="#252a31" stroke="#46505c" stroke-width="3"/>
+  <path d="M96 88.5h104" stroke="#3d4550" stroke-width="56" stroke-linecap="round"/>
+  <path d="M110 88.5h150" stroke="#0b0d10" stroke-width="40"/>
+  <path d="M120 88.5h140" stroke="#b9c1ca" stroke-width="10" stroke-linecap="round"/>
+  <path d="M232 52v73" stroke="#4c5663" stroke-width="3"/>
+  <text x="38" y="120" text-anchor="middle" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="22" font-weight="bold">DC</text>
+</svg>

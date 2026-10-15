@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 116" width="170" height="116" role="img" aria-label="RGB LED with four formed leads, top view">
+  <path d="M10 58h40m10 0h15m20 0h15m10 0h40" stroke="#b7c5d4" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="85" cy="58" r="55" fill="#e0e8ee" fill-opacity="0.9" stroke="#f8fafc" stroke-width="3"/>
+  <path d="M85 58V13a45 45 0 0 1 39 67Z" fill="#ef5b65" fill-opacity="0.8"/>
+  <path d="m85 58 39 22a45 45 0 0 1-78 0Z" fill="#5bdd96" fill-opacity="0.8"/>
+  <path d="M85 58 46 80a45 45 0 0 1 39-67Z" fill="#6ba9fa" fill-opacity="0.8"/>
+  <circle cx="85" cy="58" r="45" fill="none" stroke="#fff" stroke-width="3" stroke-opacity="0.8"/>
+  <ellipse cx="71" cy="33" rx="17" ry="8" transform="rotate(-30 71 33)" fill="#fff" fill-opacity="0.7"/>
+</svg>

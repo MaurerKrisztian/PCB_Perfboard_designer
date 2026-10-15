@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 177 150" width="177" height="150" role="img" aria-label="Momentary tactile push button, top view">
+  <rect x="3" y="3" width="171" height="144" rx="9" fill="#252b34" stroke="#94a3b8" stroke-width="4"/>
+  <rect x="12" y="13" width="153" height="124" rx="10" fill="#b5bdc7" stroke="#e2e8f0" stroke-width="3"/>
+  <path d="M14 27h15m119 0h15M14 123h15m119 0h15" stroke="#66717f" stroke-width="9"/>
+  <circle cx="88.5" cy="75" r="45" fill="#606978" stroke="#27303e" stroke-width="5"/>
+  <circle cx="88.5" cy="75" r="32" fill="#d9413c" stroke="#ff9b91" stroke-width="3"/>
+  <circle cx="81" cy="66" r="16" fill="#fff" fill-opacity="0.25"/>
+</svg>

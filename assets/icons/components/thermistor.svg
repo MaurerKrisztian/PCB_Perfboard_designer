@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 60" width="76" height="60" role="img" aria-label="NTC thermistor with a blue identification dot, top view">
+  <path d="M13 7Q38 0 63 7q10 6 10 23T63 53Q38 60 13 53Q3 47 3 30T13 7Z" fill="#8f9aa6" stroke="#d5dde5" stroke-width="3"/>
+  <path d="M15 13Q38 7 61 13" fill="none" stroke="#bfcbd5" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="38" cy="29" rx="15" ry="12" fill="#236eb4" stroke="#7fbcf2" stroke-width="2"/>
+  <path d="M13 48Q38 55 63 48" fill="none" stroke="#667587" stroke-width="3"/>
+</svg>
