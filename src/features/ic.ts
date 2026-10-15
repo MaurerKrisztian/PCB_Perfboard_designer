@@ -16,7 +16,7 @@ import {SavedCustomIc, SavedIc} from "../project-file/project-file";
 import {toGridPos} from "../project-file/grid";
 import {readCustomIcs} from "../project-file/read-project-file";
 import {ViewState} from "../state/ViewState";
-import {isModuleName} from "../project-file/ic-package";
+import {isModuleCategory} from "../project-file/ic-package";
 import {DIP_INSET, DIP_OVERHANG, drawDip} from "./ic-package/dip-shape";
 import {MODULE_EDGE, MODULE_END, drawModule} from "./ic-package/module-shape";
 import {IC_DEFINITIONS} from "./ic-definitions";
@@ -56,8 +56,8 @@ export class Ic implements PlacedPart {
   get kind(): "ic" { return "ic"; }
   get layer(): "under-board" { return "under-board"; }
 
-  // Boards on header pins (Arduino Nano…) are drawn as a dev board; every other chip is a DIP.
-  get isModule(): boolean { return isModuleName(this.name); }
+  // Parts in the Modules category (dev boards…) are drawn as a board; every other chip is a DIP.
+  get isModule(): boolean { return isModuleCategory(this.category); }
 
   static add(ic: Ic, saveToStorage: boolean = false){
     this.IC_CONTAINER.push(ic);
@@ -325,6 +325,7 @@ export class Ic implements PlacedPart {
       rotation: (this.rotationAngle || 0) as Rotation,
       pinDescription: this.pinDescription || {},
       at: toGridPos(this.topLeftDot ?? {x: 0, y: 0}),
+      category: this.category,
     };
   }
 
@@ -347,6 +348,8 @@ export class Ic implements PlacedPart {
   clone(): Ic {
     const copy = new Ic(this.widthPin, this.heightPin, { ...this.pinDescription }, this.name, this.isCustom);
     copy.rotationAngle = this.rotationAngle;
+    copy.category = this.category;
+    copy.definitionId = this.definitionId;
     return copy;
   }
 

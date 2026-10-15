@@ -14,6 +14,10 @@ export const MODULE_EDGE = 16;
 export const MODULE_END = 22;
 const PAD_RADIUS = 10.5;
 const HOLE_RADIUS = 4.5;
+// A micro/mini-USB socket is about 7.5mm wide, i.e. 150px at this pitch.
+const USB_WIDTH = 150;
+const USB_ASPECT = 0.56;
+const USB_OVERHANG = 8;
 
 type Rotation = 0 | 90 | 180 | 270;
 
@@ -98,12 +102,13 @@ function moduleShape(pinsPerRow: number, spanHoles: number): ModuleShape {
     }
   };
 
-  // USB-C at the far end, its front edge a little past the board.
+  // USB socket at the far end, its front edge a little past the board. Sockets are one real-world
+  // size whatever the board, so it only shrinks when the board is too narrow to hold it.
   let usb: Rect | null = null;
-  const usbW = iw * 0.7;
-  const usbH = Math.round(usbW * 0.56);
+  const usbW = Math.min(USB_WIDTH, iw);
+  const usbH = Math.round(usbW * USB_ASPECT);
   if (iw >= 44 && board.h >= usbH + 120) {
-    usb = {x: at(0.5) - usbW / 2, y: height + MODULE_END + 8 * k - usbH, w: usbW, h: usbH};
+    usb = {x: at(0.5) - usbW / 2, y: height + MODULE_END + USB_OVERHANG - usbH, w: usbW, h: usbH};
     bottom = usb.y - 8 * k;
   }
 

@@ -1,7 +1,7 @@
 import {Group, Material, MeshStandardMaterial, Object3D, Vector3} from "three";
 import {fitFont, LABEL_FONT, LEAD_TIP_Y, PITCH, paintedTexture, PX_PER_PITCH, SceneKit} from "./scene-kit";
 import {ViewerIc} from "./project-data";
-import {isModuleName} from "../project-file/ic-package";
+import {isModulePart} from "../project-file/ic-package";
 
 type Side = "left" | "right" | "top" | "bottom";
 
@@ -249,5 +249,5 @@ export function buildIc(kit: SceneKit, ic: ViewerIc): Object3D | null {
   const pins = icPins(kit, ic);
   if (pins.length === 0) return null;
   for (const pin of pins) kit.solder(pin.px, pin.py);
-  return isModuleName(ic.name) ? buildModule(kit, ic, pins) : buildDip(kit, ic, pins);
+  return isModulePart(ic.category, ic.name) ? buildModule(kit, ic, pins) : buildDip(kit, ic, pins);
 }
