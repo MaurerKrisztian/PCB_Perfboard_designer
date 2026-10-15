@@ -1,4 +1,4 @@
-import {ProjectFile} from "../../src/project-file/project-file";
+import {ProjectFile} from "./editor";
 
 // Project handles: the server keeps a copy of each project an agent is working on, under an id,
 // so it can check, edit and share it without sending the whole file back every call. Only a

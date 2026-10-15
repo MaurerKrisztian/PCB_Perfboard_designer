@@ -14,6 +14,10 @@ const UNKNOWN_PART_REF_PREFIX = "X";
 // A letter, then letters, digits, "_" or "-": R1, RV2, J_PWR. Short enough to print on the board.
 const REF_PATTERN = /^[A-Za-z][A-Za-z0-9_-]{0,15}$/;
 
+export function isValidRef(ref: string): boolean {
+  return REF_PATTERN.test(ref);
+}
+
 export function refPrefixFor(part: {kind: PartKind; definitionId?: string}): string {
   if (part.kind === "ic") return IC_REF_PREFIX;
   const definition = part.kind === "standard-component"
@@ -32,7 +36,7 @@ export class BoardRefs {
 
   // Takes `ref` if it's well-formed and still free. Returns whether it did.
   claim(ref: string): boolean {
-    if (!REF_PATTERN.test(ref) || this.taken.has(ref.toUpperCase())) return false;
+    if (!isValidRef(ref) || this.taken.has(ref.toUpperCase())) return false;
     this.taken.add(ref.toUpperCase());
     return true;
   }

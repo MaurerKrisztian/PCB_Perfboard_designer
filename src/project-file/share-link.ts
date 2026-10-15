@@ -3,7 +3,7 @@ import {ProjectFileError} from "./read-project-file";
 
 // Share links: a whole project carried in the editor URL's fragment (after the "#"), so sharing
 // needs no server, and browsers never send the fragment to one. Documented for people and
-// programs (agents making projects included) in docs/share-links.md. The fragment holds an
+// programs writing links in docs/share-links.md. The fragment holds an
 // optional `name` and one of:
 //   z=<project file as JSON, deflate-raw compressed, base64url>   what the editor makes
 //   json=<project file as percent-encoded JSON>                   easy to write without tools
@@ -62,8 +62,8 @@ export async function decodeEmbeddedProject(link: Extract<ShareLink, {kind: "emb
 
 // Runs `bytes` through a (de)compression stream, giving up past MAX_SHARED_PROJECT_BYTES.
 async function pipe(bytes: Uint8Array, transform: CompressionStream | DecompressionStream): Promise<Uint8Array> {
-  // A copy, as newer TypeScript DOM types (the MCP server's) only let ArrayBuffer-backed arrays
-  // into a Blob, and `slice` makes one.
+  // A copy, as newer TypeScript DOM types only let ArrayBuffer-backed arrays into a Blob, and
+  // `slice` makes one.
   const reader = new Blob([bytes.slice()]).stream().pipeThrough(transform).getReader();
   const chunks: Uint8Array[] = [];
   let size = 0;

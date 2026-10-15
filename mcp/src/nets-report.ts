@@ -1,35 +1,25 @@
-import {GridPos} from "../../src/project-file/grid";
-import {ProjectFile} from "../../src/project-file/project-file";
-import {comparePins, Netlist, NetPin, pinName} from "../../src/project-file/nets";
-import {WireLayout} from "../../src/project-file/wire-crossings";
+import {comparePins, GridPos, Netlist, NetPin, pinName, ProjectFile, WireLayout} from "./editor";
+import {holeKey, wireName} from "./text";
 
 // The board's nets and wire crossings as get_nets reports them: pins by the names agents write
 // ("U1.8 VCC", "D1.K", "R1.1") and wires by their place in the file. Worked out by the shared
-// nets.ts and wire-crossings.ts, the same code the editor's Nets panel and canvas use; this only
+// nets.ts and wire-crossings.ts, the editor's own code for its Nets panel and canvas; this only
 // names things.
 
 // Where each wire is in the file as given (the reader may have left some entries out).
 export type WireIndex = (i: number) => number;
 
-const key = ([c, r]: GridPos) => `${c},${r}`;
 const round = (n: number) => Math.round(n * 100) / 100;
-
-export const wireName = (i: number) => `wires[${i}]`;
-
-// "a", "a and b", "a, b and c".
-export function joinList(items: string[]): string {
-  return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-}
 
 // What's in a hole: pins, and the wires ending there.
 export function holeContents(project: ProjectFile, netlist: Netlist): (at: readonly number[]) => {pins: NetPin[]; wires: number[]} {
   const pins = new Map<string, NetPin[]>();
-  for (const pin of netlist.nets.flatMap(net => net.pins).sort(comparePins)) pins.set(key(pin.at), [...(pins.get(key(pin.at)) ?? []), pin]);
+  for (const pin of netlist.nets.flatMap(net => net.pins).sort(comparePins)) pins.set(holeKey(pin.at), [...(pins.get(holeKey(pin.at)) ?? []), pin]);
   const wires = new Map<string, number[]>();
   project.wires.forEach((wire, i) => {
-    for (const end of new Set([key(wire.from), key(wire.to)])) wires.set(end, [...(wires.get(end) ?? []), i]);
+    for (const end of new Set([holeKey(wire.from), holeKey(wire.to)])) wires.set(end, [...(wires.get(end) ?? []), i]);
   });
-  return ([c, r]) => ({pins: pins.get(key([c, r])) ?? [], wires: wires.get(key([c, r])) ?? []});
+  return at => ({pins: pins.get(holeKey(at)) ?? [], wires: wires.get(holeKey(at)) ?? []});
 }
 
 export interface NetsReport {

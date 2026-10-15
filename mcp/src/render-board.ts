@@ -1,13 +1,9 @@
-import {GridPos} from "../../src/project-file/grid";
-import {ProjectFile} from "../../src/project-file/project-file";
-import {partPins} from "../../src/project-file/pin-positions";
-import {computeNets, Net, pinName} from "../../src/project-file/nets";
-import {holesAlong, layoutProjectWires} from "../../src/project-file/wire-crossings";
-import {joinList} from "./nets-report";
+import {computeNets, GridPos, holesAlong, layoutProjectWires, Net, partPins, pinName, ProjectFile} from "./editor";
+import {holeKey, joinList, showHole} from "./text";
 
 // render_board's text drawing of a board: one cell per hole, so an agent can see where things are,
 // which holes are free and where wires run, without working it out from the file. Only draws:
-// what's connected comes from the shared nets code, and is named in the wire list below the grid.
+// what's connected comes from the editor's nets code, and is named in the wire list below the grid.
 
 export interface Area {
   from: GridPos;
@@ -17,9 +13,6 @@ export interface Area {
 // Short keys for parts in the grid: a-z, A-Z, then two letters.
 const LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const partKey = (i: number) => i < LETTERS.length ? LETTERS[i] : LETTERS[Math.floor(i / LETTERS.length) - 1] + LETTERS[i % LETTERS.length];
-
-const key = ([c, r]: readonly number[]) => `${c},${r}`;
-const show = ([c, r]: readonly number[]) => `[${c}, ${r}]`;
 
 // A wire running over a hole, by its direction: across, down, or diagonally.
 function runMark([dx, dy]: number[]): string {
@@ -48,12 +41,12 @@ export function renderBoard(project: ProjectFile, area?: Area): string {
 
   // Least to most important: whatever's set last in a hole is drawn.
   const cells = new Map<string, string>();
-  const set = (at: readonly number[], text: string) => cells.set(key(at), text);
+  const set = (at: readonly number[], text: string) => cells.set(holeKey(at), text);
   for (const pad of project.pads) set(pad.at, "@");
   project.wires.forEach(wire => {
     const mark = runMark([wire.to[0] - wire.from[0], wire.to[1] - wire.from[1]]);
     for (const {at} of holesAlong(wire)) {
-      const before = cells.get(key(at));
+      const before = cells.get(holeKey(at));
       set(at, before && before !== "@" && before !== mark ? "+" : mark);
     }
   });
@@ -71,7 +64,7 @@ export function renderBoard(project: ProjectFile, area?: Area): string {
   lines.push(`${" ".repeat(rowLabel)}  ${header.join("")}`.trimEnd());
   for (let r = top; r <= bottom; r++) {
     const row: string[] = [];
-    for (let c = left; c <= right; c++) row.push((cells.get(key([c, r])) ?? ".").padEnd(width));
+    for (let c = left; c <= right; c++) row.push((cells.get(holeKey([c, r])) ?? ".").padEnd(width));
     lines.push(`${String(r).padStart(rowLabel)}  ${row.join("")}`.trimEnd());
   }
 
@@ -97,7 +90,7 @@ export function renderBoard(project: ProjectFile, area?: Area): string {
       const pins = labelled
         ? part.pins.map(pin => `${pin.pin} ${pin.label ?? ""}`.trim()).join(", ")
         : part.pins.length === 1 ? "pin 1" : `pins 1-${part.pins.length}`;
-      out.push(`${partKey(i)} ${part.ref} ${part.part}${value ? ` ${value}` : ""} at ${show(part.pins[0].at)}: ${pins}`);
+      out.push(`${partKey(i)} ${part.ref} ${part.part}${value ? ` ${value}` : ""} at ${showHole(part.pins[0].at)}: ${pins}`);
     }
   }
 
@@ -113,7 +106,7 @@ export function renderBoard(project: ProjectFile, area?: Area): string {
     .filter(({wire}) => inArea(wire.from) || inArea(wire.to) || holesAlong(wire).some(({at}) => inArea(at)));
   if (shownWires.length) {
     out.push("", "Wires (index: ends, net):");
-    for (const {wire, i} of shownWires) out.push(`${i}: ${show(wire.from)}-${show(wire.to)}, ${netText(netOf.get(i))}`);
+    for (const {wire, i} of shownWires) out.push(`${i}: ${showHole(wire.from)}-${showHole(wire.to)}, ${netText(netOf.get(i))}`);
   }
   return out.join("\n");
 }

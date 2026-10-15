@@ -1,6 +1,18 @@
-// The full guide for agents, served as the resource perfboard://docs/guide. The server's
-// instructions (server.ts) are only a short version of it: clients cut instructions off at about
-// 2 KB, so anything past the essentials lives here.
+// What the server tells agents about using it: its instructions, sent when a client connects, and
+// the full guide, served as the resource perfboard://docs/guide. Keep the two in step.
+
+// Kept short: clients cut instructions off at about 2 KB. The rest is in the guide below.
+export const INSTRUCTIONS = `Perfboard Designer (https://perfboarddesigner.com) is a browser editor for perfboard and stripboard layouts. You design a board here as a project file and give the user a link that opens it in the editor.
+
+1. list_parts with no query: every part. Then get_part with ids: every part you use, in one call.
+2. new_project (cols, rows, type) returns a projectId: pass it to every other tool.
+3. edit_project: place parts (add_part) and route wires (add_wire with from/to, or a path with corners; ends can be pins by name, "U1.7", "D1.K"), all ops or none. Its reply gives where pins landed, the board's problems and, once there are no errors, its nets. Give expectNets (your netlist, e.g. [["U1.8", "R1.1"], ...]) once and every missing or extra connection is an error from then on. render_board draws the board as text to show free space.
+4. Fix every error; warnings are likely mistakes.
+5. make_share_link: give the user the link.
+
+Rules: holes are [column, row] from the top-left hole, from 0, 2.54 mm apart. A hole holds one part's pin or lead at most (two parts in one hole is an error) plus any number of wire ends, and everything in it is joined: to connect two parts, run a wire between their pins. A wire joins only the holes at its ends and corners, never a hole it passes over; wires may cross. On a stripboard each strip joins its holes up to a cut (add_cuts).
+
+The full guide, with more on all this and on changing a board the user shares (read_share_link): the resource perfboard://docs/guide.`;
 
 export const GUIDE = `# Designing a board with Perfboard Designer
 

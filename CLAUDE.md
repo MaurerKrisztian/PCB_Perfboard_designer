@@ -143,7 +143,7 @@ board is replaced (load, reset, resize) via `resetForNewBoard()`.
 editor state) shared by the editor and the 3D viewer. `project-file.ts` defines the current format
 (version 3: grid `[col, row]` positions, the board type with a stripboard's strip direction and
 cuts, only marked pads, per-kind part arrays with each part's `ref`, the user's custom ICs). It's
-written to be read by people and programs (e.g. a future MCP server) as well as the editor: facts
+written to be read by people and programs (e.g. the MCP server) as well as the editor: facts
 only, nothing derivable (no nets, strip segments or resolved pin positions), every field
 documented there. `read-project-file.ts` reads any version (v2: no board type or refs; files
 without `version` are v1: pixel coordinates, every hole, the whole IC catalog) into that shape,
@@ -167,24 +167,34 @@ old files must keep opening. `examples/*.json` are mostly v1 files and double as
 fixtures; the two `*-555-blinker.json` are v3 and are the MCP server's examples.
 
 **MCP server** (`mcp/`): a separate npm package (`perfboard-designer-mcp`, own `package.json`, Node
-22+, stdio) that lets AI agents design boards: list parts, start a project (`new_project`, blank or
+22+, stdio) that lets AI agents design boards. **It depends on the editor, never the other way
+round**: the editor must not import anything from `mcp/` (an ESLint `no-restricted-imports` rule
+enforces it) nor know the server exists, and inside `mcp/` only `mcp/src/editor.ts` imports the
+editor's source — every other server file takes editor code from it, so the whole dependency is
+listed in one place. Layout: `server.ts` only wires things up; the tools live in `mcp/src/tools/`
+by group (`catalog-tools.ts`: list/get parts; `project-tools.ts`: new/edit/get project;
+`board-tools.ts`: validate, nets, pin positions, render; `share-link-tools.ts`), resources in
+`resources.ts`; shared tool inputs (`projectId`/`project`, `expectNets`) in `project-source.ts`,
+reply formatting in `reply.ts`, wording helpers (holes, plurals, lists) in `text.ts`.
+It can: list parts, start a project (`new_project`, blank or
 from an example), change it with small ops (`edit_project`, whose wire ends can be pins by name),
 get pin positions, draw it as text (`render_board`, `mcp/src/render-board.ts`), list the board's
 nets (`get_nets`), validate it, make and read share links. Projects being worked on are kept in
 memory under a `projectId` (`mcp/src/project-handles.ts`), only a cache of the project file:
 `get_project` returns it, and every tool takes `projectId` or the whole file as `project`.
-`edit_project`'s ops (`mcp/src/edit-project.ts`) only change file entries, all or none, and refuse
+`edit_project`'s ops (schema in `mcp/src/edit-ops.ts`, one function per op in `edit-project.ts`) only change file entries, all or none, and refuse
 a change the reader would drop (e.g. a part pushed off a shrunk board); its reply, like
 `new_project`'s, checks the board as `validate_project` does and lists the nets once there are no
 errors. `expectNets` given for a projectId is remembered for later checks. Link base URL defaults
 to `PERFBOARD_EDITOR_URL` (set in the client's MCP config), else the public site. The server's
-`INSTRUCTIONS` (`server.ts`) must stay under about 2 KB, since clients cut off the rest: keep them
-to the workflow and the rules, and put detail in the guide (`mcp/src/guide.ts`, served as
-`perfboard://docs/guide`), keeping the two in step. Example projects
+`INSTRUCTIONS` must stay under about 2 KB, since clients cut off the rest: keep them to the
+workflow and the rules, and put detail in the guide (both in `mcp/src/guide.ts`; the guide is
+served as `perfboard://docs/guide`), keeping the two in step. Example projects
 (`examples/perfboard-555-blinker.json`, `examples/stripboard-555-blinker.json`) are baked in by
-`mcp/build.mjs` and served as `perfboard://examples/...` resources; keep them valid with their
-`expectNets`. It imports the editor's pure code directly (`src/project-file/`, the three definitions
-files, `catalog-categories.ts`, `rotate-offset.ts`) and esbuild bundles it with the SDK into one
+`mcp/build.mjs` (described in `mcp/src/examples.ts`) and served as `perfboard://examples/...`
+resources; keep them valid with their `expectNets`. Through `editor.ts` it uses the editor's pure
+code (`src/project-file/`, the three definitions files, `catalog-categories.ts`, `rotate-offset.ts`),
+which esbuild bundles with the SDK into one
 `mcp/dist/server.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer TypeScript).
 So those modules must stay free of DOM and editor state, and anything they import too. Facts the
 server tells agents belong in the definitions (e.g. `leadLabels`, which lead of a polarized part is
@@ -194,7 +204,7 @@ together. What's connected comes only from the shared `computeNets()` and `layou
 (Nets and Wire crossings below): never write connectivity or crossing logic in `mcp/`; add what's
 missing to those modules without reshaping their output, which the Nets panel and canvas use.
 `get_nets` (`mcp/src/nets-report.ts`) names pins as agents write them, via `pinName()` in `nets.ts`
-("U1.8 VCC", "D1.K", "C1.+", "R1.1"). Beyond the format, `validate_project` (`mcp/src/validate.ts`)
+("U1.8 VCC", "D1.K", "C1.+", "R1.1"). Beyond the format, `validate_project` (`mcp/src/validate.ts`, one function per check)
 warns about a wire passing over a pin without ending there, IC pins and two-lead parts' leads
 connected to nothing (not dev boards' or NC pins), wires that connect no pins, supply rails shorted
 together (a power net named like "GND/VCC"), and on a stripboard, pins of one part shorted by a
@@ -206,22 +216,23 @@ Check server changes with a throwaway script outside the repo that drives the bu
 running Claude session keeps the old build until it reconnects.
 
 **Nets** (`src/project-file/nets.ts`): which pins the board connects, computed from a project file
-and nothing else (`computeNets(project)`), so the editor and the MCP server always agree. A wire
+and nothing else (`computeNets(project)`), so the editor and any program reading the file (the MCP
+server) always agree. A wire
 joins only its two end holes; things in one hole are joined; on a stripboard a strip joins its
 holes up to the next cut, and a cut hole joins nothing. Nets are derived — never saved in the file.
 The editor shows them live in the right sidebar above the shortcuts (`src/features/nets-panel.ts`),
 recomputed from `getSaveJson()` shortly after a redraw that changed the board. Unconnected pins
 and wires connecting no pins are in folds below the nets. Clicking a net, an unconnected pin or
 such wires lights it up on the board until clicked again: `NetHighlightState` holds its holes and
-wires, drawn by `redrawCanvas()`, and the panel moves it to whichever net holds most of its pins
+wires, drawn by `redrawCanvas()` via `src/features/net-highlight.ts`, and the panel moves it to whichever net holds most of its pins
 after each change (most of its wires, for wires connecting no pins).
 
 **Wire crossings** (`src/project-file/wire-crossings.ts`): wires are insulated jumpers, so where
 one runs across another wire, or over a hole holding a pin, a lead or another wire's end, it goes
 *over* it (of two crossing wires, the later one in the list), and where three or more things meet
 at a hole they're joined. `layoutWires()` works this out from wire ends and pin holes:
-`redrawCanvas()` feeds it the live board each redraw (a dark edge either side of a wire where it
-goes over something, and a solder dot at each junction), and the 3D viewer feeds it the project
+`redrawCanvas()` feeds it the live board each redraw through `src/features/wire-crossing-marks.ts`
+(a dark edge either side of a wire where it goes over something, and a solder dot at each junction), and the 3D viewer feeds it the project
 file (`layoutProjectWires()`) and arches the upper wire over each crossing.
 
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the

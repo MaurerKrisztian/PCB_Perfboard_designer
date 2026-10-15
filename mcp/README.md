@@ -104,11 +104,14 @@ editor's Nets panel, so they agree with what you see there.
 
 ## How it's built
 
-`src/` is the server: `server.ts` the tools, `project-handles.ts` the kept projects,
-`edit-project.ts` `edit_project`'s ops, `validate.ts` the checks. It imports the editor's own pure code directly: the project file reader,
-share-link code, pin positions, nets (`nets.ts`) and wire crossings (`wire-crossings.ts`) in
-`../src/project-file/`, and the part definitions. That way it always agrees with the editor about
-the format, the parts and what's connected. `npm run build` bundles that code and the MCP SDK into
+`src/` is the server: `server.ts` starts it, `tools/` holds the tools by group, `resources.ts`
+the documents it serves, `project-handles.ts` the kept projects, `edit-ops.ts` and
+`edit-project.ts` `edit_project`'s ops, `validate.ts` the checks, `guide.ts` its instructions and
+guide. It builds on the editor's own pure code, all of it taken through `editor.ts`, the one file
+that imports from `../src/`: the project file reader, share-link code, pin positions, nets
+(`nets.ts`) and wire crossings (`wire-crossings.ts`) in `../src/project-file/`, and the part
+definitions. That way it always agrees with the editor about the format, the parts and what's
+connected. The editor never imports anything from here. `npm run build` bundles that code and the MCP SDK into
 a single `dist/server.js` with no runtime dependencies, and bakes in the docs and examples it
 serves.
 

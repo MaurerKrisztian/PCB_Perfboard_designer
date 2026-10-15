@@ -1,10 +1,11 @@
 import {GridPos} from "./grid";
 import {ProjectFile} from "./project-file";
-import {PartKind, partPins} from "./pin-positions";
+import {partPins} from "./pin-positions";
+import {PartKind} from "./part-refs";
 
 // Which pins are connected to which: the board's nets, worked out from a project file and nothing
-// else, so the editor (from its save snapshot) and the MCP server always agree. Nets are derived,
-// never saved in the file.
+// else, so the editor (from its save snapshot) and any program reading the same file always agree.
+// Nets are derived, never saved in the file.
 //
 // What connects: a wire joins the holes at its two ends, never the holes it passes over; things in
 // the same hole are joined (one pad); on a stripboard every hole along a strip is joined up to the
@@ -86,6 +87,12 @@ function netName(pins: NetPin[]): string | undefined {
   return shown.length > 3 ? `${shown.slice(0, 3).join("/")}/${MORE}` : shown.join("/");
 }
 
+// Every placed part's pin, as nets list them.
+export function boardPins(project: ProjectFile): NetPin[] {
+  return partPins(project).flatMap(part => part.pins.map(({pin, label, at}) =>
+    ({ref: part.ref, kind: part.kind, pin, ...(label ? {label} : {}), at})));
+}
+
 export function computeNets(project: ProjectFile): Netlist {
   const board = project.board;
   const cuts = new Set(board.type === "stripboard" ? board.cuts.map(key) : []);
@@ -125,12 +132,7 @@ export function computeNets(project: ProjectFile): Netlist {
     return from;
   });
 
-  const pinNodes: {pin: NetPin; node: string}[] = [];
-  for (const part of partPins(project)) {
-    for (const {pin, label, at} of part.pins) {
-      pinNodes.push({pin: {ref: part.ref, kind: part.kind, pin, ...(label ? {label} : {}), at}, node: nodeAt(at)});
-    }
-  }
+  const pinNodes = boardPins(project).map(pin => ({pin, node: nodeAt(pin.at)}));
 
   const byRoot = new Map<string, Net>();
   const netFor = (node: string): Net => {

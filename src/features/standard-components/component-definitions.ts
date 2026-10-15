@@ -25,8 +25,8 @@ export interface ComponentDefinition {
   // A colored LED: the context menu offers its color, which tints the body and becomes its value.
   led?: boolean;
   // Which lead is which on a polarized part, as the 2D and 3D artwork draw it: [the start dot's
-  // lead, the end dot's]. Read by programs writing projects (the MCP server); absent when the
-  // leads are interchangeable.
+  // lead, the end dot's], which a project file's `from` and `to` are. Absent when the leads are
+  // interchangeable.
   leadLabels?: [string, string];
 }
 

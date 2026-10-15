@@ -3,14 +3,12 @@ import {ProjectFile, Rotation} from "./project-file";
 import {getComponentDefinition} from "../features/standard-components/component-definitions";
 import {getAdvancedComponentDefinition, PIN_TILE_HALF, PinOffset} from "../features/advanced-components/advanced-component-definitions";
 import {rotateOffset} from "../features/advanced-components/rotate-offset";
+import {PartKind} from "./part-refs";
 
 // Where each placed part's pins land on the board, in grid [column, row] holes: the facts a
-// project file leaves out because they follow from it. Shared by the MCP server and the nets
-// (nets.ts). Mirrors the editor's placed-part classes (placed-advanced-component.ts, ic.ts), in
-// grid units instead of pixels: change them together.
-
-// Which project file list a part is in.
-export type PartKind = "standard-component" | "advanced-component" | "ic";
+// project file leaves out because they follow from it, for the nets (nets.ts) and for any program
+// reading project files. Mirrors the editor's placed-part classes (placed-advanced-component.ts,
+// ic.ts), in grid units instead of pixels: change them together.
 
 export interface PlacedPin {
   pin: number;

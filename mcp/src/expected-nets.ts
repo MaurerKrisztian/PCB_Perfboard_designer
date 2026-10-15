@@ -1,8 +1,8 @@
-import {comparePins, Net, Netlist, NetPin, pinId, pinName} from "../../src/project-file/nets";
-import {joinList} from "./nets-report";
+import {comparePins, Net, Netlist, NetPin, pinId, pinName} from "./editor";
+import {joinList} from "./text";
 
 // validate_project's expectNets: the nets an agent meant to make, compared with the ones the board
-// makes (worked out by nets.ts). Every net listed should be one net on the board, and nothing else
+// makes (worked out by the editor's nets.ts). Every net listed should be one net on the board, and nothing else
 // should be joined to it: a pin in no listed net should connect to nothing.
 
 // Signs written either way: a battery's "−" is also "-".

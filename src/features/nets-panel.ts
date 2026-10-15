@@ -9,10 +9,10 @@ import {NetHighlightState} from "../state/NetHighlightState";
 import {ProjectState} from "../state/ProjectState";
 
 // The right sidebar's Nets section: which pins the board connects, kept up to date as it changes.
-// Worked out from the project file, the same snapshot autosave writes, by the shared nets.ts, so
-// it matches what the MCP server reports. Clicking a net, an unconnected pin or wires connecting no
-// pins lights it up on the board (NetHighlightState) until it's clicked again; the light follows
-// the net as it's edited.
+// Worked out from the project file, the same snapshot autosave writes, by nets.ts, so it matches
+// what any program reading that file works out. Clicking a net, an unconnected pin or wires
+// connecting no pins lights it up on the board (NetHighlightState) until it's clicked again; the
+// light follows the net as it's edited.
 
 const netsEl = Utils.getSafeHtmlElement("nets");
 const countEl = Utils.getSafeHtmlElement("netsCount");

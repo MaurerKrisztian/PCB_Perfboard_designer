@@ -1,12 +1,8 @@
-import {COMPONENT_DEFINITIONS, ComponentDefinition} from "../../src/features/standard-components/component-definitions";
 import {
-  ADVANCED_COMPONENT_DEFINITIONS, AdvancedComponentDefinition, PinOffset,
-} from "../../src/features/advanced-components/advanced-component-definitions";
-import {IC_DEFINITIONS, IcDefinition} from "../../src/features/ic-definitions";
-import {CATALOG_CATEGORIES, CategoryId, getCategoryPath} from "../../src/features/catalog/catalog-categories";
-import {isModuleCategory} from "../../src/project-file/ic-package";
-import {PartKind} from "../../src/project-file/pin-positions";
-import {Rotation, SavedIc} from "../../src/project-file/project-file";
+  ADVANCED_COMPONENT_DEFINITIONS, AdvancedComponentDefinition, CATALOG_CATEGORIES, CategoryId, COMPONENT_DEFINITIONS,
+  ComponentDefinition, getCategoryPath, IC_DEFINITIONS, IcDefinition, isModuleCategory, PartKind, PinOffset, Rotation,
+  SavedIc,
+} from "./editor";
 
 // The editor's parts catalog as data for programs: every part a project can place, with what a
 // project file entry for it needs and where its pins are. Read straight from the editor's own
@@ -127,9 +123,15 @@ function closest(text: string, parts: readonly CatalogPart[], withCategory: bool
     .map(({part}) => part);
 }
 
-// Ids that look like `id`, best first, for "did you mean" hints.
-export function similarPartIds(id: string, limit = 3): string[] {
-  return closest(id, CATALOG, false, limit).map(part => part.id);
+// Ids that look like `id`, best first, quoted for a "did you mean" hint: '"resistor", "ldr"'. Empty
+// when none do.
+export function partsLike(id: string, limit = 3): string {
+  return closest(id, CATALOG, false, limit).map(part => `"${part.id}"`).join(", ");
+}
+
+export function noSuchPart(id: string): string {
+  const like = partsLike(id);
+  return `There's no part "${id}".${like ? ` Did you mean ${like}?` : ""}`;
 }
 
 // For a list_parts query no part matches every word of: the parts matching the most of them.
