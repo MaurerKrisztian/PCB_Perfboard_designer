@@ -2,7 +2,8 @@ import {GridPos} from "../project-file/grid";
 import {SavedWire} from "../project-file/project-file";
 
 export interface NetHighlight {
-  // Its pins ("U1.8"), how the Nets panel finds the net again after the board changes.
+  // Its pins ("U1.8"), how the Nets panel finds the net again after the board changes (by its
+  // wires when it has no pins).
   pins: string[];
   holes: GridPos[];
   wires: SavedWire[];

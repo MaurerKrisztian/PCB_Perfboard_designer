@@ -165,17 +165,30 @@ incoming link as a new stored project (after startup's reopen, via `afterStartup
 `hashchange`), then clears the fragment. A format change means a new version number plus an upgrade path in the reader —
 old files must keep opening. `examples/*.json` are v1 files and double as compatibility fixtures.
 
-**MCP server** (`mcp/`): a separate npm package (`perfboard-designer-mcp`, own `package.json`,
-Node 22+, stdio) that lets AI agents design boards: list parts, get pin positions, validate a
-project, make and read share links. Stateless — every tool takes the whole project file. It
-imports the editor's pure code directly (`src/project-file/`, the three definitions files,
-`catalog-categories.ts`, `rotate-offset.ts`) and esbuild bundles it with the SDK into one
-`mcp/dist/server.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer
-TypeScript). So those modules must stay free of DOM and editor state, and anything they import
-too. Facts the server tells agents belong in the definitions (e.g. `leadLabels`, which lead of a
-polarized part is which), not in `mcp/`. Pin geometry from a project file
-(`src/project-file/pin-positions.ts`, shared with the nets) mirrors
-`placed-advanced-component.ts` and `Ic.getRealPinPositions` — change them together.
+**MCP server** (`mcp/`): a separate npm package (`perfboard-designer-mcp`, own `package.json`, Node
+22+, stdio) that lets AI agents design boards: list parts, get pin positions, list the board's nets
+(`get_nets`), validate a project, make and read share links. Stateless — every tool takes the whole
+project file. It imports the editor's pure code directly (`src/project-file/`, the three definitions
+files, `catalog-categories.ts`, `rotate-offset.ts`) and esbuild bundles it with the SDK into one
+`mcp/dist/server.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer TypeScript).
+So those modules must stay free of DOM and editor state, and anything they import too. Facts the
+server tells agents belong in the definitions (e.g. `leadLabels`, which lead of a polarized part is
+which), not in `mcp/`. Pin geometry from a project file (`src/project-file/pin-positions.ts`, shared
+with the nets) mirrors `placed-advanced-component.ts` and `Ic.getRealPinPositions` — change them
+together. What's connected comes only from the shared `computeNets()` and `layoutProjectWires()`
+(Nets and Wire crossings below): never write connectivity or crossing logic in `mcp/`; add what's
+missing to those modules without reshaping their output, which the Nets panel and canvas use.
+`get_nets` (`mcp/src/nets-report.ts`) names pins as agents write them, via `pinName()` in `nets.ts`
+("U1.8 VCC", "D1.K", "C1.+", "R1.1"). Beyond the format, `validate_project` (`mcp/src/validate.ts`)
+warns about a wire passing over a pin without ending there, IC pins and two-lead parts' leads
+connected to nothing (not dev boards' or NC pins), wires that connect no pins, supply rails shorted
+together (a power net named like "GND/VCC"), and on a stripboard, pins of one part shorted by a
+strip or sitting in a cut hole. Wires crossing are only listed in its `notes`, never warned about.
+Its optional `expectNets` (`mcp/src/expected-nets.ts`: the netlist the agent meant, as lists of
+"REF.pin") reports every missing or extra connection as an error, treating the list as complete.
+Check server changes with a throwaway script outside the repo that drives the built
+`dist/server.js`. `.mcp.json` runs that file as the `perfboard` server, so rebuild after a change; a
+running Claude session keeps the old build until it reconnects.
 
 **Nets** (`src/project-file/nets.ts`): which pins the board connects, computed from a project file
 and nothing else (`computeNets(project)`), so the editor and the MCP server always agree. A wire

@@ -3,15 +3,16 @@ import {onRedraw, redrawCanvas} from "./draw-canvas";
 import {getSaveJson} from "./project/save-project";
 import {onProjectChange} from "./project/current-project";
 import {comparePins, computeNets, isPowerNet, Net, NetPin, pinId} from "../project-file/nets";
-import {ProjectFile} from "../project-file/project-file";
+import {GridPos} from "../project-file/grid";
+import {ProjectFile, SavedWire} from "../project-file/project-file";
 import {NetHighlightState} from "../state/NetHighlightState";
 import {ProjectState} from "../state/ProjectState";
 
 // The right sidebar's Nets section: which pins the board connects, kept up to date as it changes.
 // Worked out from the project file, the same snapshot autosave writes, by the shared nets.ts, so
-// it matches what the MCP server reports. Clicking a net, or an unconnected pin, lights it up on
-// the board (NetHighlightState) until it's clicked again; the light follows the net as it's
-// edited.
+// it matches what the MCP server reports. Clicking a net, an unconnected pin or wires connecting no
+// pins lights it up on the board (NetHighlightState) until it's clicked again; the light follows
+// the net as it's edited.
 
 const netsEl = Utils.getSafeHtmlElement("nets");
 const countEl = Utils.getSafeHtmlElement("netsCount");
@@ -21,14 +22,17 @@ const countEl = Utils.getSafeHtmlElement("netsCount");
 const REFRESH_DELAY_MS = 100;
 let pendingRefresh: number | undefined;
 let lastJson: string | undefined;
-// Kept across re-renders, which rebuild the list.
-let unconnectedOpen = false;
+// Which folds are open, kept across re-renders, which rebuild the list.
+const foldOpen = {unconnected: false, stray: false};
 
 let project: ProjectFile | undefined;
 let nets: Net[] = [];
 let highlighted: Net | undefined;
 
 const pinKey = (pin: NetPin) => `${pin.ref}.${pin.pin}`;
+const hole = ([c, r]: GridPos) => `${c},${r}`;
+const wireKey = (wire: SavedWire) => `${hole(wire.from)}-${hole(wire.to)}`;
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className: string, text?: string): HTMLElementTagNameMap[K] {
   const element = document.createElement(tag);
@@ -50,13 +54,19 @@ function toggleHighlight(net: Net) {
 }
 
 // After a change, the highlighted net is the one now holding most of its pins (none if they're
-// all gone).
+// all gone), or for wires that connected no pins, most of its wires.
 function followHighlight() {
-  const previous = new Set(NetHighlightState.current?.pins ?? []);
+  const previous = NetHighlightState.current;
+  const pins = new Set(previous?.pins ?? []);
+  const wires = new Set(previous?.wires.map(wireKey) ?? []);
+  const projectWires = project?.wires ?? [];
+  const sharedWith = pins.size
+    ? (net: Net) => net.pins.filter(pin => pins.has(pinKey(pin))).length
+    : (net: Net) => net.wires.filter(i => wires.has(wireKey(projectWires[i]))).length;
   let best: Net | undefined;
   let bestShared = 0;
   for (const net of nets) {
-    const shared = net.pins.filter(pin => previous.has(pinKey(pin))).length;
+    const shared = sharedWith(net);
     if (shared > bestShared) [best, bestShared] = [net, shared];
   }
   setHighlight(best);
@@ -84,6 +94,18 @@ function pinChip(pin: NetPin): HTMLElement {
   return chip;
 }
 
+// Wires connecting no pins, by where the first one runs ("4,2–7,2"), with how many more are
+// joined to it.
+function wireChip(net: Net): HTMLElement {
+  const {from, to} = (project?.wires ?? [])[net.wires[0]];
+  const chip = el("span", "net-pin", `${hole(from)}–${hole(to)}`);
+  const more = net.wires.length - 1;
+  chip.title = `A wire from column ${from[0]}, row ${from[1]} to column ${to[0]}, row ${to[1]} (counted from 0 at the top-left hole)`
+    + (more ? `, joined to ${plural(more, "more wire")} but to no pin` : ", connected to no pin");
+  if (more) chip.append(el("span", "net-pin-label", `+${more}`));
+  return chip;
+}
+
 function renderNet(net: Net): HTMLElement {
   const row = el("div", isPowerNet(net) ? "net power" : "net");
   row.title = net === highlighted ? "Click to stop showing it on the board" : "Click to show it on the board";
@@ -99,27 +121,36 @@ function renderNet(net: Net): HTMLElement {
   return row;
 }
 
+// A fold of chips, one per net, each picking its net; open while one of them is lit.
+function renderFold(fold: keyof typeof foldOpen, summary: string, chips: [Net, HTMLElement][]): HTMLElement {
+  const details = el("details", "nets-fold");
+  details.open = foldOpen[fold] || chips.some(([net]) => net === highlighted);
+  details.addEventListener("toggle", () => foldOpen[fold] = details.open);
+  const list = el("div", "net-pins");
+  for (const [net, chip] of chips) {
+    chip.title += " · click to show it on the board";
+    makePickable(chip, net);
+    list.append(chip);
+  }
+  details.append(el("summary", "", summary), list);
+  return details;
+}
+
 function render() {
   const connected = nets.filter(net => net.pins.length > 1);
   const unconnected = nets.filter(net => net.pins.length === 1).sort((a, b) => comparePins(a.pins[0], b.pins[0]));
+  const stray = nets.filter(net => !net.pins.length);
 
   countEl.textContent = connected.length ? String(connected.length) : "";
   netsEl.replaceChildren(...connected.map(renderNet));
   if (!connected.length) netsEl.append(el("div", "nets-empty", "No pins are connected yet. Wire two pins together and their net shows up here."));
 
   if (unconnected.length) {
-    const details = el("details", "nets-unconnected");
-    details.open = unconnectedOpen || (!!highlighted && unconnected.includes(highlighted));
-    details.addEventListener("toggle", () => unconnectedOpen = details.open);
-    const pins = el("div", "net-pins");
-    for (const net of unconnected) {
-      const chip = pinChip(net.pins[0]);
-      chip.title += " · click to show it on the board";
-      makePickable(chip, net);
-      pins.append(chip);
-    }
-    details.append(el("summary", "", `Not connected · ${unconnected.length} pin${unconnected.length === 1 ? "" : "s"}`), pins);
-    netsEl.append(details);
+    netsEl.append(renderFold("unconnected", `Not connected · ${plural(unconnected.length, "pin")}`, unconnected.map(net => [net, pinChip(net.pins[0])])));
+  }
+  if (stray.length) {
+    const wires = stray.reduce((n, net) => n + net.wires.length, 0);
+    netsEl.append(renderFold("stray", `Connecting no pins · ${plural(wires, "wire")}`, stray.map(net => [net, wireChip(net)])));
   }
 }
 

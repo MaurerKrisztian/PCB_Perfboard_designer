@@ -793,7 +793,7 @@ input[type="number"]:focus, input[type="text"]:focus, input[type="search"]:focus
 }
 
 .net:focus-visible,
-.nets-unconnected .net-pin:focus-visible {
+.nets-fold .net-pin:focus-visible {
   outline: 2px solid var(--net-highlight);
   outline-offset: 1px;
 }
@@ -849,27 +849,27 @@ input[type="number"]:focus, input[type="text"]:focus, input[type="search"]:focus
   line-height: 1.5;
 }
 
-.nets-unconnected summary {
+.nets-fold summary {
   cursor: pointer;
   color: var(--text-muted);
   user-select: none;
 }
 
-.nets-unconnected .net-pins {
+.nets-fold .net-pins {
   margin-top: 0.4rem;
 }
 
-.nets-unconnected .net-pin {
+.nets-fold .net-pin {
   cursor: pointer;
   opacity: 0.75;
 }
 
-.nets-unconnected .net-pin:hover,
-.nets-unconnected .net-pin.selected {
+.nets-fold .net-pin:hover,
+.nets-fold .net-pin.selected {
   opacity: 1;
 }
 
-.nets-unconnected .net-pin.selected {
+.nets-fold .net-pin.selected {
   border-color: var(--net-highlight);
 }
 
