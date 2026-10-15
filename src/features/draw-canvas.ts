@@ -14,15 +14,16 @@ import {activeBoardLook} from "./board-looks";
 import {PAD_RADIUS} from "./board-looks/board-look";
 import {GridConfig} from "../state/GridConfig";
 
-// How strongly a hole shows through an IC body sitting on top of it.
-const COVERED_PAD_OPACITY = 0.1;
+// How strongly a hole shows through a chip or board sitting on top of it: not at all.
+const COVERED_PAD_OPACITY = 0;
 
 const holeKey = (x: number, y: number) => `${x},${y}`;
 
-// Holes under an IC's body, but not its pins. IC bodies are drawn before the dots, so without this
-// the holes would be painted on top of the chip as if it were see-through.
-function holesUnderIcBodies(): Set<string> {
-  const covered = new Set<string>();
+// Holes under an IC's body, but not its pins, with how strongly each one shows. IC bodies are
+// drawn before the dots, so without this the holes would be painted on top of the chip as if it
+// were see-through.
+function holesUnderIcBodies(): Map<string, number> {
+  const covered = new Map<string, number>();
   const step = GridConfig.dotSpace;
   for (const ic of PartState.parts) {
     if (ic.kind !== "ic" || !ic.topLeftDot) continue;
@@ -30,20 +31,21 @@ function holesUnderIcBodies(): Set<string> {
     const {x: left, y: top} = ic.topLeftDot;
     for (let x = left; x <= left + step * (ic.widthPin - 1); x += step) {
       for (let y = top; y <= top + step * (ic.heightPin - 1); y += step) {
-        if (!pins.has(holeKey(x, y))) covered.add(holeKey(x, y));
+        if (!pins.has(holeKey(x, y))) covered.set(holeKey(x, y), COVERED_PAD_OPACITY);
       }
     }
   }
   return covered;
 }
 
-function drawDot(dot: IDot, underIc = false){
-  if (underIc) {
+// `opacity` is how strongly the hole shows through a chip on top of it (1 when uncovered).
+function drawDot(dot: IDot, opacity = 1){
+  if (opacity > 0) {
     Canvas.ctx.save();
-    Canvas.ctx.globalAlpha = COVERED_PAD_OPACITY;
+    Canvas.ctx.globalAlpha = opacity;
+    activeBoardLook().drawHole(dot);
+    Canvas.ctx.restore();
   }
-  activeBoardLook().drawHole(dot);
-  if (underIc) Canvas.ctx.restore();
 
   if (dot === SelectionState.dot) {
     // Outer glowing selection ring
@@ -147,7 +149,7 @@ export function redrawCanvas() {
   const underIcs = holesUnderIcBodies();
   for (let i = 0; i < DotState.dots.length; i++) {
     const dot = DotState.dots[i];
-    drawDot(dot, underIcs.has(holeKey(dot.x, dot.y)));
+    drawDot(dot, underIcs.get(holeKey(dot.x, dot.y)));
   }
   // 3. Draw wires
   for (let i = 0; i < LineState.lines.length; i++) {

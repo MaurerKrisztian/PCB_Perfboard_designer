@@ -33,6 +33,8 @@ export interface ViewerIc {
   heightPin: number;
   rotationAngle: Rotation;
   pinDescription: Record<number, string>;
+  // Catalog category it was placed from; undefined in files that predate it.
+  category?: string;
   left: number;
   top: number;
 }
@@ -109,6 +111,7 @@ export function readProject(raw: unknown): ViewerProject {
       heightPin: ic.heightPin,
       rotationAngle: ic.rotation,
       pinDescription: ic.pinDescription,
+      category: ic.category,
       left, top,
     };
   });

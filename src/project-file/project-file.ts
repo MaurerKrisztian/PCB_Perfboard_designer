@@ -62,6 +62,9 @@ export interface SavedIc {
   pinDescription: Record<number, string>;
   // Top-left pin.
   at: GridPos;
+  // The catalog category the chip was placed from; "modules…" parts are drawn as boards. Absent in
+  // files from before this was recorded.
+  category?: string;
 }
 
 export interface SavedStandardComponent {

@@ -5,30 +5,30 @@
        and the corners beside the bushing stay transparent. -->
   <defs>
     <clipPath id="potHousing">
-      <rect x="2" y="2" width="226" height="76" rx="10"/>
+      <rect x="0" y="0" width="230" height="80" rx="12"/>
     </clipPath>
     <clipPath id="potShaft">
-      <rect x="92" y="127" width="46" height="51" rx="4"/>
+      <rect x="90.5" y="125.5" width="49" height="54" rx="5"/>
     </clipPath>
   </defs>
   <!-- Bushing, tucked under the housing -->
-  <rect x="76" y="76" width="78" height="52" fill="#9aa5b1" stroke="#e2e8f0" stroke-width="3"/>
+  <rect x="74.5" y="76" width="81" height="53.5" fill="#9aa5b1"/>
   <path d="M77 92h76M77 104h76M77 116h76" fill="none" stroke="#78828d" stroke-width="2"/>
   <!-- Shaft with knurling -->
-  <rect x="92" y="127" width="46" height="51" rx="4" fill="#c4ced8" stroke="#e2e8f0" stroke-width="3"/>
+  <rect x="90.5" y="125.5" width="49" height="54" rx="5" fill="#c4ced8"/>
   <g clip-path="url(#potShaft)" stroke="#78828d" stroke-width="2">
     <path d="M99 128v50M106 128v50M113 128v50M120 128v50M127 128v50M134 128v50"/>
   </g>
   <!-- Housing -->
-  <rect x="2" y="2" width="226" height="76" rx="10" fill="#2a2e33" stroke="#e2e8f0" stroke-width="4"/>
+  <rect x="0" y="0" width="230" height="80" rx="12" fill="#2a2e33"/>
   <g clip-path="url(#potHousing)">
-    <rect x="2" y="2" width="226" height="16" fill="#9aa5b1"/>
-    <rect x="2" y="2" width="226" height="4" fill="#c4ced8"/>
-    <path d="M2 18h226" fill="none" stroke="#12151a" stroke-width="2"/>
-    <path d="M2 72h226" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-opacity="0.12"/>
+    <rect x="0" y="0" width="230" height="18" fill="#9aa5b1"/>
+    <rect x="0" y="0" width="230" height="6" fill="#c4ced8"/>
+    <path d="M0 18h230" fill="none" stroke="#12151a" stroke-width="2"/>
+    <path d="M0 72h230" fill="none" stroke="#e2e8f0" stroke-width="2" stroke-opacity="0.12"/>
     <!-- Anti-rotation lug on the housing's edge -->
-    <rect x="196" y="2" width="16" height="16" fill="#78828d"/>
+    <rect x="196" y="0" width="16" height="18" fill="#78828d"/>
   </g>
   <!-- Retaining collar where the bushing leaves the housing -->
-  <rect x="68" y="76" width="94" height="10" rx="3" fill="#c4ced8" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="67" y="75" width="96" height="12" rx="4" fill="#c4ced8"/>
 </svg>

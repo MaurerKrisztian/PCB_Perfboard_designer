@@ -1,3 +1,4 @@
+import {fillCrispText} from "../utils/crisp-text";
 import {Canvas} from "../state/Canvas";
 import {DotState} from "../state/DotState";
 import {IDot} from "../interfaces/dot.interface";
@@ -15,6 +16,9 @@ import {SavedCustomIc, SavedIc} from "../project-file/project-file";
 import {toGridPos} from "../project-file/grid";
 import {readCustomIcs} from "../project-file/read-project-file";
 import {ViewState} from "../state/ViewState";
+import {isModuleCategory} from "../project-file/ic-package";
+import {DIP_INSET, DIP_OVERHANG, drawDip} from "./ic-package/dip-shape";
+import {MODULE_EDGE, MODULE_END, drawModule} from "./ic-package/module-shape";
 import {IC_DEFINITIONS} from "./ic-definitions";
 import {CategoryId, isCategoryId} from "./catalog/catalog-categories";
 import {notifyCatalogChanged} from "./catalog/catalog-events";
@@ -51,6 +55,9 @@ export class Ic implements PlacedPart {
   // Getters rather than fields so they stay out of the saved catalog (see above).
   get kind(): "ic" { return "ic"; }
   get layer(): "under-board" { return "under-board"; }
+
+  // Parts in the Modules category (dev boards…) are drawn as a board; every other chip is a DIP.
+  get isModule(): boolean { return isModuleCategory(this.category); }
 
   static add(ic: Ic, saveToStorage: boolean = false){
     this.IC_CONTAINER.push(ic);
@@ -110,62 +117,33 @@ export class Ic implements PlacedPart {
     this.topLeftDot = findNearestDot(x, y) ?? null;
   }
 
+  private get title(): string {
+    return ViewState.showPartLabels && this.ref ? `${this.ref} ${this.name}` : this.name;
+  }
+
+  // Pin rows run along y at 0°/180° and along x at 90°/270°; the body sticks out past the end pins.
+  private get overhang(): number {
+    return this.isModule ? MODULE_END : DIP_OVERHANG;
+  }
+
+  // A module's board also runs past the pin rows on the outside; a DIP's body stays inside them.
+  private get sideOverhang(): number {
+    return this.isModule ? MODULE_EDGE : 0;
+  }
+
   drawBody(isSelected: boolean){
     if (!this.topLeftDot) return;
-    Canvas.ctx.beginPath();
-    
-    Canvas.ctx.fillStyle = isSelected ? "rgba(30,58,138,0.9)" : "rgba(17,24,39,0.85)";
-    Canvas.ctx.strokeStyle = isSelected ? "#38bdf8" : "#475569";
-    Canvas.ctx.lineWidth = isSelected ? 3 : 2;
-
-    const w = 50 * (this.widthPin - 1);
-    const h = 50 * (this.heightPin - 1);
-    Canvas.ctx.rect(this.topLeftDot.x, this.topLeftDot.y, w, h);
-    Canvas.ctx.stroke();
-    Canvas.ctx.fill();
-
-    // Draw Pin 1 orientation notch
-    const notchRadius = 6;
-    Canvas.ctx.beginPath();
-    Canvas.ctx.fillStyle = "#38bdf8";
-    if (this.rotationAngle === 0) {
-      Canvas.ctx.arc(this.topLeftDot.x + (w / 2), this.topLeftDot.y, notchRadius, 0, Math.PI);
-    } else if (this.rotationAngle === 90) {
-      Canvas.ctx.arc(this.topLeftDot.x + w, this.topLeftDot.y + (h / 2), notchRadius, 0.5 * Math.PI, 1.5 * Math.PI);
-    } else if (this.rotationAngle === 180) {
-      Canvas.ctx.arc(this.topLeftDot.x + (w / 2), this.topLeftDot.y + h, notchRadius, Math.PI, 2 * Math.PI);
-    } else if (this.rotationAngle === 270) {
-      Canvas.ctx.arc(this.topLeftDot.x, this.topLeftDot.y + (h / 2), notchRadius, 1.5 * Math.PI, 0.5 * Math.PI);
-    }
-    Canvas.ctx.fill();
-    Canvas.ctx.stroke();
-
-    // Draw Pin 1 dot marker
-    Canvas.ctx.beginPath();
-    let p1x = this.topLeftDot.x + 10;
-    let p1y = this.topLeftDot.y + 10;
-    if (this.rotationAngle === 90) {
-      p1x = this.topLeftDot.x + w - 10;
-      p1y = this.topLeftDot.y + 10;
-    } else if (this.rotationAngle === 180) {
-      p1x = this.topLeftDot.x + w - 10;
-      p1y = this.topLeftDot.y + h - 10;
-    } else if (this.rotationAngle === 270) {
-      p1x = this.topLeftDot.x + 10;
-      p1y = this.topLeftDot.y + h - 10;
-    }
-    Canvas.ctx.arc(p1x, p1y, 3, 0, Math.PI * 2);
-    Canvas.ctx.fillStyle = "#38bdf8";
-    Canvas.ctx.fill();
-
-    if (isSelected) {
-      // Draw selection corner handles
-      Canvas.ctx.fillStyle = "#38bdf8";
-      Canvas.ctx.fillRect(this.topLeftDot.x - 4, this.topLeftDot.y - 4, 8, 8);
-      Canvas.ctx.fillRect(this.topLeftDot.x + w - 4, this.topLeftDot.y - 4, 8, 8);
-      Canvas.ctx.fillRect(this.topLeftDot.x - 4, this.topLeftDot.y + h - 4, 8, 8);
-      Canvas.ctx.fillRect(this.topLeftDot.x + w - 4, this.topLeftDot.y + h - 4, 8, 8);
-    }
+    const paint = {
+      x: this.topLeftDot.x,
+      y: this.topLeftDot.y,
+      widthPin: this.widthPin,
+      heightPin: this.heightPin,
+      rotation: this.rotationAngle as Rotation,
+      selected: isSelected,
+      title: this.title,
+    };
+    if (this.isModule) drawModule(Canvas.ctx, paint);
+    else drawDip(Canvas.ctx, paint);
   }
 
   drawPinLabels() {
@@ -173,6 +151,14 @@ export class Ic implements PlacedPart {
     Canvas.ctx.save();
     Canvas.ctx.font = "600 9px monospace, sans-serif";
     Canvas.ctx.fillStyle = "#cbd5e1";
+
+    // A DIP's body starts DIP_INSET inside the pin rows, so its labels start inside that.
+    const side = this.isModule ? 10 : DIP_INSET + 4;
+    const end = this.isModule ? 16 : DIP_INSET + 11;
+    const endBottom = this.isModule ? 10 : DIP_INSET + 2;
+    // Keep each side's labels on its half of the body, clear of the name printed down the middle.
+    const sideMax = this.isModule ? 1e6 : Math.max(20, (50 * (this.widthPin - 1)) / 2 - side - 12);
+    const endMax = this.isModule ? 1e6 : 46;
 
     if (this.rotationAngle === 0) {
       // 0°: Vertical (Left: 1..N, Right: 2N..N+1)
@@ -183,12 +169,12 @@ export class Ic implements PlacedPart {
         const leftPinNum = i + 1;
         const leftDesc = this.pinDescription[leftPinNum];
         Canvas.ctx.textAlign = "left";
-        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + 10, py + 3);
+        fillCrispText(Canvas.ctx, leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
 
         const rightPinNum = pinsPerSide * 2 - i;
         const rightDesc = this.pinDescription[rightPinNum];
         Canvas.ctx.textAlign = "right";
-        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - 10, py + 3);
+        fillCrispText(Canvas.ctx, rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
       }
     } else if (this.rotationAngle === 90) {
       // 90°: Top: 1..N, Bottom: 2N..N+1
@@ -199,12 +185,12 @@ export class Ic implements PlacedPart {
         const topPinNum = i + 1;
         const topDesc = this.pinDescription[topPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + 16);
+        fillCrispText(Canvas.ctx, topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
 
         const bottomPinNum = pinsPerSide * 2 - i;
         const bottomDesc = this.pinDescription[bottomPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - 10);
+        fillCrispText(Canvas.ctx, bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
       }
     } else if (this.rotationAngle === 180) {
       // 180°: Left: 2N..N+1, Right: 1..N
@@ -215,12 +201,12 @@ export class Ic implements PlacedPart {
         const leftPinNum = pinsPerSide * 2 - i;
         const leftDesc = this.pinDescription[leftPinNum];
         Canvas.ctx.textAlign = "left";
-        Canvas.ctx.fillText(leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + 10, py + 3);
+        fillCrispText(Canvas.ctx, leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
 
         const rightPinNum = i + 1;
         const rightDesc = this.pinDescription[rightPinNum];
         Canvas.ctx.textAlign = "right";
-        Canvas.ctx.fillText(rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - 10, py + 3);
+        fillCrispText(Canvas.ctx, rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
       }
     } else if (this.rotationAngle === 270) {
       // 270°: Top: 2N..N+1, Bottom: 1..N
@@ -231,12 +217,12 @@ export class Ic implements PlacedPart {
         const topPinNum = pinsPerSide * 2 - i;
         const topDesc = this.pinDescription[topPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + 16);
+        fillCrispText(Canvas.ctx, topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
 
         const bottomPinNum = i + 1;
         const bottomDesc = this.pinDescription[bottomPinNum];
         Canvas.ctx.textAlign = "center";
-        Canvas.ctx.fillText(bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - 10);
+        fillCrispText(Canvas.ctx, bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
       }
     }
 
@@ -287,39 +273,9 @@ export class Ic implements PlacedPart {
     Canvas.ctx.restore();
   }
 
-  drawLabel(isSelected: boolean){
+  drawLabel(){
     if (!this.topLeftDot) return;
-    const w = 50 * (this.widthPin - 1);
-    const h = 50 * (this.heightPin - 1);
-    const centerX = this.topLeftDot.x + (w / 2);
-    const centerY = this.topLeftDot.y + (h / 2);
-
-    const title = ViewState.showPartLabels && this.ref ? `${this.ref} ${this.name}` : this.name;
-
-    Canvas.ctx.save();
-    Canvas.ctx.font = "bold 15px Inter, Arial";
-    const textWidth = Canvas.ctx.measureText(title).width;
-    const badgeW = textWidth + 20;
-    const badgeH = 26;
-
-    // Draw background badge pill behind label
-    Canvas.ctx.beginPath();
-    Canvas.ctx.fillStyle = "#0f172a";
-    Canvas.ctx.strokeStyle = isSelected ? "#38bdf8" : "#334155";
-    Canvas.ctx.lineWidth = 1.5;
-    const rectX = centerX - (badgeW / 2);
-    const rectY = centerY - (badgeH / 2);
-    Canvas.ctx.rect(rectX, rectY, badgeW, badgeH);
-    Canvas.ctx.fill();
-    Canvas.ctx.stroke();
-
-    // Draw high-contrast text
-    Canvas.ctx.fillStyle = isSelected ? "#38bdf8" : "#ffffff";
-    Canvas.ctx.textAlign = "center";
-    Canvas.ctx.textBaseline = "middle";
-    Canvas.ctx.fillText(title, centerX, centerY + 1);
-    Canvas.ctx.restore();
-
+    // Chips and boards print their name on the package itself (see drawBody) instead of a badge.
     this.drawPinMarkers();
     this.drawPinLabels();
   }
@@ -329,8 +285,8 @@ export class Ic implements PlacedPart {
     this.drawBody(selected);
   }
 
-  drawOverlay(selected: boolean){
-    this.drawLabel(selected);
+  drawOverlay(){
+    this.drawLabel();
   }
 
   getPinPositions(): Point[] {
@@ -369,6 +325,7 @@ export class Ic implements PlacedPart {
       rotation: (this.rotationAngle || 0) as Rotation,
       pinDescription: this.pinDescription || {},
       at: toGridPos(this.topLeftDot ?? {x: 0, y: 0}),
+      category: this.category,
     };
   }
 
@@ -376,17 +333,23 @@ export class Ic implements PlacedPart {
     if (!this.topLeftDot) return false;
     const w = 50 * (this.widthPin - 1);
     const h = 50 * (this.heightPin - 1);
+    // The body runs past the end pins, along the pin rows (and a board past the rows too).
+    const sideways = this.rotationAngle === 90 || this.rotationAngle === 270;
+    const padX = sideways ? this.overhang : this.sideOverhang;
+    const padY = sideways ? this.sideOverhang : this.overhang;
     return (
-      x >= this.topLeftDot.x &&
-      x <= this.topLeftDot.x + w &&
-      y >= this.topLeftDot.y &&
-      y <= this.topLeftDot.y + h
+      x >= this.topLeftDot.x - padX &&
+      x <= this.topLeftDot.x + w + padX &&
+      y >= this.topLeftDot.y - padY &&
+      y <= this.topLeftDot.y + h + padY
     );
   }
 
   clone(): Ic {
     const copy = new Ic(this.widthPin, this.heightPin, { ...this.pinDescription }, this.name, this.isCustom);
     copy.rotationAngle = this.rotationAngle;
+    copy.category = this.category;
+    copy.definitionId = this.definitionId;
     return copy;
   }
 

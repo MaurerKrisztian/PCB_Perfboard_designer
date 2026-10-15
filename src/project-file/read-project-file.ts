@@ -221,6 +221,7 @@ function readGridFile(data: Entry, version: 2 | 3): ReadProjectResult {
     return {
       ref: text(entry.ref) ?? "", name: text(entry.name) ?? "Component", widthPin, heightPin,
       rotation: rotation(entry.rotation), pinDescription: pinLabels(entry.pinDescription), at,
+      ...(typeof entry.category === "string" ? {category: entry.category} : {}),
     };
   });
 

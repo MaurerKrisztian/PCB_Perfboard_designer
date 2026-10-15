@@ -12,6 +12,8 @@ import {buildDotIndex, dotPositionKey} from "../dot-lookup";
 import {GridPos, gridToPx} from "../../project-file/grid";
 import {readProjectFile} from "../../project-file/read-project-file";
 import {setBoardSetup} from "../board-type";
+import {isCategoryId} from "../catalog/catalog-categories";
+import {isModuleName} from "../../project-file/ic-package";
 
 // Replaces the board with a project file's (any version). The file is read and checked in full
 // first, so a file that isn't a project throws ProjectFileError with the board untouched.
@@ -46,6 +48,7 @@ export function loadProject(raw: unknown): {skipped: number} {
   for (const saved of project.placedIcs) {
     const ic = new Ic(saved.widthPin, saved.heightPin, {...saved.pinDescription}, saved.name);
     ic.ref = saved.ref;
+    ic.category = isCategoryId(saved.category) ? saved.category : isModuleName(saved.name) ? "modules.custom" : "ics.custom";
     ic.rotationAngle = saved.rotation;
     ic.topLeftDot = dotAt(saved.at);
     parts.push(ic);

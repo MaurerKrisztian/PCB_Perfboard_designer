@@ -2,6 +2,8 @@ import {COMPONENT_DEFINITIONS, getIconPath} from "../standard-components/compone
 import {ADVANCED_COMPONENT_DEFINITIONS, getAdvancedIconPath} from "../advanced-components/advanced-component-definitions";
 import {deleteCustomIc, Ic, selectIc} from "../ic";
 import {getIcDefinition} from "../ic-definitions";
+import {dipIconSvg} from "../ic-package/dip-shape";
+import {moduleIconSvg} from "../ic-package/module-shape";
 import {editCustomIc, openIcEditor} from "../ic-editor-modal";
 import {ToolState} from "../../state/ToolState";
 import {setActiveTool} from "../active-tool";
@@ -36,6 +38,11 @@ function isArmed(kind: "standard-component" | "advanced-component", definitionId
 }
 
 const CUSTOM_ACTION_KEYWORDS = ["custom", "new", "create", "add"];
+
+// The IC icons are drawn in code (generic DIP / dev board), not stored as files.
+function svgDataUri(svg: string): string {
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
 
 // Built fresh on every call: custom ICs come and go at runtime, and the catalog is small.
 // Within a category, items appear in this order: actions, then each source's definition order.
@@ -75,7 +82,7 @@ export function buildCatalog(): CatalogItem[] {
     const def = ic.definitionId ? getIcDefinition(ic.definitionId) : undefined;
     items.push({
       key: icKey(ic), isAction: false, name: ic.name, categoryId: ic.category,
-      keywords: def?.keywords ?? [], emoji: ic.category.indexOf("modules") === 0 ? "📟" : "📦",
+      keywords: def?.keywords ?? [], iconPath: svgDataUri(ic.isModule ? moduleIconSvg() : dipIconSvg()), emoji: ic.category.indexOf("modules") === 0 ? "📟" : "📦",
       activate: () => selectIc(ic.id),
       isArmed: () => {
         const active = ToolState.active;
