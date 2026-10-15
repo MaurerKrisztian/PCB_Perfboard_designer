@@ -779,13 +779,58 @@ kbd {
 
 .catalog-tree, .catalog-results {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  flex-direction: column;
+  gap: 1px;
 }
 
-/* Shared catalog button container styling (Standard Components, etc.) */
-.catalog-items {
+/* Tree/result rows reset the global button look: flat, full width, left aligned */
+button.catalog-row {
+  --depth: 0;
+  width: 100%;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  padding: 0.35rem 0.5rem 0.35rem calc(0.5rem + var(--depth) * 0.9rem);
+  font-size: 0.8rem;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: var(--text-main);
+}
+
+button.catalog-row:hover {
+  background: var(--bg-hover);
+  border-color: transparent;
+  transform: none;
+}
+
+button.catalog-row.active-mode {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  border-color: #38bdf8;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+button.catalog-category-row {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.catalog-chevron {
+  font-size: 0.7rem;
+  width: 0.7rem;
+  transition: transform 0.15s ease;
+}
+
+.catalog-category.collapsed > .catalog-category-row .catalog-chevron {
+  transform: rotate(-90deg);
+}
+
+.catalog-category.collapsed > .catalog-children {
+  display: none;
+}
+
+.catalog-children {
   display: flex;
   flex-direction: column;
   gap: 1px;
