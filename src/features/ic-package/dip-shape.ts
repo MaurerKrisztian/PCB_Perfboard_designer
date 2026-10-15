@@ -178,7 +178,7 @@ export function dipIconSvg(): string {
   const {body, notch, pin1} = shape;
   const deg = (angle * 180) / Math.PI;
   const wide = shape.height + 2 * DIP_OVERHANG, tall = shape.width + 2 * LEAD_REACH;
-  return `<svg class="ic-icon" viewBox="${-DIP_OVERHANG} ${-LEAD_REACH} ${wide} ${tall}" aria-hidden="true">`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-DIP_OVERHANG} ${-LEAD_REACH} ${wide} ${tall}" aria-hidden="true">`
     + `<g transform="translate(${tx} ${ty}) rotate(${deg})">${leads}`
     + `<rect x="${body.x}" y="${body.y}" width="${body.w}" height="${body.h}" rx="4" fill="#23272c" stroke="#0d0f11" stroke-width="3"/>`
     + `<path d="M ${notch.x - NOTCH_RADIUS} ${notch.y} A ${NOTCH_RADIUS} ${NOTCH_RADIUS} 0 0 0 ${notch.x + NOTCH_RADIUS} ${notch.y} Z" fill="#0d0f11"/>`

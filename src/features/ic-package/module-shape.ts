@@ -468,7 +468,7 @@ export function moduleIconSvg(): string {
     ? `<rect x="${chip.x}" y="${chip.y}" width="${chip.w}" height="${chip.h}" rx="4" fill="#23272c" stroke="#0d0f11" stroke-width="3"/>`
       + `<circle cx="${chip.x + chip.w * 0.15}" cy="${chip.y + chip.h * 0.15}" r="3.5" fill="#6c757d"/>`
     : "";
-  return `<svg class="ic-icon" viewBox="${-MODULE_END} ${-MODULE_EDGE} ${wide} ${tall}" aria-hidden="true">`
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${-MODULE_END} ${-MODULE_EDGE} ${wide} ${tall}" aria-hidden="true">`
     + `<g transform="translate(${tx} ${ty}) rotate(${deg})">`
     + `<rect x="${board.x}" y="${board.y}" width="${board.w}" height="${board.h}" rx="5" fill="${BOARD_FILL}" stroke="${BOARD_EDGE_COLOR}" stroke-width="3"/>`
     + socket + holes + small + mcu

@@ -7,6 +7,7 @@ import {BOARD_COLOR as STRIPBOARD_COLOR} from "../board-looks/stripboard-look";
 import {getAdvancedComponentDefinition} from "../advanced-components/advanced-component-definitions";
 import {rotateOffset} from "../advanced-components/rotate-offset";
 import {LED_SOLID_COLORS} from "../standard-components/standard-component-render";
+import {isLed} from "../standard-components/component-definitions";
 
 // A small picture of a project, drawn from its project file rather than the editor's state: the
 // board and its copper, the wires, and a simple footprint for every part. For the Projects
@@ -24,6 +25,7 @@ const STANDARD_BODY_COLORS: Record<string, string> = {
   "electrolytic-capacitor": "#34618f",
   "inductor": "#3f3a34",
   "led": "#fafbfc",
+  "led-3mm": "#fafbfc",
   "diode": "#3a4046",
 };
 const ADVANCED_BODY_COLORS: Record<string, string> = {
@@ -153,9 +155,9 @@ export function drawProjectThumbnail(canvas: HTMLCanvasElement, project: Project
     const body = Math.min(length * 0.7, 1.2 * pitch);
     const ux = (x2 - x1) / length, uy = (y2 - y1) / length;
     const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-    const isLed = part.definitionId === "led";
-    ctx.strokeStyle = isLed && part.color ? LED_SOLID_COLORS[part.color] ?? "#e5e7eb" : STANDARD_BODY_COLORS[part.definitionId] ?? DARK_PART_COLOR;
-    ctx.lineWidth = (part.definitionId === "electrolytic-capacitor" || isLed ? 0.8 : 0.45) * pitch;
+    const isLedPart = isLed(part.definitionId);
+    ctx.strokeStyle = isLedPart && part.color ? LED_SOLID_COLORS[part.color] ?? "#e5e7eb" : STANDARD_BODY_COLORS[part.definitionId] ?? DARK_PART_COLOR;
+    ctx.lineWidth = (part.definitionId === "electrolytic-capacitor" || isLedPart ? 0.8 : 0.45) * pitch;
     ctx.beginPath();
     ctx.moveTo(mx - (ux * body) / 2, my - (uy * body) / 2);
     ctx.lineTo(mx + (ux * body) / 2, my + (uy * body) / 2);

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 236 236" width="236" height="236" role="img" aria-label="Round magnetic buzzer, top view">
+  <circle cx="118" cy="118" r="114" fill="#171e28" stroke="#9ca9bb" stroke-width="5"/>
+  <circle cx="118" cy="118" r="102" fill="#283341" stroke="#49586b" stroke-width="3"/>
+  <circle cx="118" cy="118" r="25" fill="#070c12" stroke="#56687b" stroke-width="5"/>
+  <path d="M50 58h28M64 44v28" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round"/>
+  <path d="M76 174h84" stroke="#788899" stroke-width="4" stroke-linecap="round"/>
+</svg>

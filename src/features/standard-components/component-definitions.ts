@@ -2,10 +2,15 @@
 // prompt parses user input (SI prefixes, shorthand notations) and how it's displayed.
 export type ComponentUnit = "Ω" | "F" | "H";
 
+import {CategoryId} from "../catalog/catalog-categories";
+
 export interface ComponentDefinition {
   id: string;
-  category: string;
+  // Where the part is listed in the Components panel tree (see catalog-categories.ts).
+  category: CategoryId;
   name: string;
+  // Extra search terms (abbreviations, part families) that don't appear in `name`.
+  keywords?: string[];
   // Letters of a placed part's reference designator: "R" makes R1, R2...
   refPrefix: string;
   iconPath?: string;
@@ -17,6 +22,8 @@ export interface ComponentDefinition {
   // (outline stroke included). Lets value labels hug the visible body instead of the whole
   // square icon box. Defaults to 50, i.e. the full box.
   artworkHalfThickness?: number;
+  // A colored LED: the context menu offers its color, which tints the body and becomes its value.
+  led?: boolean;
 }
 
 // One grid step is GridConfig.dotSpace (50px), so the default body spans a bit more than
@@ -37,14 +44,19 @@ export function getIconPath(def: ComponentDefinition): string {
 }
 
 export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
-  {id: "resistor", refPrefix: "R", category: "Passive", name: "Resistor", fallbackLabel: "R", unit: "Ω", artworkHalfThickness: 17},
-  {id: "ceramic-capacitor", refPrefix: "C", category: "Passive", name: "Ceramic Capacitor", fallbackLabel: "C", unit: "F", artworkHalfThickness: 38},
-  {id: "electrolytic-capacitor", refPrefix: "C", category: "Passive", name: "Electrolytic Capacitor", fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44},
-  {id: "inductor", refPrefix: "L", category: "Passive", name: "Inductor", fallbackLabel: "L", unit: "H", artworkHalfThickness: 17},
-  {id: "led", refPrefix: "D", category: "Semiconductor", name: "LED", fallbackLabel: "LED"},
-  {id: "diode", refPrefix: "D", category: "Semiconductor", name: "Diode", fallbackLabel: "D", artworkHalfThickness: 18},
+  {id: "resistor", refPrefix: "R", category: "passives.resistors", name: "Resistor", keywords: ["res"], fallbackLabel: "R", unit: "Ω", artworkHalfThickness: 17},
+  {id: "ceramic-capacitor", refPrefix: "C", category: "passives.capacitors", name: "Ceramic Capacitor", keywords: ["cap", "mlcc", "disc"], fallbackLabel: "C", unit: "F", artworkHalfThickness: 38},
+  {id: "electrolytic-capacitor", refPrefix: "C", category: "passives.capacitors", name: "Electrolytic Capacitor", keywords: ["cap", "polarized", "elco"], fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44},
+  {id: "inductor", refPrefix: "L", category: "passives", name: "Inductor", keywords: ["coil", "choke"], fallbackLabel: "L", unit: "H", artworkHalfThickness: 17},
+  {id: "led", refPrefix: "D", category: "semiconductors.diodes", name: "LED", keywords: ["light", "light emitting diode", "5mm"], fallbackLabel: "LED", led: true},
+  {id: "led-3mm", refPrefix: "D", category: "semiconductors.diodes", name: "LED (3 mm)", keywords: ["light", "light emitting diode", "3mm", "t-1", "indicator"], fallbackLabel: "LED", iconPath: `${COMPONENT_ICON_DIR}led.svg`, bodySize: 46, led: true},
+  {id: "diode", refPrefix: "D", category: "semiconductors.diodes", name: "Diode", keywords: ["rectifier", "1n4148", "1n4007"], fallbackLabel: "D", artworkHalfThickness: 18},
 ];
 
 export function getComponentDefinition(id: string): ComponentDefinition | undefined {
   return COMPONENT_DEFINITIONS.find(def => def.id === id);
+}
+
+export function isLed(definitionId: string): boolean {
+  return getComponentDefinition(definitionId)?.led === true;
 }

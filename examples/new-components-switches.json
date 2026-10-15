@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "board": {"type": "perfboard", "cols": 30, "rows": 19},
+  "pads": [
+    {"at": [1, 0], "color": "#38bdf8", "note": "SWITCHES: toggles, rotary encoder, latching switch, KSA and 6x6 mm push buttons, slide switch and 2-, 4- and 8-position DIP switches. A component gallery, not a working circuit: wires only demonstrate routing. Enable Labels, then open 3D View."}
+  ],
+  "wires": [],
+  "placedIcs": [],
+  "placedStandardComponents": [],
+  "placedAdvancedComponents": [
+    {"ref": "SW5", "definitionId": "toggle-spdt", "at": [3, 3], "rotation": 0, "rows": 1, "cols": 1, "value": "SPDT"},
+    {"ref": "SW6", "definitionId": "toggle-dpdt", "at": [11, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "DPDT"},
+    {"ref": "SW10", "definitionId": "rotary-encoder", "at": [19, 7], "rotation": 0, "rows": 1, "cols": 1, "value": "Encoder"},
+    {"ref": "SW4", "definitionId": "latching-switch", "at": [26, 5], "rotation": 0, "rows": 1, "cols": 1, "value": "Latching"},
+    {"ref": "SW1", "definitionId": "push-button", "at": [2, 9], "rotation": 0, "rows": 1, "cols": 1, "value": "KSA"},
+    {"ref": "SW2", "definitionId": "tactile-6x6", "at": [8, 9], "rotation": 0, "rows": 1, "cols": 1, "value": "6x6"},
+    {"ref": "SW3", "definitionId": "slide-switch", "at": [14, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "SPDT"},
+    {"ref": "SW7", "definitionId": "dip-switch-2", "at": [2, 17], "rotation": 0, "rows": 1, "cols": 1, "value": "2-pos"},
+    {"ref": "SW8", "definitionId": "dip-switch-4", "at": [6, 17], "rotation": 0, "rows": 1, "cols": 1, "value": "4-pos"},
+    {"ref": "SW9", "definitionId": "dip-switch-8", "at": [12, 17], "rotation": 0, "rows": 1, "cols": 1, "value": "8-pos"}
+  ],
+  "customIcs": []
+}

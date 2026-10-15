@@ -1,7 +1,6 @@
 import {isPlacementTool, ToolState} from "../state/ToolState";
 import {SelectionState} from "../state/SelectionState";
-import {updateStandardComponentButtonHighlight} from "./standard-components/standard-components-panel";
-import {updateAdvancedComponentButtonHighlight} from "./advanced-components/advanced-components-panel";
+import {notifyArmedPartChanged} from "./catalog/catalog-events";
 import {behaviorOf} from "./tools";
 
 const SWATCH_STYLE = "display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px;";
@@ -30,8 +29,7 @@ function syncToolHighlights() {
   document.querySelectorAll('#toolModeSelector .tool-mode-btn').forEach(btn => {
     btn.classList.toggle('active-mode', btn.getAttribute('data-mode') === kind);
   });
-  updateStandardComponentButtonHighlight();
-  updateAdvancedComponentButtonHighlight();
+  notifyArmedPartChanged();
 }
 
 export function updateSelectionStatus() {

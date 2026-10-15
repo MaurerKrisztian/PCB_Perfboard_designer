@@ -72,6 +72,7 @@ function readCustomIc(entry: Entry): SavedCustomIc | undefined {
     widthPin,
     heightPin,
     pinDescription: pinLabels(entry.pinDescription),
+    ...(typeof entry.category === "string" ? {category: entry.category} : {}),
   };
 }
 

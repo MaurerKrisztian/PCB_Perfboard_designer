@@ -92,6 +92,8 @@ export interface SavedCustomIc {
   widthPin: number;
   heightPin: number;
   pinDescription: Record<number, string>;
+  // Where the part is listed in the Components panel; absent in files from before the catalog.
+  category?: string;
 }
 
 export interface ProjectFile {

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 410 197" width="410" height="197" role="img" aria-label="8-position DIP switch, top view">
+  <rect x="3" y="3" width="404" height="191" rx="6" fill="#b5282e" stroke="#f08b8b" stroke-width="4"/>
+  <path d="M10 186h390M401 12v170" stroke="#7d1a20" stroke-width="5"/>
+  <rect x="14" y="54" width="382" height="89" rx="4" fill="#7d1a20"/>
+  <rect x="15" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="19" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <rect x="65" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="69" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <rect x="115" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="119" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <rect x="165" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="169" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <rect x="215" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="219" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <rect x="265" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="269" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <rect x="315" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="319" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <rect x="365" y="60" width="30" height="77" rx="3" fill="#1c1f23" stroke="#3a3f47" stroke-width="2"/>
+  <rect x="369" y="100" width="22" height="31" rx="3" fill="#f5efe2" stroke="#c9c1b0" stroke-width="2"/>
+  <text x="55" y="36" text-anchor="middle" fill="#f8d7d7" font-family="Arial,sans-serif" font-size="15" font-weight="bold">ON</text>
+</svg>

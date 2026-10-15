@@ -1,0 +1,16 @@
+{
+  "version": 3,
+  "board": {"type": "perfboard", "cols": 38, "rows": 26},
+  "pads": [
+    {"at": [1, 0], "color": "#38bdf8", "note": "BATTERY HOLDERS: 18650 (Keystone 1043), 2 x AA (Keystone 2462) and CR2032 coin cell. Pin labels mark + and -. A component gallery, not a working circuit: wires only demonstrate routing. Enable Labels, then open 3D View."}
+  ],
+  "wires": [],
+  "placedIcs": [],
+  "placedStandardComponents": [],
+  "placedAdvancedComponents": [
+    {"ref": "BT3", "definitionId": "battery-18650", "at": [3, 6], "rotation": 0, "rows": 1, "cols": 1, "value": "18650"},
+    {"ref": "BT2", "definitionId": "battery-2xaa", "at": [25, 20], "rotation": 0, "rows": 1, "cols": 1, "value": "2xAA"},
+    {"ref": "BT1", "definitionId": "coin-cell-holder", "at": [28, 17], "rotation": 0, "rows": 1, "cols": 1, "value": "CR2032"}
+  ],
+  "customIcs": []
+}

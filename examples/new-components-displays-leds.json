@@ -1,0 +1,23 @@
+{
+  "version": 3,
+  "board": {"type": "perfboard", "cols": 37, "rows": 23},
+  "pads": [
+    {"at": [1, 0], "color": "#38bdf8", "note": "DISPLAYS & LEDS: 4-digit and single-digit seven-segment displays (common cathode and anode), 10-segment bar graph, RGB LEDs and 3 mm LEDs. A component gallery, not a working circuit: wires only demonstrate routing. Enable Labels, then open 3D View."}
+  ],
+  "wires": [],
+  "placedIcs": [],
+  "placedStandardComponents": [
+    {"ref": "D4", "definitionId": "led-3mm", "from": [15, 21], "to": [16, 21], "value": "Red", "color": "red"},
+    {"ref": "D5", "definitionId": "led-3mm", "from": [19, 21], "to": [20, 21], "value": "Green", "color": "green"}
+  ],
+  "placedAdvancedComponents": [
+    {"ref": "DS3", "definitionId": "seven-segment-4-cc", "at": [10, 8], "rotation": 0, "rows": 1, "cols": 1, "value": "4-digit CC"},
+    {"ref": "DS1", "definitionId": "seven-segment-cc", "at": [25, 8], "rotation": 0, "rows": 1, "cols": 1, "value": "CC"},
+    {"ref": "DS2", "definitionId": "seven-segment-ca", "at": [31, 8], "rotation": 0, "rows": 1, "cols": 1, "value": "CA"},
+    {"ref": "DS4", "definitionId": "seven-segment-4-ca", "at": [10, 17], "rotation": 0, "rows": 1, "cols": 1, "value": "4-digit CA"},
+    {"ref": "D3", "definitionId": "led-bargraph-10", "at": [25, 15], "rotation": 0, "rows": 1, "cols": 1, "value": "Bar graph"},
+    {"ref": "D1", "definitionId": "rgb-led-cathode", "at": [3, 21], "rotation": 0, "rows": 1, "cols": 1, "value": "RGB CC"},
+    {"ref": "D2", "definitionId": "rgb-led-anode", "at": [9, 21], "rotation": 0, "rows": 1, "cols": 1, "value": "RGB CA"}
+  ],
+  "customIcs": []
+}

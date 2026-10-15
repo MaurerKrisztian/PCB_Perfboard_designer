@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 246 264" width="246" height="264" role="img" aria-label="12 mm rotary encoder with knurled shaft, top view">
+  <rect x="3" y="3" width="240" height="258" rx="8" fill="#9aa3ad" stroke="#e2e8f0" stroke-width="4"/>
+  <rect x="17" y="17" width="212" height="230" rx="6" fill="#2a2f36" stroke="#566170" stroke-width="3"/>
+  <g fill="#c4cad2" stroke="#eef2f5" stroke-width="2">
+    <circle cx="28" cy="28" r="6"/>
+    <circle cx="218" cy="28" r="6"/>
+    <circle cx="28" cy="236" r="6"/>
+    <circle cx="218" cy="236" r="6"/>
+  </g>
+  <circle cx="123" cy="132" r="76" fill="#b9c1ca" stroke="#e2e8f0" stroke-width="4"/>
+  <circle cx="123" cy="132" r="64" fill="none" stroke="#8a949f" stroke-width="5" stroke-dasharray="4 5"/>
+  <circle cx="123" cy="132" r="52" fill="#dfe3e8" stroke="#8a949f" stroke-width="3"/>
+  <circle cx="123" cy="132" r="44" fill="#d0d6dc" stroke="#ffffff" stroke-width="10" stroke-dasharray="3 6"/>
+  <path d="M95 112h56" stroke="#7a8590" stroke-width="7" stroke-linecap="round"/>
+</svg>

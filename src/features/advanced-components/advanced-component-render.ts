@@ -39,7 +39,7 @@ export interface DrawAdvancedComponentOptions {
   ghost?: boolean;
 }
 
-export function getBoundingRect(points: Point[], pad: number = 0) {
+export function getBoundingRect(points: Point[], pad = 0) {
   const xs = points.map(p => p.x);
   const ys = points.map(p => p.y);
   const minX = Math.min(...xs) - pad;
@@ -205,6 +205,21 @@ export function drawAdvancedComponentBody(
     Canvas.ctx.fillText(def.fallbackLabel, iconAnchor.x, iconAnchor.y);
   }
 
+  if (skipBody && options.selected) {
+    Canvas.ctx.beginPath();
+    Canvas.ctx.setLineDash([]);
+    Canvas.ctx.strokeStyle = BORDER_COLOR_SELECTED;
+    Canvas.ctx.lineWidth = 3;
+    if (hasOutline) {
+      Canvas.ctx.moveTo(outline[0].x, outline[0].y);
+      for (const point of outline.slice(1)) Canvas.ctx.lineTo(point.x, point.y);
+      Canvas.ctx.closePath();
+    } else {
+      Canvas.ctx.rect(rect.x, rect.y, rect.w, rect.h);
+    }
+    Canvas.ctx.stroke();
+  }
+
   // Pin number labels, drawn last so they stay legible over the body/icon.
   Canvas.ctx.setLineDash([]);
   Canvas.ctx.font = PIN_LABEL_FONT;
@@ -219,8 +234,9 @@ export function drawAdvancedComponentBody(
   pins.forEach((pin, i) => {
     const x = pin.x + labelOffset.x * GridConfig.dotSpace;
     const y = pin.y + labelOffset.y * GridConfig.dotSpace;
-    Canvas.ctx.strokeText(String(i + 1), x, y);
-    Canvas.ctx.fillText(String(i + 1), x, y);
+    const label = def.pinLabels?.[i] ?? String(i + 1);
+    Canvas.ctx.strokeText(label, x, y);
+    Canvas.ctx.fillText(label, x, y);
   });
 
   Canvas.ctx.restore();

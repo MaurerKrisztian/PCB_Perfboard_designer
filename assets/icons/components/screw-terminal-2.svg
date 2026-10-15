@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" width="200" height="160" role="img" aria-label="Two-position screw terminal, top view">
+  <rect x="3" y="3" width="194" height="154" rx="8" fill="#16855c" stroke="#86dcb5" stroke-width="4"/>
+  <path d="M100 5v150M5 104h190" stroke="#0b513e" stroke-width="5"/>
+  <g fill="#35434b" stroke="#a5b2bd" stroke-width="4">
+    <circle cx="50" cy="56" r="31"/>
+    <circle cx="150" cy="56" r="31"/>
+  </g>
+  <g fill="#c2cbd1">
+    <circle cx="50" cy="56" r="23"/>
+    <circle cx="150" cy="56" r="23"/>
+  </g>
+  <path d="m34 40 32 32m68-32 32 32" stroke="#45515e" stroke-width="7"/>
+  <g fill="#122e26" stroke="#45af84" stroke-width="3">
+    <rect x="20" y="116" width="60" height="29" rx="5"/>
+    <rect x="120" y="116" width="60" height="29" rx="5"/>
+  </g>
+</svg>

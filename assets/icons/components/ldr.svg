@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" role="img" aria-label="Photoresistor with a serpentine sensing track, top view">
+  <circle cx="50" cy="50" r="47" fill="#dfb774" stroke="#f3ddb5" stroke-width="4"/>
+  <circle cx="50" cy="50" r="38" fill="#c77433" stroke="#8e5028" stroke-width="2"/>
+  <path d="M24 28h40a6 6 0 0 1 0 12H35a6 6 0 0 0 0 12h30a6 6 0 0 1 0 12H36a6 6 0 0 0 0 12h39" fill="none" stroke="#f8e5b8" stroke-width="5" stroke-linecap="round"/>
+  <path d="M13 47h10m54 6h10" stroke="#f8e5b8" stroke-width="5" stroke-linecap="round"/>
+</svg>

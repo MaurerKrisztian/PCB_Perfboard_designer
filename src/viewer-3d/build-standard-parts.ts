@@ -260,13 +260,15 @@ const LED_COLORS: Record<string, string> = {
   yellow: "#facc15",
 };
 
-function buildLed(kit: SceneKit, span: number, color?: string): Group {
+// diameter: 5 for a standard T-1¾ LED, 3 for a T-1. The body scales with it.
+function buildLed(kit: SceneKit, span: number, color?: string, diameter = 5): Group {
   const group = new Group();
   const cx = span / 2;
-  const radius = 2.5, flangeRadius = 2.9, base = 2.2, flangeHeight = 1.0, straight = 5.1;
+  const scale = diameter / 5;
+  const radius = 2.5 * scale, flangeRadius = 2.9 * scale, base = 2.2, flangeHeight = 1.0 * scale, straight = 5.1 * scale;
 
   // Flange with the flat cathode edge on the start side (-x), like led.svg's flat edge.
-  const flatX = -2.5;
+  const flatX = -2.5 * scale;
   const flatHalf = Math.sqrt(flangeRadius * flangeRadius - flatX * flatX);
   const arcFrom = Math.atan2(-flatHalf, flatX);
   const flange = new Shape();
@@ -310,11 +312,11 @@ function buildLed(kit: SceneKit, span: number, color?: string): Group {
 
   // Leads continue up inside the epoxy to the anvil (cathode, start side) and post, which show
   // through the translucent body.
-  group.add(radialLeads(kit, span, 1.27, base, 3.4));
+  group.add(radialLeads(kit, span, 1.27, base, 3.4 * scale));
   const gap = Math.min(cx, 1.27);
   const frame = kit.standard("led-frame", {color: "#bfc5cc", metalness: 1, roughness: 0.3});
-  group.add(kit.box(1.5, 1.1, 0.4, frame, new Vector3(cx - gap + 0.35, base + 4.0, 0)));
-  group.add(kit.box(0.6, 0.6, 0.4, frame, new Vector3(cx + gap - 0.1, base + 3.8, 0)));
+  group.add(kit.box(1.5 * scale, 1.1 * scale, 0.4, frame, new Vector3(cx - gap + 0.35 * scale, base + 4.0 * scale, 0)));
+  group.add(kit.box(0.6 * scale, 0.6 * scale, 0.4, frame, new Vector3(cx + gap - 0.1, base + 3.8 * scale, 0)));
   return group;
 }
 
@@ -343,6 +345,7 @@ export function buildStandardPart(kit: SceneKit, part: ViewerStandardPart): Obje
     case "ceramic-capacitor": group = buildCeramicCapacitor(kit, span, part.value); break;
     case "electrolytic-capacitor": group = buildElectrolyticCapacitor(kit, span, part.value); break;
     case "led": group = buildLed(kit, span, part.color); break;
+    case "led-3mm": group = buildLed(kit, span, part.color, 3); break;
     default: group = buildUnknown(kit, span);
   }
   group.position.copy(start);

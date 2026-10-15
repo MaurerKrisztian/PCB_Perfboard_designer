@@ -1,0 +1,26 @@
+{
+  "version": 3,
+  "board": {"type": "perfboard", "cols": 33, "rows": 18},
+  "pads": [
+    {"at": [1, 0], "color": "#38bdf8", "note": "PASSIVES, SENSORS & OUTPUTS: buzzer, relay, DHT22, DHT11, DS18B20, IR receiver, microphone, trimmer, LDR, thermistor, film capacitor, crystal and resonator. A component gallery, not a working circuit: wires only demonstrate routing. Enable Labels, then open 3D View."}
+  ],
+  "wires": [],
+  "placedIcs": [],
+  "placedStandardComponents": [],
+  "placedAdvancedComponents": [
+    {"ref": "BZ1", "definitionId": "buzzer", "at": [3, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "Buzzer"},
+    {"ref": "K1", "definitionId": "relay-dpdt", "at": [9, 6], "rotation": 0, "rows": 1, "cols": 1, "value": "DPDT"},
+    {"ref": "U3", "definitionId": "dht22", "at": [20, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "DHT22"},
+    {"ref": "U4", "definitionId": "dht11", "at": [27, 4], "rotation": 0, "rows": 1, "cols": 1, "value": "DHT11"},
+    {"ref": "U1", "definitionId": "ds18b20", "at": [2, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "DS18B20"},
+    {"ref": "U2", "definitionId": "ir-receiver", "at": [7, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "TSOP38238"},
+    {"ref": "MK1", "definitionId": "electret-mic", "at": [12, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "Mic"},
+    {"ref": "RV1", "definitionId": "trimmer", "at": [18, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "10kΩ"},
+    {"ref": "R1", "definitionId": "ldr", "at": [24, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "GL5528"},
+    {"ref": "RT1", "definitionId": "thermistor", "at": [29, 10], "rotation": 0, "rows": 1, "cols": 1, "value": "10kΩ"},
+    {"ref": "C1", "definitionId": "film-capacitor", "at": [3, 15], "rotation": 0, "rows": 1, "cols": 1, "value": "100nF"},
+    {"ref": "Y1", "definitionId": "crystal-hc49", "at": [10, 15], "rotation": 0, "rows": 1, "cols": 1, "value": "16MHz"},
+    {"ref": "Y2", "definitionId": "ceramic-resonator", "at": [17, 15], "rotation": 0, "rows": 1, "cols": 1, "value": "4MHz"}
+  ],
+  "customIcs": []
+}
