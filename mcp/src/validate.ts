@@ -6,7 +6,7 @@ import {comparePins, computeNets, isPowerNet, Net, Netlist, NetPin, pinName} fro
 import {layoutProjectWires} from "../../src/project-file/wire-crossings";
 import {isModulePart} from "../../src/project-file/ic-package";
 import {similarPartIds} from "./parts";
-import {holeContents, WireIndex, wireName} from "./nets-report";
+import {holeContents, joinList, WireIndex, wireName} from "./nets-report";
 import {checkExpectedNets} from "./expected-nets";
 
 // Checks a project file the way a person looking at the board would: beyond what the reader
@@ -114,20 +114,28 @@ export function validateProject(raw: unknown, expectNets?: string[][]): Validati
   const pinHoles = new Set(parts.flatMap(part => part.pins.map(pin => key(pin.at))));
   const wireEnds = new Map<string, number>();
   for (const wire of project.wires) for (const end of [wire.from, wire.to]) wireEnds.set(key(end), (wireEnds.get(key(end)) ?? 0) + 1);
+  // Wires with a problem at an end reported already, so they aren't reported again as stray.
+  const badEnds = new Set<number>();
   project.wires.forEach((wire, i) => {
-    if (key(wire.from) === key(wire.to)) error(`wires[${wireIndex(i)}] starts and ends in hole ${show(wire.from)}.`);
+    if (key(wire.from) === key(wire.to)) {
+      error(`wires[${wireIndex(i)}] starts and ends in hole ${show(wire.from)}.`);
+      badEnds.add(i);
+    }
     for (const end of [wire.from, wire.to]) {
       const body = holes.get(key(end))?.find(u => u.what.startsWith("the body"));
-      if (body) error(`wires[${wireIndex(i)}] ends at ${show(end)}, which is under ${body.what}.`);
-      else if (project.board.type === "perfboard" && !pinHoles.has(key(end)) && (wireEnds.get(key(end)) ?? 0) < 2) {
+      if (body) {
+        error(`wires[${wireIndex(i)}] ends at ${show(end)}, which is under ${body.what}.`);
+        badEnds.add(i);
+      } else if (project.board.type === "perfboard" && !pinHoles.has(key(end)) && (wireEnds.get(key(end)) ?? 0) < 2) {
         warn(`wires[${wireIndex(i)}] ends at ${show(end)}, which has no pin and no other wire: that end connects to nothing.`);
+        badEnds.add(i);
       }
     }
   });
 
   const nets = computeNets(project);
-  if (project.board.type === "stripboard") checkStrips(project, parts, nets, warn, wireIndex);
-  checkConnections(project, nets, warn, note, wireIndex);
+  if (project.board.type === "stripboard") checkStrips(project, parts, nets, warn, wireIndex, badEnds);
+  checkConnections(project, nets, warn, note, wireIndex, badEnds);
   if (expectNets) checkExpectedNets(nets, expectNets, error);
 
   return {ok: !problems.some(p => p.severity === "error"), project, wireIndex, problems, notes};
@@ -219,7 +227,7 @@ function reportRenamedRefs(data: Entry, project: ProjectFile, warn: (message: st
 
 // Stripboard mistakes: two pins of one part left on the same strip (shorted), and leads in cut
 // holes (connected to nothing).
-function checkStrips(project: ProjectFile, parts: PartPins[], nets: Netlist, warn: (message: string) => void, wireIndex: WireIndex) {
+function checkStrips(project: ProjectFile, parts: PartPins[], nets: Netlist, warn: (message: string) => void, wireIndex: WireIndex, badEnds: Set<number>) {
   const board = project.board;
   if (board.type !== "stripboard") return;
   // What the strips join with no wires: pins of one part on one of these nets are shorted by the
@@ -250,7 +258,9 @@ function checkStrips(project: ProjectFile, parts: PartPins[], nets: Netlist, war
   }
   project.wires.forEach((wire, i) => {
     for (const end of [wire.from, wire.to]) {
-      if (!nets.netAt(end)) warn(`wires[${wireIndex(i)}] ends in cut hole ${show(end)}, so that end connects to nothing.`);
+      if (nets.netAt(end)) continue;
+      warn(`wires[${wireIndex(i)}] ends in cut hole ${show(end)}, so that end connects to nothing.`);
+      badEnds.add(i);
     }
   });
 }
@@ -258,10 +268,12 @@ function checkStrips(project: ProjectFile, parts: PartPins[], nets: Netlist, war
 // An IC pin marked as not connected inside: "NC", "N.C.", "N/C".
 const NO_CONNECT = /^N\.?\/?C\.?$/i;
 
-// Wiring mistakes the nets show: a wire running over a pin it doesn't join, IC pins left
-// unconnected, supply rails shorted together. Wires are insulated jumpers joined only at their
-// ends, so wires crossing are fine: only noted.
-function checkConnections(project: ProjectFile, nets: Netlist, warn: (message: string) => void, note: (message: string) => void, wireIndex: WireIndex) {
+// Wiring mistakes the nets show: a wire running over a pin it doesn't join, IC pins and leads left
+// unconnected, wires that join no pins, supply rails shorted together. Wires are insulated
+// jumpers joined only at their ends, so wires crossing are fine: only noted.
+function checkConnections(
+  project: ProjectFile, nets: Netlist, warn: (message: string) => void, note: (message: string) => void, wireIndex: WireIndex, badEnds: Set<number>
+) {
   const inHole = holeContents(project, nets);
   const wire = (i: number) => wireName(wireIndex(i));
 
@@ -280,19 +292,42 @@ function checkConnections(project: ProjectFile, nets: Netlist, warn: (message: s
     }
   }
 
-  // Dev boards are left out: most of their pins go unused.
+  // Pins on no net with another pin: a chip's may be unused on purpose, a two-lead part's can't
+  // be. Other parts' (headers, modules) often are, so they're left out.
   const modules = new Set(project.placedIcs.filter(ic => isModulePart(ic.category, ic.name)).map(ic => ic.ref));
   const loose = nets.nets
-    .filter(net => net.pins.length === 1 && net.pins[0].kind === "ic")
+    .filter(net => net.pins.length === 1)
     .map(net => net.pins[0])
     // In a cut hole is reported already; a no-connect pin is meant to be left alone.
-    .filter(pin => !modules.has(pin.ref) && nets.netAt(pin.at) && !NO_CONNECT.test(pin.label ?? ""))
+    .filter(pin => nets.netAt(pin.at) && (pin.kind === "standard-component"
+      || pin.kind === "ic" && !modules.has(pin.ref) && !NO_CONNECT.test(pin.label ?? "")))
     .sort(comparePins);
-  const byChip = new Map<string, NetPin[]>();
-  for (const pin of loose) byChip.set(pin.ref, [...(byChip.get(pin.ref) ?? []), pin]);
-  for (const [ref, pins] of byChip) {
+  const byPart = new Map<string, NetPin[]>();
+  for (const pin of loose) byPart.set(pin.ref, [...(byPart.get(pin.ref) ?? []), pin]);
+  for (const [ref, pins] of byPart) {
     const one = pins.length === 1;
-    warn(`${ref}: ${pins.map(pinName).join(", ")} ${one ? "is" : "are"} connected to nothing. Wire ${one ? "it" : "them"} up, unless ${one ? "it's" : "they're"} meant to be unused.`);
+    // Wires ending on them that lead nowhere else.
+    const stubs = pins.flatMap(pin => nets.netAt(pin.at)?.wires ?? []).map(wire);
+    const stubNote = stubs.length ? ` ${joinList(stubs)} on ${one ? "it" : "them"} lead${stubs.length === 1 ? "s" : ""} to no other pin.` : "";
+    if (pins[0].kind === "ic") {
+      warn(`${ref}: ${pins.map(pinName).join(", ")} ${one ? "is" : "are"} connected to nothing.${stubNote} Wire ${one ? "it" : "them"} up, unless ${one ? "it's" : "they're"} meant to be unused.`);
+    } else {
+      warn(`${ref}: ${joinList(pins.map(pinName))} ${one ? "is" : "are"} connected to nothing, so ${ref} does nothing in the circuit.${stubNote} Wire ${one ? "it to the net it belongs" : "them to the nets they belong"} to.`);
+    }
+  }
+
+  // Wires on no net of two or more pins, unless an end's problem was reported already, or the one
+  // pin they reach was just now.
+  const reported = new Set(loose);
+  for (const net of nets.nets) {
+    if (!net.wires.length || net.pins.length > 1) continue;
+    if (net.wires.some(i => badEnds.has(i)) || net.pins.some(pin => reported.has(pin))) continue;
+    const one = net.wires.length === 1;
+    const list = joinList(net.wires.map(wire));
+    const [pin] = net.pins;
+    warn(pin
+      ? `${list} lead${one ? "s" : ""} from ${pinName(pin)} to no other pin. End ${one ? "it" : "them"} on the pin ${pinName(pin)} should connect to, or remove ${one ? "it" : "them"}.`
+      : `${list} connect${one ? "s" : ""} no pins, so ${one ? "it does" : "they do"} nothing. End ${one ? "it" : "them"} on the pins ${one ? "it" : "they"} should join, or remove ${one ? "it" : "them"}.`);
   }
 
   for (const net of nets.nets) {

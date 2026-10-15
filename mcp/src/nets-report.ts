@@ -16,6 +16,11 @@ const round = (n: number) => Math.round(n * 100) / 100;
 
 export const wireName = (i: number) => `wires[${i}]`;
 
+// "a", "a and b", "a, b and c".
+export function joinList(items: string[]): string {
+  return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
 // What's in a hole: pins, and the wires ending there.
 export function holeContents(project: ProjectFile, netlist: Netlist): (at: readonly number[]) => {pins: NetPin[]; wires: number[]} {
   const pins = new Map<string, NetPin[]>();

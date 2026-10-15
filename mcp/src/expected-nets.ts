@@ -1,4 +1,5 @@
 import {comparePins, Net, Netlist, NetPin, pinId, pinName} from "../../src/project-file/nets";
+import {joinList} from "./nets-report";
 
 // validate_project's expectNets: the nets an agent meant to make, compared with the ones the board
 // makes (worked out by nets.ts). Every net listed should be one net on the board, and nothing else
@@ -33,10 +34,6 @@ function findPin(name: string, pinsByRef: Map<string, NetPin[]>): NetPin | strin
 }
 
 const pinSet = (pins: NetPin[]) => `{${pins.map(pinName).join(", ")}}`;
-
-function joinList(items: string[]): string {
-  return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-}
 
 export function checkExpectedNets(netlist: Netlist, expected: string[][], error: (message: string) => void): void {
   const netOf = new Map<NetPin, Net>();
