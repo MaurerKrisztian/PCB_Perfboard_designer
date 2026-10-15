@@ -3,9 +3,10 @@ import {
   ADVANCED_COMPONENT_DEFINITIONS, AdvancedComponentDefinition, PinOffset,
 } from "../../src/features/advanced-components/advanced-component-definitions";
 import {IC_DEFINITIONS, IcDefinition} from "../../src/features/ic-definitions";
-import {CategoryId, getCategoryPath} from "../../src/features/catalog/catalog-categories";
+import {CATALOG_CATEGORIES, CategoryId, getCategoryPath} from "../../src/features/catalog/catalog-categories";
 import {isModuleCategory} from "../../src/project-file/ic-package";
 import {PartKind} from "../../src/project-file/pin-positions";
+import {Rotation, SavedIc} from "../../src/project-file/project-file";
 
 // The editor's parts catalog as data for programs: every part a project can place, with what a
 // project file entry for it needs and where its pins are. Read straight from the editor's own
@@ -111,18 +112,29 @@ export function findPart(id: string): CatalogPart | undefined {
     ?? CATALOG.find(part => part.kind === "ic" && part.name.toLowerCase() === wanted);
 }
 
-// Ids that look like `id`, best first, for "did you mean" hints.
-export function similarPartIds(id: string, limit = 3): string[] {
-  const words = id.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+// The parts with the most of the words of `text` in their id, name, keywords and (optionally)
+// category, best first: for hints when nothing matches in full.
+function closest(text: string, parts: readonly CatalogPart[], withCategory: boolean, limit: number): CatalogPart[] {
+  const words = text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   const score = (part: CatalogPart) => {
-    const haystack = [part.id, part.name, ...(part.keywords ?? [])].join(" ").toLowerCase();
+    const haystack = [part.id, part.name, ...(withCategory ? [part.category] : []), ...(part.keywords ?? [])].join(" ").toLowerCase();
     return words.filter(word => haystack.includes(word)).length;
   };
-  return CATALOG.map(part => ({id: part.id, score: score(part)}))
+  return parts.map(part => ({part, score: score(part)}))
     .filter(({score}) => score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
-    .map(({id}) => id);
+    .map(({part}) => part);
+}
+
+// Ids that look like `id`, best first, for "did you mean" hints.
+export function similarPartIds(id: string, limit = 3): string[] {
+  return closest(id, CATALOG, false, limit).map(part => part.id);
+}
+
+// For a list_parts query no part matches every word of: the parts matching the most of them.
+export function closestParts(query: string, kind?: PartKind, limit = 5): CatalogPart[] {
+  return closest(query, CATALOG.filter(part => !kind || part.kind === kind), true, limit);
 }
 
 export function searchParts(query?: string, kind?: PartKind): CatalogPart[] {
@@ -134,12 +146,27 @@ export function searchParts(query?: string, kind?: PartKind): CatalogPart[] {
   });
 }
 
+const pinCount = (part: CatalogPart) => part.kind === "standard-component" ? "2 leads"
+  : part.kind === "ic" ? `${part.heightPin * 2} pins`
+  : part.sizable ? "rows x cols pins" : `${part.pins.length} pins`;
+
 // One line per part, for listings: enough to choose, with get_part for the rest.
 export function summarize(part: CatalogPart) {
-  const pins = part.kind === "standard-component" ? "2 leads"
-    : part.kind === "ic" ? `${part.heightPin * 2} pins`
-    : part.sizable ? "rows x cols pins" : `${part.pins.length} pins`;
-  return {kind: part.kind, id: part.id, name: part.name, category: part.category, pins};
+  return {kind: part.kind, id: part.id, name: part.name, category: part.category, pins: pinCount(part)};
+}
+
+// Where each category comes in the editor's Components panel.
+const CATEGORY_ORDER = new Map(CATALOG_CATEGORIES.map((category, i) => [categoryName(category.id), i]));
+
+// The whole catalog at a glance, for list_parts without a query: per category, in the editor's
+// order, each part's id with its name and pin count ("resistor": "Resistor, 2 leads").
+export function partsByCategory(parts: readonly CatalogPart[]): Record<string, Record<string, string>> {
+  const order = (part: CatalogPart) => CATEGORY_ORDER.get(part.category) ?? CATEGORY_ORDER.size;
+  const groups: Record<string, Record<string, string>> = {};
+  for (const part of [...parts].sort((a, b) => order(a) - order(b))) {
+    (groups[part.category] ??= {})[part.id] = `${part.name}, ${pinCount(part)}`;
+  }
+  return groups;
 }
 
 // A project file entry for the part, placed with its anchor at `at`, to copy and adjust.
@@ -160,14 +187,19 @@ export function exampleEntry(part: CatalogPart, at: [number, number] = [1, 1], r
         entry: {ref, definitionId: part.id, at, rotation: 0, rows: 1, cols: part.sizable ? 4 : 1},
       };
     case "ic":
-      return {
-        list: "placedIcs",
-        entry: {
-          ref, name: part.name, at, rotation: 0, widthPin: part.widthPin, heightPin: part.heightPin,
-          pinDescription: part.pinDescription, category: (IC_DEFINITIONS.find(def => def.id === part.id)?.category ?? "ics"),
-        },
-      };
+      return {list: "placedIcs", entry: icEntry(part, at, 0, ref)};
   }
+}
+
+// A placedIcs entry for a catalog chip. widthPin and heightPin describe it as placed, so a chip
+// turned 90 or 270 has them swapped.
+export function icEntry(part: IcCatalogPart, at: [number, number], rotation: Rotation, ref: string): SavedIc {
+  const turned = rotation === 90 || rotation === 270;
+  return {
+    ref, name: part.name, at, rotation,
+    widthPin: turned ? part.heightPin : part.widthPin, heightPin: turned ? part.widthPin : part.heightPin,
+    pinDescription: {...part.pinDescription}, category: IC_DEFINITIONS.find(def => def.id === part.id)?.category ?? "ics",
+  };
 }
 
 // How to place a part, in words, for get_part.

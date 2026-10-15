@@ -163,12 +163,23 @@ agents): the format is the pure `src/project-file/share-link.ts`, documented for
 `docs/share-links.md` (keep the two in step). `share-project.ts` is the Share dialog and opens an
 incoming link as a new stored project (after startup's reopen, via `afterStartup()`, and on
 `hashchange`), then clears the fragment. A format change means a new version number plus an upgrade path in the reader —
-old files must keep opening. `examples/*.json` are v1 files and double as compatibility fixtures.
+old files must keep opening. `examples/*.json` are mostly v1 files and double as compatibility
+fixtures; the two `*-555-blinker.json` are v3 and are the MCP server's examples.
 
 **MCP server** (`mcp/`): a separate npm package (`perfboard-designer-mcp`, own `package.json`, Node
-22+, stdio) that lets AI agents design boards: list parts, get pin positions, list the board's nets
-(`get_nets`), validate a project, make and read share links. Stateless — every tool takes the whole
-project file. It imports the editor's pure code directly (`src/project-file/`, the three definitions
+22+, stdio) that lets AI agents design boards: list parts, start a project (`new_project`, blank or
+from an example), change it with small ops (`edit_project`), get pin positions, list the board's
+nets (`get_nets`), validate it, make and read share links. Projects being worked on are kept in
+memory under a `projectId` (`mcp/src/project-handles.ts`), only a cache of the project file:
+`get_project` returns it, and every tool takes `projectId` or the whole file as `project`.
+`edit_project`'s ops (`mcp/src/edit-project.ts`) only change file entries, all or none, and refuse
+a change the reader would drop (e.g. a part pushed off a shrunk board); its reply, like
+`new_project`'s, checks the board as `validate_project` does and lists the nets once there are no
+errors. `expectNets` given for a projectId is remembered for later checks. Link base URL defaults
+to `PERFBOARD_EDITOR_URL` (set in the client's MCP config), else the public site. Example projects
+(`examples/perfboard-555-blinker.json`, `examples/stripboard-555-blinker.json`) are baked in by
+`mcp/build.mjs` and served as `perfboard://examples/...` resources; keep them valid with their
+`expectNets`. It imports the editor's pure code directly (`src/project-file/`, the three definitions
 files, `catalog-categories.ts`, `rotate-offset.ts`) and esbuild bundles it with the SDK into one
 `mcp/dist/server.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer TypeScript).
 So those modules must stay free of DOM and editor state, and anything they import too. Facts the
@@ -195,10 +206,11 @@ and nothing else (`computeNets(project)`), so the editor and the MCP server alwa
 joins only its two end holes; things in one hole are joined; on a stripboard a strip joins its
 holes up to the next cut, and a cut hole joins nothing. Nets are derived — never saved in the file.
 The editor shows them live in the right sidebar above the shortcuts (`src/features/nets-panel.ts`),
-recomputed from `getSaveJson()` shortly after a redraw that changed the board. Clicking a net
-(or an unconnected pin) lights it up on the board until clicked again: `NetHighlightState` holds
-its holes and wires, drawn by `redrawCanvas()`, and the panel moves it to whichever net holds most
-of its pins after each change.
+recomputed from `getSaveJson()` shortly after a redraw that changed the board. Unconnected pins
+and wires connecting no pins are in folds below the nets. Clicking a net, an unconnected pin or
+such wires lights it up on the board until clicked again: `NetHighlightState` holds its holes and
+wires, drawn by `redrawCanvas()`, and the panel moves it to whichever net holds most of its pins
+after each change (most of its wires, for wires connecting no pins).
 
 **Wire crossings** (`src/project-file/wire-crossings.ts`): wires are insulated jumpers, so where
 one runs across another wire, or over a hole holding a pin, a lead or another wire's end, it goes

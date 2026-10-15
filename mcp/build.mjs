@@ -1,11 +1,16 @@
 // Bundles the server, the editor's shared project-file code and the MCP SDK into one file with no
-// runtime dependencies, so `npx perfboard-designer-mcp` starts fast. The docs it serves as
-// resources are read from the repo now and baked in.
+// runtime dependencies, so `npx perfboard-designer-mcp` starts fast. The docs and example
+// projects it serves as resources are read from the repo now and baked in.
 import {build} from "esbuild";
 import {readFileSync} from "node:fs";
 
 const read = path => readFileSync(new URL(path, import.meta.url), "utf8");
 const {version} = JSON.parse(read("./package.json"));
+// The example projects it serves (src/server.ts describes them), by id.
+const EXAMPLES = {
+  "555-led-blinker": "perfboard-555-blinker.json",
+  "555-led-blinker-stripboard": "stripboard-555-blinker.json",
+};
 
 await build({
   absWorkingDir: new URL(".", import.meta.url).pathname,
@@ -21,6 +26,7 @@ await build({
     SHARE_LINKS_DOC: JSON.stringify(read("../docs/share-links.md")),
     PROJECT_FILE_SOURCE: JSON.stringify(read("../src/project-file/project-file.ts")),
     SERVER_VERSION: JSON.stringify(version),
+    EXAMPLE_PROJECTS: JSON.stringify(Object.fromEntries(Object.entries(EXAMPLES).map(([id, file]) => [id, read(`../examples/${file}`)]))),
   },
   logLevel: "info",
 });

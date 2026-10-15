@@ -1,0 +1,58 @@
+{
+  "version": 3,
+  "board": {"type":"perfboard","cols":14,"rows":12},
+  "pads": [],
+  "wires": [
+    {"from":[0,0],"to":[2,0],"color":"#ef4444"},
+    {"from":[2,0],"to":[9,0],"color":"#ef4444"},
+    {"from":[9,0],"to":[11,0],"color":"#ef4444"},
+    {"from":[11,0],"to":[11,1],"color":"#ef4444"},
+    {"from":[9,4],"to":[9,0],"color":"#ef4444"},
+    {"from":[6,7],"to":[2,7],"color":"#ef4444"},
+    {"from":[2,7],"to":[2,0],"color":"#ef4444"},
+    {"from":[0,1],"to":[0,11],"color":"#1f2937"},
+    {"from":[0,11],"to":[3,11],"color":"#1f2937"},
+    {"from":[3,11],"to":[5,11],"color":"#1f2937"},
+    {"from":[5,11],"to":[9,11],"color":"#1f2937"},
+    {"from":[9,11],"to":[11,11],"color":"#1f2937"},
+    {"from":[6,4],"to":[5,4],"color":"#1f2937"},
+    {"from":[5,4],"to":[5,11],"color":"#1f2937"},
+    {"from":[9,10],"to":[9,11],"color":"#1f2937"},
+    {"from":[11,10],"to":[11,11],"color":"#1f2937"},
+    {"from":[9,5],"to":[11,5]},
+    {"from":[11,4],"to":[11,5]},
+    {"from":[9,6],"to":[10,6],"color":"#facc15"},
+    {"from":[10,6],"to":[10,8],"color":"#facc15"},
+    {"from":[10,8],"to":[11,8],"color":"#facc15"},
+    {"from":[6,5],"to":[4,5],"color":"#facc15"},
+    {"from":[4,5],"to":[4,3],"color":"#facc15"},
+    {"from":[4,3],"to":[10,3],"color":"#facc15"},
+    {"from":[10,3],"to":[10,6],"color":"#facc15"},
+    {"from":[11,8],"to":[11,9],"color":"#facc15"},
+    {"from":[9,7],"to":[9,8]},
+    {"from":[6,6],"to":[3,6]},
+    {"from":[3,9],"to":[3,10]}
+  ],
+  "placedIcs": [
+    {
+      "ref": "U1",
+      "name": "NE555 Timer",
+      "widthPin": 4,
+      "heightPin": 4,
+      "rotation": 0,
+      "pinDescription": {"1":"GND","2":"TRIG","3":"OUT","4":"RESET","5":"CTRL","6":"THRESH","7":"DISCH","8":"VCC"},
+      "at": [6,4],
+      "category": "ics.timers"
+    }
+  ],
+  "placedStandardComponents": [
+    {"ref":"R1","definitionId":"resistor","from":[11,1],"to":[11,4],"value":"1k"},
+    {"ref":"R2","definitionId":"resistor","from":[11,5],"to":[11,8],"value":"68k"},
+    {"ref":"C1","definitionId":"electrolytic-capacitor","from":[11,10],"to":[11,9],"value":"10u"},
+    {"ref":"C2","definitionId":"ceramic-capacitor","from":[9,8],"to":[9,10],"value":"10n"},
+    {"ref":"R3","definitionId":"resistor","from":[3,6],"to":[3,9],"value":"470"},
+    {"ref":"D1","definitionId":"led","from":[3,11],"to":[3,10],"color":"#ef4444"}
+  ],
+  "placedAdvancedComponents": [{"ref":"J1","definitionId":"header-pins","at":[0,0],"rotation":0,"rows":2,"cols":1}],
+  "customIcs": []
+}
