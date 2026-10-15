@@ -5,12 +5,11 @@ import {
 import {IC_DEFINITIONS, IcDefinition} from "../../src/features/ic-definitions";
 import {CategoryId, getCategoryPath} from "../../src/features/catalog/catalog-categories";
 import {isModuleCategory} from "../../src/project-file/ic-package";
+import {PartKind} from "../../src/project-file/pin-positions";
 
 // The editor's parts catalog as data for programs: every part a project can place, with what a
 // project file entry for it needs and where its pins are. Read straight from the editor's own
 // definitions, so it can't drift from them.
-
-export type PartKind = "standard-component" | "advanced-component" | "ic";
 
 interface CatalogPartBase {
   kind: PartKind;

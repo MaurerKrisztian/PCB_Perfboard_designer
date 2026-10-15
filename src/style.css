@@ -13,6 +13,8 @@
   --accent-indigo: #6366f1;
   --text-main: #f3f4f6;
   --text-muted: #9ca3af;
+  /* The net picked in the Nets panel, on the board too (NET_HIGHLIGHT_COLOR in draw-canvas.ts). */
+  --net-highlight: #e879f9;
 }
 
 /* Dark, slim scrollbars across the editor, matching the sidebar's. Firefox and current Chromium
@@ -737,6 +739,138 @@ input[type="number"]:focus, input[type="text"]:focus, input[type="search"]:focus
   min-height: 38px;
   display: flex;
   align-items: center;
+}
+
+/* Nets (nets-panel.ts) */
+.nets-count {
+  margin-left: auto;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--text-main);
+  font-size: 0.7rem;
+  letter-spacing: 0;
+}
+
+.nets-count:empty {
+  display: none;
+}
+
+#nets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 50vh;
+  overflow-y: auto;
+  font-size: 0.8rem;
+}
+
+.net {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-light);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.net.power {
+  border-left-color: var(--accent-cyan);
+}
+
+.net {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.net:hover {
+  border-color: var(--border-light);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.net.selected {
+  border-color: var(--net-highlight);
+  background: rgba(232, 121, 249, 0.08);
+}
+
+.net:focus-visible,
+.nets-unconnected .net-pin:focus-visible {
+  outline: 2px solid var(--net-highlight);
+  outline-offset: 1px;
+}
+
+.net-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.net-name {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.net-name.unnamed {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.net-size {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.net-pins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.net-pin {
+  padding: 1px 5px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  background: var(--bg-hover);
+  color: var(--text-main);
+  font-family: monospace;
+  font-size: 0.72rem;
+}
+
+.net-pin-label {
+  margin-left: 0.3rem;
+  color: #93c5fd;
+}
+
+.nets-empty {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.nets-unconnected summary {
+  cursor: pointer;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.nets-unconnected .net-pins {
+  margin-top: 0.4rem;
+}
+
+.nets-unconnected .net-pin {
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.nets-unconnected .net-pin:hover,
+.nets-unconnected .net-pin.selected {
+  opacity: 1;
+}
+
+.nets-unconnected .net-pin.selected {
+  border-color: var(--net-highlight);
 }
 
 /* Shortcuts Panel */

@@ -3,6 +3,31 @@ import {ViewerWire} from "./project-data";
 export interface WirePoint {
   x: number;
   y: number;
+  // Not a bend: a place on the straight run where the wire arches over something it doesn't join,
+  // another wire (`underWidth`, that wire's width) or a hole's pin, lead or wire end.
+  hop?: {underWidth?: number};
+}
+
+/** A jumper's radius in mm, from the editor's thin/normal/thick width. */
+export function wireRadius(width: number): number {
+  return 0.25 + width * 0.09;
+}
+
+/** Where a straight run from 0 to `length` rises over its hops: a smooth rise and fall `halfRun`
+ *  either side of each one, overlapping arches merged. Ends excluded; any units, so long as
+ *  `at`, `length` and `halfRun` share one. */
+export function archSamples(length: number, hops: {at: number; lift: number; halfRun: number}[]): {at: number; lift: number}[] {
+  const STEPS = 3;
+  const liftAt = (at: number) => Math.max(0, ...hops.map(hop => {
+    const u = (at - hop.at) / hop.halfRun;
+    return Math.abs(u) < 1 ? hop.lift * (1 + Math.cos(Math.PI * u)) / 2 : 0;
+  }));
+  return hops
+    .flatMap(hop => Array.from({length: 2 * STEPS + 1}, (_, k) => hop.at + hop.halfRun * (k - STEPS) / STEPS))
+    .filter(at => at > 0 && at < length)
+    .sort((a, b) => a - b)
+    .filter((at, i, all) => i === 0 || at - all[i - 1] > 0.5)
+    .map(at => ({at, lift: liftAt(at)}));
 }
 
 /** One jumper wire as the user drew it: a run of editor segments joined end to end. `points`
@@ -22,6 +47,8 @@ export function holeKey(px: number, py: number): string {
 interface Segment {
   a: WirePoint;
   b: WirePoint;
+  // Its hops, from a to b.
+  hops: WirePoint[];
   ka: string;
   kb: string;
   color: string;
@@ -37,7 +64,8 @@ export function chainWires(wires: ViewerWire[], componentHoles: ReadonlySet<stri
   for (const wire of wires) {
     if (wire.x1 === wire.x2 && wire.y1 === wire.y2) continue;
     const a = {x: wire.x1, y: wire.y1}, b = {x: wire.x2, y: wire.y2};
-    segments.push({a, b, ka: holeKey(a.x, a.y), kb: holeKey(b.x, b.y), color: wire.color, width: wire.width});
+    const hops = wire.hops.map(({x, y, underWidth}) => ({x, y, hop: underWidth !== undefined ? {underWidth} : {}}));
+    segments.push({a, b, hops, ka: holeKey(a.x, a.y), kb: holeKey(b.x, b.y), color: wire.color, width: wire.width});
   }
 
   const touching = new Map<string, number[]>();
@@ -69,8 +97,8 @@ export function chainWires(wires: ViewerWire[], componentHoles: ReadonlySet<stri
       if (visited.has(next)) return {points, closed: true};
       visited.add(next);
       const segment = segments[next];
-      const far = segment.ka === at ? segment.b : segment.a;
-      points.push(far);
+      const forward = segment.ka === at;
+      points.push(...(forward ? segment.hops : [...segment.hops].reverse()), forward ? segment.b : segment.a);
       current = next;
       at = segment.ka === at ? segment.kb : segment.ka;
     }
@@ -83,12 +111,12 @@ export function chainWires(wires: ViewerWire[], componentHoles: ReadonlySet<stri
     visited.add(i);
     const forward = follow(i, segment.kb, visited);
     if (forward.closed) {
-      paths.push({points: [segment.a, segment.b, ...forward.points], color: segment.color, width: segment.width, closed: true});
+      paths.push({points: [segment.a, ...segment.hops, segment.b, ...forward.points], color: segment.color, width: segment.width, closed: true});
       return;
     }
     const backward = follow(i, segment.ka, visited);
     paths.push({
-      points: [...backward.points.reverse(), segment.a, segment.b, ...forward.points],
+      points: [...backward.points.reverse(), segment.a, ...segment.hops, segment.b, ...forward.points],
       color: segment.color, width: segment.width, closed: false,
     });
   });

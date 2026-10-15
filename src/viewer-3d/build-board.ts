@@ -2,10 +2,10 @@ import {
   CircleGeometry, Color, DoubleSide, ExtrudeGeometry, Group, InstancedMesh, LatheGeometry, Matrix4,
   Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, RingGeometry, Shape, Vector2, Vector3,
 } from "three";
-import {BOARD_BOTTOM_Y, BOARD_THICKNESS, BoardFrame, PITCH, SceneKit} from "./scene-kit";
+import {BOARD_BOTTOM_Y, BOARD_THICKNESS, BoardFrame, PITCH, PX_PER_PITCH, SceneKit} from "./scene-kit";
 import {CUT_GAP_PITCH, STRIP_WIDTH_PITCH} from "../project-file/stripboard-geometry";
 import {ViewerBoard, ViewerDot, ViewerProject} from "./project-data";
-import {WirePath} from "./wire-paths";
+import {archSamples, WirePath, WirePoint, wireRadius} from "./wire-paths";
 
 const PERFBOARD_COLOR = "#0e5a27";
 // Stripboards are usually SRBP (paper-based), a warm brown.
@@ -163,17 +163,54 @@ export function buildSolderJoints(kit: SceneKit): InstancedMesh | null {
   return instanced(geometry as unknown as CircleGeometry, material, holes.map(h => new Vector3(h.x, BOARD_BOTTOM_Y - SURFACE_LIFT, h.z)));
 }
 
+// How a wire arches over what it doesn't join (its hops): clear of the wire underneath, or of a
+// wire end's bend or a lead standing in a hole, rising and falling over this far either side.
+const ARCH_GAP = 0.15;
+const HOLE_ARCH_LIFT = 1.5;
+const ARCH_RUN = 1.4;
+const PX_PER_MM = PX_PER_PITCH / PITCH;
+
+/** A wire's centreline in the scene: lying on the board, arching over each hop between its bends. */
+function wireLine(frame: BoardFrame, points: WirePoint[], radius: number): Vector3[] {
+  const line: Vector3[] = [];
+  for (let i = 0; i < points.length;) {
+    const start = points[i];
+    line.push(frame.point(start.x, start.y, radius));
+    let next = i + 1;
+    while (next < points.length && points[next].hop) next++;
+    if (next >= points.length) break;
+    const end = points[next];
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    const hops = points.slice(i + 1, next).map(({x, y, hop}) => {
+      const underRadius = hop?.underWidth !== undefined ? wireRadius(hop.underWidth) : 0;
+      return {
+        at: Math.hypot(x - start.x, y - start.y),
+        lift: underRadius ? 2 * underRadius + ARCH_GAP : HOLE_ARCH_LIFT,
+        halfRun: (ARCH_RUN + underRadius) * PX_PER_MM,
+      };
+    });
+    for (const {at, lift} of archSamples(length, hops)) {
+      const t = at / length;
+      line.push(frame.point(start.x + (end.x - start.x) * t, start.y + (end.y - start.y) * t, radius + lift));
+    }
+    i = next;
+  }
+  return line;
+}
+
 /** Insulated jumper wires lying on the top face. Each wire is one continuous insulated run, so
  *  its bends are just insulation; only its two free ends dive into their holes as bare tinned
- *  copper and get soldered. Thickness follows the editor's thin/normal/thick gauges. */
+ *  copper and get soldered. Where it crosses another wire, or a hole it doesn't join, it arches
+ *  over (the later wire over the earlier, as the editor draws them). Thickness follows the
+ *  editor's thin/normal/thick gauges. */
 export function buildWires(kit: SceneKit, paths: WirePath[]): Group {
   const {frame} = kit;
   const group = new Group();
   const conductor = kit.standard("wire-conductor", {color: "#d0d4d8", metalness: 1, roughness: 0.3});
   for (const path of paths) {
-    const radius = 0.25 + path.width * 0.09;
+    const radius = wireRadius(path.width);
     const insulation = kit.standard(`wire:${path.color}`, {color: path.color, roughness: 0.45});
-    const points = path.points.map(p => frame.point(p.x, p.y, radius));
+    const points = wireLine(frame, path.points, radius);
     group.add(kit.bentWire(points, radius, insulation));
     if (path.closed) {
       // A loop has no free ends; round off the one corner bentWire leaves out.

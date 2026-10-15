@@ -65,7 +65,7 @@
           <button data-open-3d role="menuitem">3D View</button>
           <div class="menu-divider"></div>
           <button id="toggleSidebarBtn" role="menuitemcheckbox" aria-checked="true">Tools Sidebar<span class="menu-check">✓</span></button>
-          <button id="toggleShortcutsBtn" role="menuitemcheckbox" aria-checked="true">Keyboard Shortcuts<span class="menu-check">✓</span></button>
+          <button id="toggleShortcutsBtn" role="menuitemcheckbox" aria-checked="true">Nets &amp; Shortcuts<span class="menu-check">✓</span></button>
         </div>
       </div>
       <input type="file" id="loadProjectBtn" style="display:none">
@@ -271,10 +271,16 @@
       </div>
     </section>
 
-    <!-- Right Sidebar: Shortcuts & Legend -->
+    <!-- Right Sidebar: the board's nets (nets-panel.ts) and the shortcuts legend -->
     <aside id="shortcutsPanel" class="right-sidebar tool-panel">
-      <div class="section-title">Keyboard Shortcuts</div>
-      <div id="shortcuts"></div>
+      <div>
+        <div class="section-title">Nets <span id="netsCount" class="nets-count"></span></div>
+        <div id="nets"></div>
+      </div>
+      <div>
+        <div class="section-title">Keyboard Shortcuts</div>
+        <div id="shortcuts"></div>
+      </div>
     </aside>
 
   </main>

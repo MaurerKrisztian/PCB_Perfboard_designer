@@ -1,7 +1,7 @@
 import {GridPos} from "../../src/project-file/grid";
 import {ProjectFile} from "../../src/project-file/project-file";
 import {ProjectFileError, readProjectFile} from "../../src/project-file/read-project-file";
-import {Box, PartPins, partPins} from "./pins";
+import {Box, PartPins, partPins} from "../../src/project-file/pin-positions";
 import {similarPartIds} from "./parts";
 
 // Checks a project file the way a person looking at the board would: beyond what the reader

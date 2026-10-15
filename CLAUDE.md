@@ -70,8 +70,8 @@ hover, selection, color picker, context menu, shortcuts, project save/load, etc.
 mutate the state classes and call `redrawCanvas()` (`src/features/draw-canvas.ts`) after any
 change that affects what's on screen. `redrawCanvas` redraws everything from scratch each call
 (immediate-mode style) in a fixed layer order: bare board → IC bodies → grid dots → wires →
-standard components → advanced components → part labels → IC labels → in-progress placement
-previews.
+standard components → advanced components → junction dots → part labels → IC labels → the net
+picked in the Nets panel → in-progress placement previews.
 
 **Components catalog** (`src/features/catalog/`): the sidebar's single Components section — a
 search box over a category tree. It only decides where parts are *listed*; placing them is still
@@ -173,8 +173,27 @@ imports the editor's pure code directly (`src/project-file/`, the three definiti
 `mcp/dist/server.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer
 TypeScript). So those modules must stay free of DOM and editor state, and anything they import
 too. Facts the server tells agents belong in the definitions (e.g. `leadLabels`, which lead of a
-polarized part is which), not in `mcp/`. Its pin geometry (`mcp/src/pins.ts`) mirrors
+polarized part is which), not in `mcp/`. Pin geometry from a project file
+(`src/project-file/pin-positions.ts`, shared with the nets) mirrors
 `placed-advanced-component.ts` and `Ic.getRealPinPositions` — change them together.
+
+**Nets** (`src/project-file/nets.ts`): which pins the board connects, computed from a project file
+and nothing else (`computeNets(project)`), so the editor and the MCP server always agree. A wire
+joins only its two end holes; things in one hole are joined; on a stripboard a strip joins its
+holes up to the next cut, and a cut hole joins nothing. Nets are derived — never saved in the file.
+The editor shows them live in the right sidebar above the shortcuts (`src/features/nets-panel.ts`),
+recomputed from `getSaveJson()` shortly after a redraw that changed the board. Clicking a net
+(or an unconnected pin) lights it up on the board until clicked again: `NetHighlightState` holds
+its holes and wires, drawn by `redrawCanvas()`, and the panel moves it to whichever net holds most
+of its pins after each change.
+
+**Wire crossings** (`src/project-file/wire-crossings.ts`): wires are insulated jumpers, so where
+one runs across another wire, or over a hole holding a pin, a lead or another wire's end, it goes
+*over* it (of two crossing wires, the later one in the list), and where three or more things meet
+at a hole they're joined. `layoutWires()` works this out from wire ends and pin holes:
+`redrawCanvas()` feeds it the live board each redraw (a dark edge either side of a wire where it
+goes over something, and a solder dot at each junction), and the 3D viewer feeds it the project
+file (`layoutProjectWires()`) and arches the upper wire over each crossing.
 
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the
 editor on purpose. It only consumes project-file JSON, read by the shared `src/project-file/`

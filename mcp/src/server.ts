@@ -6,7 +6,7 @@ import {
   decodeEmbeddedProject, makeShareFragment, MAX_SHARED_PROJECT_BYTES, readShareFragment,
 } from "../../src/project-file/share-link";
 import {CATALOG, exampleEntry, findPart, placementNotes, searchParts, similarPartIds, summarize} from "./parts";
-import {partPins} from "./pins";
+import {partPins} from "../../src/project-file/pin-positions";
 import {validateProject} from "./validate";
 
 // The Perfboard Designer MCP server: lets an AI agent design a perfboard or stripboard layout as a

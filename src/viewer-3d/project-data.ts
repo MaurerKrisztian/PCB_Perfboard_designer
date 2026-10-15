@@ -5,6 +5,7 @@
 import {GRID_PITCH_PX, GridPos, gridToPx} from "../project-file/grid";
 import {readProjectFile} from "../project-file/read-project-file";
 import {StripDirection} from "../project-file/project-file";
+import {layoutProjectWires} from "../project-file/wire-crossings";
 
 export type Rotation = 0 | 90 | 180 | 270;
 
@@ -18,6 +19,15 @@ export type ViewerBoard =
   | {type: "perfboard"}
   | {type: "stripboard"; strips: StripDirection; cuts: {x: number; y: number}[]};
 
+// Where a wire goes over something it doesn't join (see wire-crossings.ts), in pixels.
+// `underWidth` is the width of the wire it crosses; absent over a hole holding a pin, a lead or
+// another wire's end.
+export interface ViewerHop {
+  x: number;
+  y: number;
+  underWidth?: number;
+}
+
 export interface ViewerWire {
   x1: number;
   y1: number;
@@ -25,6 +35,8 @@ export interface ViewerWire {
   y2: number;
   color: string;
   width: number;
+  // In order from (x1, y1).
+  hops: ViewerHop[];
 }
 
 export interface ViewerIc {
@@ -93,12 +105,17 @@ export function readProject(raw: unknown): ViewerProject {
     }
   }
 
-  const wires: ViewerWire[] = project.wires.map(wire => {
+  const {hops} = layoutProjectWires(project);
+  const wires: ViewerWire[] = project.wires.map((wire, i) => {
     const from = px(wire.from);
     const to = px(wire.to);
     return {
       x1: from.x, y1: from.y, x2: to.x, y2: to.y,
       color: wire.color ?? DEFAULT_WIRE_COLOR, width: wire.width ?? DEFAULT_WIRE_WIDTH,
+      hops: hops.filter(hop => hop.wire === i).map(hop => ({
+        ...px(hop.at),
+        ...(hop.under !== undefined ? {underWidth: project.wires[hop.under].width ?? DEFAULT_WIRE_WIDTH} : {}),
+      })),
     };
   });
 
