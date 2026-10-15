@@ -15,6 +15,8 @@ import {
 // writes when the project changed. Opening another project saves the one being left first.
 
 export const DEFAULT_PROJECT_NAME = "Untitled project";
+// For a project opened from a share link that doesn't name it.
+const SHARED_PROJECT_NAME = "Shared project";
 const SAVE_DELAY_MS = 500;
 
 let pendingSave: number | undefined;
@@ -118,18 +120,39 @@ export function newProject(name: string): boolean {
   });
 }
 
-// Opens a project file the user picked as a new stored project, named after the file.
-export function importProjectFile(text: string, fileName: string) {
+// Opens the project file `parse` returns as a new stored project called `name` (or a numbered
+// variant). `what` is how the user knows it, in messages.
+function importProject(parse: () => unknown, name: string, what: string) {
   let read: ReadProjectResult;
   try {
-    read = readProjectFile(JSON.parse(text));
+    read = readProjectFile(parse());
   } catch (err) {
     console.error(err);
-    alert(`Couldn't open "${fileName}". ${whyUnreadable(err)}`);
+    alert(`Couldn't open "${what}". ${whyUnreadable(err)}`);
     return;
   }
-  createAndOpen(unusedProjectName(fileName.replace(/\.json$/i, "").trim() || DEFAULT_PROJECT_NAME), read.project);
-  reportSkipped(fileName, read.skipped);
+  createAndOpen(unusedProjectName(name), read.project);
+  reportSkipped(what, read.skipped);
+}
+
+// Opens a project file the user picked as a new stored project, named after the file.
+export function importProjectFile(text: string, fileName: string) {
+  importProject(() => JSON.parse(text), fileName.replace(/\.json$/i, "").trim() || DEFAULT_PROJECT_NAME, fileName);
+}
+
+// Opens a project from a share link as a new stored project: the receiver gets a copy, and the
+// project they had open stays as it was. `raw` is the project file the link carried, unchecked.
+export function importSharedProject(raw: unknown, name: string | undefined) {
+  const projectName = name?.trim() || SHARED_PROJECT_NAME;
+  importProject(() => raw, projectName, projectName);
+}
+
+const startupListeners: (() => void)[] = [];
+
+// Runs `listener` once the project open last time has been reopened at page load, so whatever it
+// opens isn't then replaced by that.
+export function afterStartup(listener: () => void) {
+  startupListeners.push(listener);
 }
 
 // Stores a copy of a project as "<name> copy". The open project stays open.
@@ -170,7 +193,7 @@ export function deleteProject(id: string) {
 // Reopens the project open last time, or else the most recently edited one, or starts the first.
 // Waits for DOMContentLoaded because index.ts lays out a fresh grid after importing the feature
 // modules, which would replace it.
-window.addEventListener("DOMContentLoaded", () => {
+function reopenLastProject() {
   try {
     migrateLegacySave("My project");
     const lastOpen = getLastOpenProjectId();
@@ -181,4 +204,9 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error("Local storage isn't available, so the board won't be saved.", e);
     setCurrent(undefined);
   }
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  reopenLastProject();
+  startupListeners.forEach(listener => listener());
 });

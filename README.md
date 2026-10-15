@@ -84,8 +84,9 @@ device.
 - 📝 **Notes on any hole**: label pads like `+9V`, `GND` or `TP1` so the layout still makes sense
   months later.
 - 💾 **Save, share and export**: keep as many projects as you like in the browser, saved
-  automatically as you go. Download a design as a JSON project file to share or reopen, or export
-  the board as a high-resolution PNG image.
+  automatically as you go. Share a board with a link that opens a copy of it (no account or
+  upload: the board is in the link), download it as a JSON project file, or export it as a
+  high-resolution PNG image.
 - ↩️ **Fast to work with**: undo and redo, drag parts to move them, a right-click context menu,
   and keyboard shortcuts for the common actions.
 
@@ -183,8 +184,8 @@ No. It runs in any modern web browser, and works best on a desktop or laptop wit
 
 On your own device. Your projects are saved in this browser automatically as you edit: open,
 rename, duplicate or delete them from **File → Open Project**. **Save Project to File** downloads a
-project file you can import again or share. Nothing is
-uploaded to a server.
+project file you can import again or share, and **Share** makes a link with the board inside
+the link itself. Nothing is uploaded to a server.
 
 ### Does it work for stripboard (Veroboard)?
 
@@ -231,6 +232,8 @@ cuts, wires, and every part with its reference designator, all as `[column, row]
 rather than pixels. Files from older versions still open. The format is documented field by field
 in [`src/project-file/project-file.ts`](src/project-file/project-file.ts), and the
 [`examples/`](examples) folder has sample projects to open with **File → Import Project from File**.
+Share links carry the same file, and can be made by other programs (an AI agent designing a board,
+say): see [docs/share-links.md](docs/share-links.md).
 
 ## Contributing
 

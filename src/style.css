@@ -1169,6 +1169,29 @@ body.fullscreen-active .right-sidebar {
   gap: 0.5rem;
 }
 
+/* Share Link dialog */
+.share-card {
+  max-width: 560px;
+}
+
+.share-note {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.share-note.is-warning {
+  color: #fbbf24;
+}
+
+input.share-link-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
 /* The open project's name in the header; opens the Projects dialog */
 button.project-name-btn {
   display: inline-block;

@@ -52,6 +52,7 @@
           <button id="loadProjectTrigger" role="menuitem">Import Project from File...</button>
           <div class="menu-divider"></div>
           <button id="saveProjectBtn" role="menuitem">Save Project to File...</button>
+          <button data-share-link role="menuitem">Share Link...</button>
           <div class="menu-divider"></div>
           <button id="downloadBtn" role="menuitem">Download Image</button>
         </div>
@@ -73,6 +74,7 @@
     </nav>
 
     <div class="header-actions">
+      <button data-share-link class="btn" title="Copy a link that opens a copy of this board">🔗 Share</button>
       <button id="open3dViewBtn" data-open-3d class="btn-accent">🧊 3D View</button>
     </div>
   </header>
@@ -359,6 +361,27 @@
       <div class="modal-footer projects-footer">
         <span class="projects-footer-hint">💾 Saved in this browser as you edit</span>
         <button id="modalImportProjectBtn" class="btn">Import from File...</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Share Link Modal (share-project.ts) -->
+  <div id="shareModal" class="modal-overlay" style="display:none;">
+    <div class="modal-card share-card" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+      <div class="modal-header">
+        <span id="shareModalTitle" class="modal-title">🔗 Share Link</span>
+        <button id="closeShareModalBtn" class="close-btn" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="share-note">Anyone who opens this link gets their own copy of the board as it is now. Changes you make later aren't in it: share a new link for those.</p>
+        <input type="text" id="shareLinkInput" class="share-link-input" readonly aria-label="Share link">
+        <p id="shareLinkInfo" class="share-note" aria-live="polite"></p>
+      </div>
+
+      <div class="modal-footer">
+        <button id="doneShareModalBtn" class="btn">Close</button>
+        <button id="copyShareLinkBtn" class="btn-primary">Copy Link</button>
       </div>
     </div>
   </div>

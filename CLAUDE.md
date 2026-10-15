@@ -157,7 +157,12 @@ different projects never write the same key), `current-project.ts` tracks which 
 (`ProjectState.current`), opens/creates/imports/deletes them, and autosaves the open one shortly
 after any redraw that changed it (via `onRedraw()` in `draw-canvas.ts` — every board change ends
 in a redraw) and when the tab is hidden or closed. `projects-modal.ts` is the UI (File menu
-items, header name, Projects dialog). A format change means a new version number plus an upgrade path in the reader —
+items, header name, Projects dialog). **Share links** carry a whole project in the editor URL's
+fragment (`#name=…&z=…`, or `json=`/`src=` for links written by people and programs such as AI
+agents): the format is the pure `src/project-file/share-link.ts`, documented for outside writers in
+`docs/share-links.md` (keep the two in step). `share-project.ts` is the Share dialog and opens an
+incoming link as a new stored project (after startup's reopen, via `afterStartup()`, and on
+`hashchange`), then clears the fragment. A format change means a new version number plus an upgrade path in the reader —
 old files must keep opening. `examples/*.json` are v1 files and double as compatibility fixtures.
 
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the
