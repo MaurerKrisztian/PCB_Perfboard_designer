@@ -39,7 +39,7 @@ export class Ic implements PlacedPart {
   public definitionId?: string;
   // Set on the armed copy of a catalog template (see selectIc); undefined everywhere else.
   public armedFrom?: Ic;
-  public rotationAngle: number = 0; // 0, 90, 180, 270
+  public rotationAngle = 0; // 0, 90, 180, 270
   topLeftDot: IDot | null = null;
 
   constructor(
@@ -47,7 +47,7 @@ export class Ic implements PlacedPart {
     public heightPin: number, 
     public pinDescription: Record<number, string>,
     public name: string,
-    isCustom: boolean = false
+    isCustom = false
   ) {
     this.isCustom = isCustom;
   }
@@ -59,7 +59,7 @@ export class Ic implements PlacedPart {
   // Parts in the Modules category (dev boards…) are drawn as a board; every other chip is a DIP.
   get isModule(): boolean { return isModuleCategory(this.category); }
 
-  static add(ic: Ic, saveToStorage: boolean = false){
+  static add(ic: Ic, saveToStorage = false){
     this.IC_CONTAINER.push(ic);
     if (saveToStorage) {
       this.saveCustomIcsToLocalStorage();

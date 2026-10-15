@@ -12,14 +12,15 @@ export function getCachedIcon(iconPath: string): IconCacheEntry {
   let entry = cache.get(iconPath);
   if (!entry) {
     const img = new Image();
-    entry = {img, loaded: false, failed: false};
-    cache.set(iconPath, entry);
+    const created: IconCacheEntry = {img, loaded: false, failed: false};
+    entry = created;
+    cache.set(iconPath, created);
     img.onload = () => {
-      entry!.loaded = true;
+      created.loaded = true;
       redrawCanvas();
     };
     img.onerror = () => {
-      entry!.failed = true;
+      created.failed = true;
       redrawCanvas();
     };
     img.src = iconPath;

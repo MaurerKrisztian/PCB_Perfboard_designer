@@ -132,8 +132,8 @@ function drawColorSpectrum() {
 function updatePickedColorFromMouse(clientX: number, clientY: number) {
   if (!spectrumCanvas) return;
   const rect = spectrumCanvas.getBoundingClientRect();
-  let x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-  let y = Math.max(0, Math.min(rect.height, clientY - rect.top));
+  const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+  const y = Math.max(0, Math.min(rect.height, clientY - rect.top));
 
   if (spectrumHandle) {
     spectrumHandle.style.left = `${x}px`;
