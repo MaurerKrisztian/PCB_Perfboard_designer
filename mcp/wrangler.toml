@@ -1,0 +1,28 @@
+# The MCP server hosted on Cloudflare Workers (src/worker.ts). `npm run worker:dev` runs it
+# locally, `npm run worker:deploy` publishes it; both build it first (build.mjs).
+name = "perfboard-designer-mcp"
+main = "dist/worker.js"
+compatibility_date = "2026-09-01"
+# build.mjs has already bundled it, with the docs and examples baked in.
+no_bundle = true
+# Served at its own domain and its workers.dev address. The domain must be on the deploying
+# Cloudflare account: remove `routes` to deploy a copy to your own account.
+routes = [{ pattern = "mcp.perfboarddesigner.com", custom_domain = true }]
+workers_dev = true
+
+[build]
+command = "node build.mjs"
+watch_dir = ["src", "../src/project-file", "../docs", "../examples"]
+
+# One Durable Object per kept project, named by its projectId.
+[[durable_objects.bindings]]
+name = "PROJECTS"
+class_name = "ProjectHolder"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ProjectHolder"]
+
+[vars]
+# Where share links open. Leave unset for the public editor, https://perfboarddesigner.com/app/.
+# PERFBOARD_EDITOR_URL = "http://localhost:3000/app/"

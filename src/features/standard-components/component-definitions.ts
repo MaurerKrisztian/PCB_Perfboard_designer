@@ -24,6 +24,10 @@ export interface ComponentDefinition {
   artworkHalfThickness?: number;
   // A colored LED: the context menu offers its color, which tints the body and becomes its value.
   led?: boolean;
+  // Which lead is which on a polarized part, as the 2D and 3D artwork draw it: [the start dot's
+  // lead, the end dot's], which a project file's `from` and `to` are. Absent when the leads are
+  // interchangeable.
+  leadLabels?: [string, string];
 }
 
 // One grid step is GridConfig.dotSpace (50px), so the default body spans a bit more than
@@ -46,11 +50,11 @@ export function getIconPath(def: ComponentDefinition): string {
 export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {id: "resistor", refPrefix: "R", category: "passives.resistors", name: "Resistor", keywords: ["res"], fallbackLabel: "R", unit: "Ω", artworkHalfThickness: 17},
   {id: "ceramic-capacitor", refPrefix: "C", category: "passives.capacitors", name: "Ceramic Capacitor", keywords: ["cap", "mlcc", "disc"], fallbackLabel: "C", unit: "F", artworkHalfThickness: 38},
-  {id: "electrolytic-capacitor", refPrefix: "C", category: "passives.capacitors", name: "Electrolytic Capacitor", keywords: ["cap", "polarized", "elco"], fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44},
+  {id: "electrolytic-capacitor", refPrefix: "C", category: "passives.capacitors", name: "Electrolytic Capacitor", keywords: ["cap", "polarized", "elco"], fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44, leadLabels: ["-", "+"]},
   {id: "inductor", refPrefix: "L", category: "passives", name: "Inductor", keywords: ["coil", "choke"], fallbackLabel: "L", unit: "H", artworkHalfThickness: 17},
-  {id: "led", refPrefix: "D", category: "semiconductors.diodes", name: "LED", keywords: ["light", "light emitting diode", "5mm"], fallbackLabel: "LED", led: true},
-  {id: "led-3mm", refPrefix: "D", category: "semiconductors.diodes", name: "LED (3 mm)", keywords: ["light", "light emitting diode", "3mm", "t-1", "indicator"], fallbackLabel: "LED", iconPath: `${COMPONENT_ICON_DIR}led.svg`, bodySize: 46, led: true},
-  {id: "diode", refPrefix: "D", category: "semiconductors.diodes", name: "Diode", keywords: ["rectifier", "1n4148", "1n4007"], fallbackLabel: "D", artworkHalfThickness: 18},
+  {id: "led", refPrefix: "D", category: "semiconductors.diodes", name: "LED", keywords: ["light", "light emitting diode", "5mm"], fallbackLabel: "LED", led: true, leadLabels: ["K", "A"]},
+  {id: "led-3mm", refPrefix: "D", category: "semiconductors.diodes", name: "LED (3 mm)", keywords: ["light", "light emitting diode", "3mm", "t-1", "indicator"], fallbackLabel: "LED", iconPath: `${COMPONENT_ICON_DIR}led.svg`, bodySize: 46, led: true, leadLabels: ["K", "A"]},
+  {id: "diode", refPrefix: "D", category: "semiconductors.diodes", name: "Diode", keywords: ["rectifier", "1n4148", "1n4007"], fallbackLabel: "D", artworkHalfThickness: 18, leadLabels: ["A", "K"]},
 ];
 
 export function getComponentDefinition(id: string): ComponentDefinition | undefined {

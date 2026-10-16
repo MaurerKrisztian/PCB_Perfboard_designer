@@ -13,6 +13,8 @@
   --accent-indigo: #6366f1;
   --text-main: #f3f4f6;
   --text-muted: #9ca3af;
+  /* The net picked in the Nets panel, on the board too (NET_HIGHLIGHT_COLOR in draw-canvas.ts). */
+  --net-highlight: #e879f9;
 }
 
 /* Dark, slim scrollbars across the editor, matching the sidebar's. Firefox and current Chromium
@@ -739,6 +741,139 @@ input[type="number"]:focus, input[type="text"]:focus, input[type="search"]:focus
   align-items: center;
 }
 
+/* Nets (nets-panel.ts) */
+.nets-count {
+  margin-left: auto;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: var(--bg-hover);
+  color: var(--text-main);
+  font-size: 0.7rem;
+  letter-spacing: 0;
+}
+
+.nets-count:empty {
+  display: none;
+}
+
+#nets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 50vh;
+  overflow-y: auto;
+  font-size: 0.8rem;
+}
+
+.net {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-light);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.net.power {
+  border-left-color: var(--accent-cyan);
+}
+
+.net {
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.net:hover {
+  border-color: var(--border-light);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.net.selected {
+  border-color: var(--net-highlight);
+  background: rgba(232, 121, 249, 0.08);
+}
+
+.net:focus-visible,
+.nets-fold .net-pin:focus-visible {
+  outline: 2px solid var(--net-highlight);
+  outline-offset: 1px;
+}
+
+.net-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.net-name {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.net-name.unnamed {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.net-size {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.net-pins {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.net-pin {
+  padding: 1px 5px;
+  border: 1px solid var(--border-light);
+  border-radius: 4px;
+  background: var(--bg-hover);
+  color: var(--text-main);
+  font-family: monospace;
+  font-size: 0.72rem;
+}
+
+.net-pin-label {
+  margin-left: 0.3rem;
+  color: #93c5fd;
+}
+
+.nets-empty {
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Amber, like the Share dialog's warning: unconnected pins and stray wires are likely mistakes. */
+.nets-fold summary {
+  cursor: pointer;
+  color: #fbbf24;
+  user-select: none;
+}
+
+.nets-fold .net-pins {
+  margin-top: 0.4rem;
+}
+
+.nets-fold .net-pin {
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.nets-fold .net-pin:hover,
+.nets-fold .net-pin.selected {
+  opacity: 1;
+}
+
+.nets-fold .net-pin.selected {
+  border-color: var(--net-highlight);
+}
+
 /* Shortcuts Panel */
 #shortcuts {
   font-size: 0.8rem;
@@ -1167,6 +1302,29 @@ body.fullscreen-active .right-sidebar {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
+}
+
+/* Share Link dialog */
+.share-card {
+  max-width: 560px;
+}
+
+.share-note {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.share-note.is-warning {
+  color: #fbbf24;
+}
+
+input.share-link-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
 }
 
 /* The open project's name in the header; opens the Projects dialog */

@@ -328,7 +328,9 @@ function readV1(data: Entry): ReadProjectResult {
 export function readProjectFile(raw: unknown): ReadProjectResult {
   const data = asEntry(raw);
   if (!data) throw new ProjectFileError(NOT_A_PROJECT);
-  if (data.version === undefined) return readV1(data);
+  // Version 1 never had a `board`, so a file without a version that has one was written by hand
+  // (or by a program) to the current format, and only left the version out.
+  if (data.version === undefined) return asEntry(data.board) ? readGridFile(data, PROJECT_FILE_VERSION) : readV1(data);
   if (data.version === 2 || data.version === 3) return readGridFile(data, data.version);
   if (typeof data.version === "number" && data.version > PROJECT_FILE_VERSION) {
     throw new ProjectFileError(

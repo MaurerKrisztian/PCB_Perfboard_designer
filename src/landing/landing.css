@@ -331,6 +331,34 @@ h1, h2, h3 {
   font-size: 0.95rem;
 }
 
+/* A card across the whole grid, with a link out (the MCP server). */
+.feature-wide {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background:
+    radial-gradient(circle at 0% 50%, rgba(6, 182, 212, 0.12), transparent 55%),
+    var(--surface);
+  border-color: rgba(6, 182, 212, 0.35);
+}
+
+.feature-wide .feature-icon {
+  flex: none;
+}
+
+.feature-wide-text {
+  flex: 1;
+}
+
+.feature-wide h3 {
+  margin-top: 0;
+}
+
+.feature-wide .button {
+  flex: none;
+}
+
 /* --- 3D view showcase --- */
 
 .showcase {
@@ -570,6 +598,11 @@ h1, h2, h3 {
 
   .site-header .button-small {
     margin-left: auto;
+  }
+
+  .feature-wide {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 

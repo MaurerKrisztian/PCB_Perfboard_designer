@@ -13,6 +13,9 @@ import {behaviorOf} from "./tools";
 import {activeBoardLook} from "./board-looks";
 import {PAD_RADIUS} from "./board-looks/board-look";
 import {GridConfig} from "../state/GridConfig";
+import {WireHop} from "../project-file/wire-crossings";
+import {drawJunctions, drawOverEdges, liveWireMarks} from "./wire-crossing-marks";
+import {drawNetHighlight} from "./net-highlight";
 
 // How strongly a hole shows through a chip or board sitting on top of it: not at all.
 const COVERED_PAD_OPACITY = 0;
@@ -90,7 +93,7 @@ function drawDot(dot: IDot, opacity = 1){
   }
 }
 
-function drawLine(line: ILine){
+function drawLine(line: ILine, hops: WireHop[] = []){
   const baseWidth = line.width || 4;
 
   // Selected line glowing highlight & terminal node handles
@@ -119,6 +122,8 @@ function drawLine(line: ILine){
     Canvas.ctx.lineCap = "round";
     Canvas.ctx.stroke();
   }
+
+  drawOverEdges(line, hops);
 
   // Main trace line
   Canvas.ctx.beginPath();
@@ -151,19 +156,24 @@ export function redrawCanvas() {
     const dot = DotState.dots[i];
     drawDot(dot, underIcs.get(holeKey(dot.x, dot.y)));
   }
-  // 3. Draw wires
+  // 3. Draw wires, each with dark edges where it goes over something it doesn't join
+  const wireMarks = liveWireMarks();
   for (let i = 0; i < LineState.lines.length; i++) {
-    drawLine(LineState.lines[i]);
+    drawLine(LineState.lines[i], wireMarks.hopsByWire.get(i));
   }
   // 4. Draw standard, then advanced (fixed-pin) component bodies, above wires/dots
   for (const part of PartState.parts) {
     if (part.layer === "over-wires") part.draw(part === selected);
   }
-  // 5. Draw silkscreen-style part labels, ref and value (when toggled on)
+  // 5. Junction dots, over component leads too, where three or more things are joined
+  drawJunctions(wireMarks.junctions);
+  // 6. Draw silkscreen-style part labels, ref and value (when toggled on)
   drawPartLabels();
-  // 6. Draw IC text badges on top of everything
+  // 7. Draw IC text badges on top of everything
   PartState.parts.forEach((part: PlacedPart) => part.drawOverlay?.(part === selected));
-  // 7. The active tool's placement preview
+  // 8. The net picked in the Nets panel
+  drawNetHighlight();
+  // 9. The active tool's placement preview
   const tool = ToolState.active;
   if (DotState.hoverDot) behaviorOf(tool).drawPreview?.(tool, DotState.hoverDot);
 

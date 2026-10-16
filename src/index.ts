@@ -2,6 +2,8 @@ import "./style.css";
 import "./features/project/save-image";
 import "./features/project/current-project";
 import "./features/project/save-project";
+import "./features/project/share-project";
+import "./features/nets-panel";
 import "./features/description";
 import "./features/select";
 import "./features/hover";

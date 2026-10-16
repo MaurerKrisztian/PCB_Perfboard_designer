@@ -12,4 +12,8 @@ module.exports = {
     browser: true,
   },
   ignorePatterns: ["*.cjs"],
+  rules: {
+    // The MCP server (mcp/) builds on the editor's code, never the other way round.
+    "no-restricted-imports": ["error", {patterns: [{group: ["**/mcp", "**/mcp/**"], message: "The editor must not depend on the MCP server (mcp/)."}]}],
+  },
 };
