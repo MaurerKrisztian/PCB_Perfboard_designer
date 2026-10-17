@@ -1,8 +1,9 @@
 // Bundles the server (stdio, and the Cloudflare Worker), the editor's shared project-file code and the MCP SDK into one file each with
 // no runtime dependencies, so `npx perfboard-designer-mcp` starts fast. The docs and example
-// projects it serves as resources are read from the repo now and baked in.
+// projects it serves as resources, and the part icons its board pictures embed, are read from the
+// repo now and baked in.
 import {build} from "esbuild";
-import {readFileSync} from "node:fs";
+import {readdirSync, readFileSync} from "node:fs";
 
 const read = path => readFileSync(new URL(path, import.meta.url), "utf8");
 const {version} = JSON.parse(read("./package.json"));
@@ -11,6 +12,13 @@ const EXAMPLES = {
   "555-led-blinker": "perfboard-555-blinker.json",
   "555-led-blinker-stripboard": "stripboard-555-blinker.json",
 };
+
+// The part icons, by file name, minus their <metadata> (provenance manifests no renderer reads,
+// about half of their size).
+const ICON_DIR = "../assets/icons/components/";
+const COMPONENT_ICONS = Object.fromEntries(readdirSync(new URL(ICON_DIR, import.meta.url))
+  .filter(file => file.endsWith(".svg"))
+  .map(file => [file, read(ICON_DIR + file).replace(/<metadata>[\s\S]*?<\/metadata>/g, "")]));
 
 const shared = {
   absWorkingDir: new URL(".", import.meta.url).pathname,
@@ -21,6 +29,7 @@ const shared = {
     PROJECT_FILE_SOURCE: JSON.stringify(read("../src/project-file/project-file.ts")),
     SERVER_VERSION: JSON.stringify(version),
     EXAMPLE_PROJECTS: JSON.stringify(Object.fromEntries(Object.entries(EXAMPLES).map(([id, file]) => [id, read(`../examples/${file}`)]))),
+    COMPONENT_ICONS: JSON.stringify(COMPONENT_ICONS),
   },
   logLevel: "info",
 };

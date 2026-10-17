@@ -1,4 +1,3 @@
-import {Canvas} from "../../state/Canvas";
 import {BoardState} from "../../state/BoardState";
 import {HistoryState} from "../../state/HistoryState";
 import {ActiveTool} from "../../state/ToolState";
@@ -20,24 +19,13 @@ export const cutTool: ToolBehavior<CutTool> = {
     return true;
   },
 
-  drawPreview(_tool, hoverDot) {
+  drawPreview(_tool, hoverDot, painter) {
     if (!BoardState.isStripboard) return;
     const color = hoverDot.cut ? MEND_PREVIEW_COLOR : CUT_PREVIEW_COLOR;
-    const ctx = Canvas.ctx;
-    ctx.save();
-    ctx.beginPath();
-    ctx.setLineDash([4, 3]);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.arc(hoverDot.x, hoverDot.y, PREVIEW_RADIUS, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-    ctx.fillStyle = color;
-    ctx.font = "bold 11px Inter, Arial";
-    ctx.textAlign = "center";
-    ctx.fillText(hoverDot.cut ? "Mend strip" : "✂ Cut strip", hoverDot.x, hoverDot.y - PREVIEW_RADIUS - 6);
-    ctx.restore();
+    painter.circle(hoverDot.x, hoverDot.y, PREVIEW_RADIUS, {stroke: {paint: color, width: 2, dash: [4, 3]}});
+    painter.text(hoverDot.cut ? "Mend strip" : "✂ Cut strip", hoverDot.x, hoverDot.y - PREVIEW_RADIUS - 6, {
+      font: {family: "sans", size: 11, weight: 700}, color, align: "center",
+    });
   },
 
   statusText: () => "Tool: CUT Mode [Click hole to cut / mend]",

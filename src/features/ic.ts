@@ -1,5 +1,3 @@
-import {fillCrispText} from "../utils/crisp-text";
-import {Canvas} from "../state/Canvas";
 import {DotState} from "../state/DotState";
 import {IDot} from "../interfaces/dot.interface";
 import {ShortcutRegistry} from "./shortcut-keys";
@@ -13,14 +11,13 @@ import {GridConfig} from "../state/GridConfig";
 import {isRotatable, PlacedPart} from "../interfaces/placed-part.interface";
 import {Point} from "../interfaces/point.interface";
 import {SavedCustomIc, SavedIc} from "../project-file/project-file";
-import {toGridPos} from "../project-file/grid";
+import {gridToPx, toGridPos} from "../project-file/grid";
 import {readCustomIcs} from "../project-file/read-project-file";
-import {ViewState} from "../state/ViewState";
-import {isModuleCategory} from "../project-file/ic-package";
-import {DIP_INSET, DIP_OVERHANG, drawDip} from "./ic-package/dip-shape";
-import {MODULE_EDGE, MODULE_END, drawModule} from "./ic-package/module-shape";
-import {IC_DEFINITIONS} from "./ic-definitions";
-import {CategoryId, isCategoryId} from "./catalog/catalog-categories";
+import {isModuleCategory} from "../parts/ic-package";
+import {DIP_OVERHANG, MODULE_EDGE, MODULE_END} from "../board-render";
+import {icPins} from "../parts/part-geometry";
+import {IC_DEFINITIONS} from "../parts/ic-definitions";
+import {CategoryId, isCategoryId} from "../parts/catalog-categories";
 import {notifyCatalogChanged} from "./catalog/catalog-events";
 
 
@@ -117,10 +114,6 @@ export class Ic implements PlacedPart {
     this.topLeftDot = findNearestDot(x, y) ?? null;
   }
 
-  private get title(): string {
-    return ViewState.showPartLabels && this.ref ? `${this.ref} ${this.name}` : this.name;
-  }
-
   // Pin rows run along y at 0°/180° and along x at 90°/270°; the body sticks out past the end pins.
   private get overhang(): number {
     return this.isModule ? MODULE_END : DIP_OVERHANG;
@@ -131,162 +124,11 @@ export class Ic implements PlacedPart {
     return this.isModule ? MODULE_EDGE : 0;
   }
 
-  drawBody(isSelected: boolean){
-    if (!this.topLeftDot) return;
-    const paint = {
-      x: this.topLeftDot.x,
-      y: this.topLeftDot.y,
-      widthPin: this.widthPin,
-      heightPin: this.heightPin,
-      rotation: this.rotationAngle as Rotation,
-      selected: isSelected,
-      title: this.title,
-    };
-    if (this.isModule) drawModule(Canvas.ctx, paint);
-    else drawDip(Canvas.ctx, paint);
-  }
-
-  drawPinLabels() {
-    if (!this.topLeftDot) return;
-    Canvas.ctx.save();
-    Canvas.ctx.font = "600 9px monospace, sans-serif";
-    Canvas.ctx.fillStyle = "#cbd5e1";
-
-    // A DIP's body starts DIP_INSET inside the pin rows, so its labels start inside that.
-    const side = this.isModule ? 10 : DIP_INSET + 4;
-    const end = this.isModule ? 16 : DIP_INSET + 11;
-    const endBottom = this.isModule ? 10 : DIP_INSET + 2;
-    // Keep each side's labels on its half of the body, clear of the name printed down the middle.
-    const sideMax = this.isModule ? 1e6 : Math.max(20, (50 * (this.widthPin - 1)) / 2 - side - 12);
-    const endMax = this.isModule ? 1e6 : 46;
-
-    if (this.rotationAngle === 0) {
-      // 0°: Vertical (Left: 1..N, Right: 2N..N+1)
-      const pinsPerSide = this.heightPin;
-      const rightX = this.topLeftDot.x + 50 * (this.widthPin - 1);
-      for (let i = 0; i < pinsPerSide; i++) {
-        const py = this.topLeftDot.y + i * 50;
-        const leftPinNum = i + 1;
-        const leftDesc = this.pinDescription[leftPinNum];
-        Canvas.ctx.textAlign = "left";
-        fillCrispText(Canvas.ctx, leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
-
-        const rightPinNum = pinsPerSide * 2 - i;
-        const rightDesc = this.pinDescription[rightPinNum];
-        Canvas.ctx.textAlign = "right";
-        fillCrispText(Canvas.ctx, rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
-      }
-    } else if (this.rotationAngle === 90) {
-      // 90°: Top: 1..N, Bottom: 2N..N+1
-      const pinsPerSide = this.widthPin;
-      const bottomY = this.topLeftDot.y + 50 * (this.heightPin - 1);
-      for (let i = 0; i < pinsPerSide; i++) {
-        const px = this.topLeftDot.x + i * 50;
-        const topPinNum = i + 1;
-        const topDesc = this.pinDescription[topPinNum];
-        Canvas.ctx.textAlign = "center";
-        fillCrispText(Canvas.ctx, topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
-
-        const bottomPinNum = pinsPerSide * 2 - i;
-        const bottomDesc = this.pinDescription[bottomPinNum];
-        Canvas.ctx.textAlign = "center";
-        fillCrispText(Canvas.ctx, bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
-      }
-    } else if (this.rotationAngle === 180) {
-      // 180°: Left: 2N..N+1, Right: 1..N
-      const pinsPerSide = this.heightPin;
-      const rightX = this.topLeftDot.x + 50 * (this.widthPin - 1);
-      for (let i = 0; i < pinsPerSide; i++) {
-        const py = this.topLeftDot.y + i * 50;
-        const leftPinNum = pinsPerSide * 2 - i;
-        const leftDesc = this.pinDescription[leftPinNum];
-        Canvas.ctx.textAlign = "left";
-        fillCrispText(Canvas.ctx, leftDesc ? `${leftPinNum}:${leftDesc}` : `${leftPinNum}`, this.topLeftDot.x + side, py + 3, sideMax);
-
-        const rightPinNum = i + 1;
-        const rightDesc = this.pinDescription[rightPinNum];
-        Canvas.ctx.textAlign = "right";
-        fillCrispText(Canvas.ctx, rightDesc ? `${rightDesc}:${rightPinNum}` : `${rightPinNum}`, rightX - side, py + 3, sideMax);
-      }
-    } else if (this.rotationAngle === 270) {
-      // 270°: Top: 2N..N+1, Bottom: 1..N
-      const pinsPerSide = this.widthPin;
-      const bottomY = this.topLeftDot.y + 50 * (this.heightPin - 1);
-      for (let i = 0; i < pinsPerSide; i++) {
-        const px = this.topLeftDot.x + i * 50;
-        const topPinNum = pinsPerSide * 2 - i;
-        const topDesc = this.pinDescription[topPinNum];
-        Canvas.ctx.textAlign = "center";
-        fillCrispText(Canvas.ctx, topDesc ? `${topPinNum}:${topDesc}` : `${topPinNum}`, px, this.topLeftDot.y + end, endMax);
-
-        const bottomPinNum = i + 1;
-        const bottomDesc = this.pinDescription[bottomPinNum];
-        Canvas.ctx.textAlign = "center";
-        fillCrispText(Canvas.ctx, bottomDesc ? `${bottomDesc}:${bottomPinNum}` : `${bottomPinNum}`, px, bottomY - endBottom, endMax);
-      }
-    }
-
-    Canvas.ctx.restore();
-  }
-
+  // Each pin's number and hole, in drawing px, numbered as everywhere else (icPins).
   getRealPinPositions(): {pin: number, x: number, y: number}[] {
     if (!this.topLeftDot) return [];
-    const positions: {pin: number, x: number, y: number}[] = [];
-
-    if (this.rotationAngle === 0 || this.rotationAngle === 180) {
-      const pinsPerSide = this.heightPin;
-      const leftX = this.topLeftDot.x;
-      const rightX = this.topLeftDot.x + 50 * (this.widthPin - 1);
-      for (let i = 0; i < pinsPerSide; i++) {
-        const py = this.topLeftDot.y + i * 50;
-        const leftPinNum = this.rotationAngle === 0 ? (i + 1) : (pinsPerSide * 2 - i);
-        const rightPinNum = this.rotationAngle === 0 ? (pinsPerSide * 2 - i) : (i + 1);
-        positions.push({pin: leftPinNum, x: leftX, y: py});
-        positions.push({pin: rightPinNum, x: rightX, y: py});
-      }
-    } else {
-      const pinsPerSide = this.widthPin;
-      const topY = this.topLeftDot.y;
-      const bottomY = this.topLeftDot.y + 50 * (this.heightPin - 1);
-      for (let i = 0; i < pinsPerSide; i++) {
-        const px = this.topLeftDot.x + i * 50;
-        const topPinNum = this.rotationAngle === 90 ? (i + 1) : (pinsPerSide * 2 - i);
-        const bottomPinNum = this.rotationAngle === 90 ? (pinsPerSide * 2 - i) : (i + 1);
-        positions.push({pin: topPinNum, x: px, y: topY});
-        positions.push({pin: bottomPinNum, x: px, y: bottomY});
-      }
-    }
-
-    return positions;
-  }
-
-  drawPinMarkers() {
-    const positions = this.getRealPinPositions();
-    Canvas.ctx.save();
-    Canvas.ctx.strokeStyle = "#38bdf8";
-    Canvas.ctx.lineWidth = 1.5;
-    for (const {x, y} of positions) {
-      Canvas.ctx.beginPath();
-      Canvas.ctx.arc(x, y, 5, 0, Math.PI * 2);
-      Canvas.ctx.stroke();
-    }
-    Canvas.ctx.restore();
-  }
-
-  drawLabel(){
-    if (!this.topLeftDot) return;
-    // Chips and boards print their name on the package itself (see drawBody) instead of a badge.
-    this.drawPinMarkers();
-    this.drawPinLabels();
-  }
-
-  // The body goes under the holes; the name badge and pin labels go on top of everything.
-  draw(selected: boolean){
-    this.drawBody(selected);
-  }
-
-  drawOverlay(){
-    this.drawLabel();
+    const placement = {at: toGridPos(this.topLeftDot), widthPin: this.widthPin, heightPin: this.heightPin, rotation: this.rotationAngle as Rotation};
+    return icPins(placement).map(({pin, at}) => ({pin, x: gridToPx(at[0]), y: gridToPx(at[1])}));
   }
 
   getPinPositions(): Point[] {
@@ -351,76 +193,6 @@ export class Ic implements PlacedPart {
     copy.category = this.category;
     copy.definitionId = this.definitionId;
     return copy;
-  }
-
-  getPinPositionOnIC(dot: IDot) {
-    if (this.topLeftDot == null) {
-      return null;
-    }
-
-    if (this.rotationAngle === 0) {
-      // 0°: Vertical (Side A = Left: 1..N, Side B = Right: 2N..N+1)
-      const isOnLeftSide = dot.x === this.topLeftDot.x && dot.y >= this.topLeftDot.y && dot.y <= this.topLeftDot.y + ((this.heightPin - 1) * 50);
-      const isOnRightSide = dot.x === this.topLeftDot.x + 50 * (this.widthPin - 1) && dot.y >= this.topLeftDot.y && dot.y <= this.topLeftDot.y + ((this.heightPin - 1) * 50);
-      if (!(isOnLeftSide || isOnRightSide)) return null;
-
-      const relativeY = dot.y - this.topLeftDot.y;
-      const i = Math.round(relativeY / 50);
-      if (i >= 0 && i < this.heightPin) {
-        const pinNbr = isOnLeftSide ? (i + 1) : (this.heightPin * 2 - i);
-        return { pin: pinNbr, info: this.pinDescription[pinNbr] };
-      }
-    } else if (this.rotationAngle === 90) {
-      // 90°: Horizontal (Side A = Top: 1..N, Side B = Bottom: 2N..N+1)
-      const isOnTopSide = dot.y === this.topLeftDot.y && dot.x >= this.topLeftDot.x && dot.x <= this.topLeftDot.x + ((this.widthPin - 1) * 50);
-      const isOnBottomSide = dot.y === this.topLeftDot.y + 50 * (this.heightPin - 1) && dot.x >= this.topLeftDot.x && dot.x <= this.topLeftDot.x + ((this.widthPin - 1) * 50);
-      if (!(isOnTopSide || isOnBottomSide)) return null;
-
-      const relativeX = dot.x - this.topLeftDot.x;
-      const i = Math.round(relativeX / 50);
-      if (i >= 0 && i < this.widthPin) {
-        const pinNbr = isOnTopSide ? (i + 1) : (this.widthPin * 2 - i);
-        return { pin: pinNbr, info: this.pinDescription[pinNbr] };
-      }
-    } else if (this.rotationAngle === 180) {
-      // 180°: Vertical (Side A = Right: 1..N, Side B = Left: 2N..N+1)
-      const isOnLeftSide = dot.x === this.topLeftDot.x && dot.y >= this.topLeftDot.y && dot.y <= this.topLeftDot.y + ((this.heightPin - 1) * 50);
-      const isOnRightSide = dot.x === this.topLeftDot.x + 50 * (this.widthPin - 1) && dot.y >= this.topLeftDot.y && dot.y <= this.topLeftDot.y + ((this.heightPin - 1) * 50);
-      if (!(isOnLeftSide || isOnRightSide)) return null;
-
-      const relativeY = dot.y - this.topLeftDot.y;
-      const i = Math.round(relativeY / 50);
-      if (i >= 0 && i < this.heightPin) {
-        const pinNbr = isOnRightSide ? (i + 1) : (this.heightPin * 2 - i);
-        return { pin: pinNbr, info: this.pinDescription[pinNbr] };
-      }
-    } else if (this.rotationAngle === 270) {
-      // 270°: Horizontal (Side A = Bottom: 1..N, Side B = Top: 2N..N+1)
-      const isOnTopSide = dot.y === this.topLeftDot.y && dot.x >= this.topLeftDot.x && dot.x <= this.topLeftDot.x + ((this.widthPin - 1) * 50);
-      const isOnBottomSide = dot.y === this.topLeftDot.y + 50 * (this.heightPin - 1) && dot.x >= this.topLeftDot.x && dot.x <= this.topLeftDot.x + ((this.widthPin - 1) * 50);
-      if (!(isOnTopSide || isOnBottomSide)) return null;
-
-      const relativeX = dot.x - this.topLeftDot.x;
-      const i = Math.round(relativeX / 50);
-      if (i >= 0 && i < this.widthPin) {
-        const pinNbr = isOnBottomSide ? (i + 1) : (this.widthPin * 2 - i);
-        return { pin: pinNbr, info: this.pinDescription[pinNbr] };
-      }
-    }
-    return null;
-  }
-
-  getPinNumber(dot: IDot){
-    if (!this.getPinPositionOnIC(dot) || !this.topLeftDot){
-      return null;
-    }
-
-    const relativeY = dot.y - this.topLeftDot.y;
-    const pinNumber = Math.floor(relativeY / 50) + 1;
-
-    if (pinNumber > 0 && pinNumber <= this.widthPin) {
-      return { pin: pinNumber, info: this.pinDescription[pinNumber]};
-    }
   }
 
   rotate(){

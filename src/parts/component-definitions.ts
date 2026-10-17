@@ -2,7 +2,7 @@
 // prompt parses user input (SI prefixes, shorthand notations) and how it's displayed.
 export type ComponentUnit = "Ω" | "F" | "H";
 
-import {CategoryId} from "../catalog/catalog-categories";
+import {CategoryId} from "./catalog-categories";
 
 export interface ComponentDefinition {
   id: string;
@@ -13,7 +13,8 @@ export interface ComponentDefinition {
   keywords?: string[];
   // Letters of a placed part's reference designator: "R" makes R1, R2...
   refPrefix: string;
-  iconPath?: string;
+  // The artwork's file in COMPONENT_ICON_DIR, when it isn't named after the id ("<id>.svg").
+  iconFile?: string;
   fallbackLabel: string;
   unit?: ComponentUnit;
   // Side length of the rendered square body, in canvas pixels. Defaults to DEFAULT_BODY_SIZE.
@@ -43,8 +44,14 @@ export function getComponentBodySize(def: ComponentDefinition): number {
 // both at perfboarddesigner.com and under the GitHub Pages subfolder /perfboard-designer/.
 export const COMPONENT_ICON_DIR = "../icons/components/";
 
+// The artwork's file name, which the board renderer asks its painter for.
+export function getIconFile(def: {id: string; iconFile?: string}): string {
+  return def.iconFile ?? `${def.id}.svg`;
+}
+
+// The artwork's address from the editor page, for the catalog's buttons.
 export function getIconPath(def: ComponentDefinition): string {
-  return def.iconPath ?? `${COMPONENT_ICON_DIR}${def.id}.svg`;
+  return `${COMPONENT_ICON_DIR}${getIconFile(def)}`;
 }
 
 export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
@@ -53,7 +60,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {id: "electrolytic-capacitor", refPrefix: "C", category: "passives.capacitors", name: "Electrolytic Capacitor", keywords: ["cap", "polarized", "elco"], fallbackLabel: "C+", unit: "F", bodySize: 96, artworkHalfThickness: 44, leadLabels: ["-", "+"]},
   {id: "inductor", refPrefix: "L", category: "passives", name: "Inductor", keywords: ["coil", "choke"], fallbackLabel: "L", unit: "H", artworkHalfThickness: 17},
   {id: "led", refPrefix: "D", category: "semiconductors.diodes", name: "LED", keywords: ["light", "light emitting diode", "5mm"], fallbackLabel: "LED", led: true, leadLabels: ["K", "A"]},
-  {id: "led-3mm", refPrefix: "D", category: "semiconductors.diodes", name: "LED (3 mm)", keywords: ["light", "light emitting diode", "3mm", "t-1", "indicator"], fallbackLabel: "LED", iconPath: `${COMPONENT_ICON_DIR}led.svg`, bodySize: 46, led: true, leadLabels: ["K", "A"]},
+  {id: "led-3mm", refPrefix: "D", category: "semiconductors.diodes", name: "LED (3 mm)", keywords: ["light", "light emitting diode", "3mm", "t-1", "indicator"], fallbackLabel: "LED", iconFile: "led.svg", bodySize: 46, led: true, leadLabels: ["K", "A"]},
   {id: "diode", refPrefix: "D", category: "semiconductors.diodes", name: "Diode", keywords: ["rectifier", "1n4148", "1n4007"], fallbackLabel: "D", artworkHalfThickness: 18, leadLabels: ["A", "K"]},
 ];
 

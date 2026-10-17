@@ -8,7 +8,7 @@ import type {PlacedStandardComponent} from "../standard-components/placed-standa
 import type {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 import {PROJECT_FILE_VERSION, ProjectFile, SavedBoard, SavedPad, SavedWire} from "../../project-file/project-file";
 import {holesAlong, toGridPos} from "../../project-file/grid";
-import {DEFAULT_DOT_COLOR} from "../board-looks/board-look";
+import {DEFAULT_DOT_COLOR} from "../../board-render";
 import {BoardState} from "../../state/BoardState";
 import {ProjectState} from "../../state/ProjectState";
 

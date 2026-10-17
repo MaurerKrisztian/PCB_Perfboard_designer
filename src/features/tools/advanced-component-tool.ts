@@ -1,8 +1,7 @@
-import {Canvas} from "../../state/Canvas";
+import {drawPart} from "../../board-render";
 import {ActiveTool} from "../../state/ToolState";
 import {IDot} from "../../interfaces/dot.interface";
-import {getAdvancedComponentDefinition} from "../advanced-components/advanced-component-definitions";
-import {drawAdvancedComponentBody} from "../advanced-components/advanced-component-render";
+import {getAdvancedComponentDefinition} from "../../parts/advanced-component-definitions";
 import {PlacedAdvancedComponent} from "../advanced-components/placed-advanced-component";
 import {findDotAt} from "../dot-lookup";
 import {placePart} from "../placed-parts";
@@ -52,18 +51,13 @@ export const advancedComponentTool: ToolBehavior<AdvancedComponentTool> = {
     return true;
   },
 
-  drawPreview(tool, hoverDot) {
+  drawPreview(tool, hoverDot, painter) {
     const def = getAdvancedComponentDefinition(tool.definitionId);
     if (!def) return;
     // Second half of a two-click span: preview the whole block the commit would place.
     const ghost = (def.gridSizable && tool.start && spannedBlock(def.id, tool.start, hoverDot))
       || new PlacedAdvancedComponent(def.id, hoverDot, def.gridSizable ? 0 : tool.rotation);
-    Canvas.ctx.save();
-    drawAdvancedComponentBody(
-      ghost.getPinPositions(), ghost.getShadedPositions(), ghost.getBodyOutline(), ghost.getIconAnchor(),
-      def, ghost.rotationAngle, {ghost: true}
-    );
-    Canvas.ctx.restore();
+    drawPart(painter, {kind: "advanced-component", entry: ghost.serialize()}, {ghost: true});
   },
 
   statusText(tool) {

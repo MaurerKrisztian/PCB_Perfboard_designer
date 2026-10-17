@@ -75,7 +75,7 @@ Once the package is published to npm, `npx -y perfboard-designer-mcp` replaces
 | `render_board` | Draws the board as text, one cell per hole with column and row numbers: pins by part key and number (`a1`), holes under a body, wire ends, holes a wire runs over without joining them, strip cuts and marked holes, then which part each key is and every wire with its net. `area` draws only part of the board (needed above 6000 holes). |
 | `get_nets` | Which pins the board connects: each net with its name (e.g. `GND`), its pins (`U1.8 VCC` for a chip pin, `D1.K` or `C1.+` for a polarized lead, `R1.1` otherwise) and its wires, plus pins connected to nothing, junctions (holes where three or more things join) and crossings (where a wire goes over another wire or a hole without joining it). |
 | `validate_project` | Lists every problem, with where it is: unreadable entries, unknown parts, pins off the board, two parts' pins or leads in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), a wire passing over a pin without ending there, IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or in a cut hole. Wires crossing are listed as notes, not problems. Pass `expectNets` (the netlist you meant, e.g. `[["U1.8", "U1.4", "R1.1", "J1.1"], ["U1.2", "U1.6", "C1.+"]]`) and every missing or extra connection is an error; for a kept project it's remembered, so `edit_project` and `make_share_link` check against it too (`[]` forgets it). A whole project sent here is kept, and the reply gives its `projectId`. |
-| `make_share_link` | Validates the project (with `expectNets`, given or remembered) and returns the link that opens it. It refuses a project with errors unless `allowErrors` is set. `editorUrl` points it at another copy of the editor, e.g. `http://localhost:3000/app/`; it defaults to `PERFBOARD_EDITOR_URL`. |
+| `make_share_link` | Validates the project (with `expectNets`, given or remembered) and returns the link that opens it, and `image`: the address of an SVG picture of the board, drawn as the editor draws it (served by the hosted Worker, below). It refuses a project with errors unless `allowErrors` is set. `editorUrl` points it at another copy of the editor, e.g. `http://localhost:3000/app/`; it defaults to `PERFBOARD_EDITOR_URL`. |
 | `read_share_link` | Reads the project out of a link you share with the agent (`z=`, `json=` or `src=`) and keeps it under a `projectId`, so the agent can change an existing board. |
 
 Every tool that reads a project takes either `projectId` or the whole file as `project`. Kept
@@ -104,6 +104,11 @@ so an MCP client can reach it over the web with nothing installed: Streamable HT
 live in memory: each is kept in its own Durable Object (`ProjectHolder`), named by its
 `projectId`, and forgotten after 30 days unused. Project ids are random, so they can't be guessed.
 There's no sign-in: anyone with the address can use it.
+
+It also draws boards: `/render.svg?` followed by a share link's part after the `#` (`name=…&z=…`
+or `json=…`; `src=` links aren't fetched) answers with an SVG picture of that board, drawn by the
+editor's own board renderer (`../src/board-render/`) with the part icons baked in. Its address
+says everything in it, so it's cached for good (`src/board-image.ts`).
 
 Try it locally (at http://localhost:8787/mcp):
 
@@ -147,11 +152,12 @@ the documents it serves, `project-handles.ts` the kept projects (and where they'
 `edit-project.ts` `edit_project`'s ops, `validate.ts` the checks, `guide.ts` its instructions and
 guide. It builds on the editor's own pure code, all of it taken through `editor.ts`, the one file
 that imports from `../src/`: the project file reader, share-link code, pin positions, nets
-(`nets.ts`) and wire crossings (`wire-crossings.ts`) in `../src/project-file/`, and the part
-definitions. That way it always agrees with the editor about the format, the parts and what's
+(`nets.ts`) and wire crossings (`wire-crossings.ts`) in `../src/project-file/`, the part
+definitions and part geometry in `../src/parts/`, and the board renderer (`../src/board-render/`)
+for pictures of a board. That way it always agrees with the editor about the format, the parts and what's
 connected. The editor never imports anything from here. `npm run build` bundles that code and the MCP SDK into
 a single `dist/server.js` (and `dist/worker.js` for Cloudflare) with no runtime dependencies,
-and bakes in the docs and examples it serves.
+and bakes in the docs and examples it serves and the part icons its pictures embed.
 
 | Command | What it does |
 | --- | --- |

@@ -12,7 +12,7 @@ workers_dev = true
 
 [build]
 command = "node build.mjs"
-watch_dir = ["src", "../src/project-file", "../docs", "../examples"]
+watch_dir = ["src", "../src/parts", "../src/project-file", "../src/board-render", "../assets/icons/components", "../docs", "../examples"]
 
 # One Durable Object per kept project, named by its projectId.
 [[durable_objects.bindings]]

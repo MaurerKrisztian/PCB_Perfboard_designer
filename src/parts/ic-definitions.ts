@@ -1,4 +1,4 @@
-import {CategoryId} from "./catalog/catalog-categories";
+import {CategoryId} from "./catalog-categories";
 
 // Built-in dual-row parts placed through the IC system (ic.ts): DIP chips and dev boards/modules
 // whose pins sit in two parallel rows. Pins are numbered DIP-style: 1..N down the left row,

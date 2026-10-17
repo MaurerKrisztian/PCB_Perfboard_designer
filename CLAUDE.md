@@ -26,6 +26,19 @@ tests changes manually in the browser.
 
 ## Architecture
 
+`ARCHITECTURE.md` (repo root) is the developer guide to all of this, for people: how each part
+works and how to extend it. Keep it in step with this file: a change that makes a section of
+either wrong fixes both.
+
+**Layers** (enforced by ESLint, `.eslintrc.cjs`): each imports only the layers below it.
+`src/parts/` (part definitions, catalog categories, value parsing and colour codes,
+`rotate-offset.ts`, `ic-package.ts`, and `part-geometry.ts`) imports nothing outside itself →
+`src/project-file/` imports it → `src/board-render/` imports both → the editor, `src/viewer-3d/`
+and `mcp/` on top. Those three bottom layers are pure (no DOM, no editor state; browser globals
+like `document`/`Path2D` fail lint there), outside code imports the renderer only through
+`src/board-render/index.ts`, the 3D viewer never imports the editor, and the editor never imports
+`mcp/`. When lint stops an import, move the code to the right layer rather than silencing it.
+
 **Pages** (Vite multi-page build, inputs listed in `vite.config.ts`). Served at
 https://perfboarddesigner.com (GitHub Pages custom domain, kept across deploys by `assets/CNAME`).
 Keep all in-site URLs relative — never `/...` — so it also works under the github.io subfolder
@@ -46,7 +59,7 @@ Keep all in-site URLs relative — never `/...` — so it also works under the g
 
 Vanilla TS, no framework, no state-management library. `src/index.ts` is the editor's entrypoint: it imports
 every feature module for side effects (each attaches its own DOM event listeners), then calls
-`createDotGrid`, `resetCanvas`, and `redrawCanvas` once at startup. Adding a new feature means
+`createDotGrid` and `redrawCanvas` once at startup. Adding a new feature means
 creating a module under `src/features/` and importing it in `index.ts`.
 
 **State** (`src/state/`): plain classes used as static/global singletons (no instances are ever
@@ -63,24 +76,47 @@ drops a placement tool back to Select. Toolbar/catalog highlights are derived fr
 `updateSelectionStatus()`.
 
 **Tools** (`src/features/tools/`): each `ActiveTool` kind has a `ToolBehavior` —
-`onPointerDown`, `drawPreview`, `statusText`, optional `stepBack` (Escape) — registered in
+`onPointerDown`, `drawPreview` (given the board's Painter), `statusText`, optional `stepBack` (Escape) — registered in
 `tools/index.ts` and looked up with `behaviorOf(tool)`. Tools only change state; the caller
 (`select.ts`, the board's input router, which also owns panning, the context menu and Escape)
 redraws and refreshes the status badge. Keep tool modules free of imports that lead back to
 `draw-canvas.ts` (it imports the registry to draw previews), which is why the note prompt lives in
 `dot-notes.ts` rather than `description.ts`.
 
-**Features** (`src/features/`): self-registering modules, each owning one concern (drawing,
-hover, selection, color picker, context menu, shortcuts, project save/load, etc.). They read/
+**Features** (`src/features/`): self-registering modules, each owning one concern (hover,
+selection, color picker, context menu, shortcuts, project save/load, etc.). They read/
 mutate the state classes and call `redrawCanvas()` (`src/features/draw-canvas.ts`) after any
 change that affects what's on screen. `redrawCanvas` redraws everything from scratch each call
-(immediate-mode style) in a fixed layer order: bare board → IC bodies → grid dots → wires →
-standard components → advanced components → junction dots → part labels → IC labels → the net
-picked in the Nets panel → in-progress placement previews.
+(immediate-mode style): it hands the board renderer a snapshot of the board (`getSaveJson()`) and
+what the editor marks on it (`editorView()`), then draws the active tool's preview on top. See
+Rendering below.
+
+**Rendering** (`src/board-render/`): one renderer draws every 2D board — the editor's canvas, PNG
+and SVG export, Projects-dialog thumbnails, the catalog's chip icons, the MCP server's pictures —
+as `drawBoard(painter, project, view)`: a project file in, shapes out onto a `Painter`
+(`painter/painter.ts`: circle/arc/rect/line/polygon/path/text/image/group/stamp, each call carrying
+its whole style). Two painters: `CanvasPainter` (`src/features/board-canvas/canvas-painter.ts`,
+browser only: Path2D, hole sprites cached per zoom, text snapped to device pixels) and
+`SvgPainter` (`painter/svg-painter.ts`, a string, runs anywhere; lets only plain colour syntax
+through, since colours come from files anyone can write). `BoardView` (`board-view.ts`) is what to
+mark beyond the file — part labels, `selected`/`hovered` items (a part by ref, a wire by index, a
+hole by position), a placement's `startHole`, a net `highlight`; `PLAIN_VIEW` is none of it; the
+editor builds its own in `src/features/board-canvas/editor-view.ts`. `draw-board.ts` alone fixes
+the layer order: board look → under-board parts (chips) → holes (not those under a chip's body) →
+wires → over-wires parts → junction dots → part labels → part overlays (chip pin labels) → net
+highlight. Parts are drawn by one `PartArtist` per kind (`artists/`, registered in `artists/index.ts`)
+from their project-file entries; a standard part's special art (resistor bands, ceramic code, LED
+colour) is a `Decoration` in `artists/standard-decorations.ts`. Placed parts don't draw themselves
+but hit-test with the same geometry as the drawing (`standardPartSpan`, `advancedPartGeometry`,
+the package extents), so clicking and drawing agree. Icons are asked for by file name
+(`getIconFile(def)`): the canvas side loads them (`board-canvas/browser-icons.ts`, redrawing when
+one arrives; one-off drawings `await browserIcons.ready(iconsUsedBy(project))`), the SVG side is
+handed their text. **`src/board-render/` is pure** (it may import only `src/project-file/` and
+`src/parts/`), and outside code imports only its `index.ts`.
 
 **Components catalog** (`src/features/catalog/`): the sidebar's single Components section — a
 search box over a category tree. It only decides where parts are *listed*; placing them is still
-done by the three systems below. `catalog-categories.ts` declares the tree (one line per
+done by the three systems below. `src/parts/catalog-categories.ts` declares the tree (one line per
 category, `parentId` for nesting, array order = display order; `CategoryId` is derived from it so a
 bad id fails to compile). Every part definition names one `category: CategoryId` plus optional
 search `keywords`. `catalog.ts` merges all three systems into `CatalogItem`s whose
@@ -101,34 +137,44 @@ along every row or column, which the user can cut at a hole). `BoardState.setup`
 and strip direction; change it through `setBoardSetup()` (`src/features/board-type.ts`, which
 also owns the sidebar switch and shows the Cut tool only on a stripboard). Strip cuts live on the
 dots (`IDot.cut`), so they survive a resize and are kept, hidden, while the board is a
-perfboard. How each type is drawn is its *look*, one file each in `src/features/board-looks/`
+perfboard. How each type is drawn is its *look*, one file each in `src/board-render/board-looks/`
 (`perfboard-look.ts`, `stripboard-look.ts`) behind the `BoardLook` interface (`paintBoard` for
-the bare board and strips, `drawHole` per hole); `activeBoardLook()` picks one. Strip and cut
+the bare board, strips and cuts, a `hole` stamp per plain hole); `boardLookFor(type)` picks one. Strip and cut
 sizes live in `src/project-file/stripboard-geometry.ts`, shared with the 3D viewer so both draw
 cuts the same way. A new board type
 means a new look there plus a `BoardType` in the project file.
 
-**Two parallel component systems** — don't conflate them:
-- `src/features/standard-components/` — flexible-lead parts (resistor, capacitor, LED, diode…)
-  defined by `ComponentDefinition` in `component-definitions.ts`. Placed by picking a start and
-  end dot; body is drawn between them. Values (e.g. resistance) use SI-prefix parsing/formatting
-  in `component-value.ts` / `component-value-codes.ts`.
-- `src/features/advanced-components/` — fixed-pin-geometry parts (ICs-adjacent, pots, etc.)
-  defined by `AdvancedComponentDefinition` in `advanced-component-definitions.ts`. Placed via a
-  single anchor dot + rotation; pin/shaded-hole/body-outline offsets (in grid units, relative to
-  the anchor) are rotated at render/placement time (`rotate-offset.ts`).
+**Two parallel component systems** — don't conflate them. Their definitions are pure data in
+`src/parts/`; the placed-part classes live with their editor behaviour in `src/features/`:
+- Standard components (`src/features/standard-components/`) — flexible-lead parts (resistor,
+  capacitor, LED, diode…) defined by `ComponentDefinition` in `src/parts/component-definitions.ts`.
+  Placed by picking a start and end dot; body is drawn between them. Values (e.g. resistance) use
+  SI-prefix parsing/formatting in `src/parts/component-value.ts` / `component-value-codes.ts`.
+- Advanced components (`src/features/advanced-components/`) — fixed-pin-geometry parts
+  (ICs-adjacent, pots, etc.) defined by `AdvancedComponentDefinition` in
+  `src/parts/advanced-component-definitions.ts`. Placed via a single anchor dot + rotation;
+  pin/shaded-hole/body-outline offsets (in grid units, relative to the anchor) are rotated
+  (`rotate-offset.ts`) by the shared part geometry (below).
 - IC chips (`src/features/ic.ts`, `ic-editor-modal.ts`) are a third, older placement concept
   (dual-row multi-pin part with labelled pins), separate from both of the above. It backs both
   DIP ICs and dual-row dev boards (Modules › Dev Boards); built-ins are data in
-  `ic-definitions.ts` (`dualRowPins()` builds DIP numbering from two top-to-bottom rows). Custom
+  `src/parts/ic-definitions.ts` (`dualRowPins()` builds DIP numbering from two top-to-bottom rows). Custom
   ones come from the editor modal (IC or Module type → ICs › Custom / Modules › Custom) and persist
   in localStorage `custom_ics`. `Ic` is both the catalog entry and the placed chip; `Ic.id`
   identifies the catalog entry, and catalog entries are saved through `Ic.customIcEntries()`,
   which picks its fields (including `category`). Loading *merges* custom ICs into the catalog —
   never replace `Ic.IC_CONTAINER` wholesale, or built-ins added later go missing.
 
+**Part geometry** is worked out once, in grid units, in `src/parts/part-geometry.ts`:
+`advancedPartShape()` (a fixed-pin part's pins, covered holes, outline, icon anchor, body box),
+`advancedPinOffsets()` (its pins before rotation) and `icPins()` (a chip's pins in DIP order, with
+their side). Everything uses it — `src/project-file/pin-positions.ts` (nets, MCP),
+`src/board-render/artists/advanced-geometry.ts` (the same in drawing px, for the drawing and
+`PlacedAdvancedComponent`'s pins and hit test), `Ic.getRealPinPositions` and the 3D viewer — so
+never work out pin positions anywhere else.
+
 All three placed-part classes implement `PlacedPart` (`src/interfaces/placed-part.interface.ts`):
-hit-testing, drawing, pin/occupied positions, anchor dots, `serialize()` and `ref`, the part's
+hit-testing, pin/occupied positions, anchor dots, `serialize()` (its entry, which the renderer draws) and `ref`, the part's
 reference designator (R1, U2…), unique on the board ignoring case. `placePart` gives a new part
 the lowest free ref for its kind; the letters come from each definition's `refPrefix` (ICs are
 "U"), via `src/project-file/part-refs.ts`. Board-level code
@@ -187,7 +233,10 @@ reply formatting in `reply.ts`, wording helpers (holes, plurals, lists) in `text
 It can: list parts, start a project (`new_project`, blank or
 from an example), change it with small ops (`edit_project`, whose wire ends can be pins by name),
 get pin positions, draw it as text (`render_board`, `mcp/src/render-board.ts`), list the board's
-nets (`get_nets`), validate it, make and read share links. Projects being worked on are kept under a
+nets (`get_nets`), validate it, make and read share links. `make_share_link` also returns `image`:
+the Worker's `GET /render.svg?<a share link's fragment>` (`mcp/src/board-image.ts`, `z=`/`json=`
+only, never fetching `src=`), an SVG picture drawn by the editor's own board renderer with the part
+icons `build.mjs` bakes in. Projects being worked on are kept under a
 `projectId` (`mcp/src/project-handles.ts`, behind an async `ProjectStore`: in memory for stdio, a
 Durable Object per project on the Worker, so a tool that changes a kept entry calls
 `saveHeldProject`), only a cache of the project file:
@@ -203,14 +252,14 @@ served as `perfboard://docs/guide`), keeping the two in step. Example projects
 (`examples/perfboard-555-blinker.json`, `examples/stripboard-555-blinker.json`) are baked in by
 `mcp/build.mjs` (described in `mcp/src/examples.ts`) and served as `perfboard://examples/...`
 resources; keep them valid with their `expectNets`. Through `editor.ts` it uses the editor's pure
-code (`src/project-file/`, the three definitions files, `catalog-categories.ts`, `rotate-offset.ts`),
+code (`src/parts/`, `src/project-file/`, `src/board-render/`),
 which esbuild bundles with the SDK into
 `mcp/dist/server.js` and `mcp/dist/worker.js` (`cd mcp && npm run build`; `npm run typecheck` uses its own newer TypeScript).
 So those modules must stay free of DOM and editor state, and anything they import too. Facts the
 server tells agents belong in the definitions (e.g. `leadLabels`, which lead of a polarized part is
-which), not in `mcp/`. Pin geometry from a project file (`src/project-file/pin-positions.ts`, shared
-with the nets) mirrors `placed-advanced-component.ts` and `Ic.getRealPinPositions` — change them
-together. What's connected comes only from the shared `computeNets()` and `layoutProjectWires()`
+which), not in `mcp/`. Pin positions from a project file (`src/project-file/pin-positions.ts`, shared with the nets)
+come from the shared part geometry (`src/parts/part-geometry.ts`), like the editor's and the
+renderer's. What's connected comes only from the shared `computeNets()` and `layoutProjectWires()`
 (Nets and Wire crossings below): never write connectivity or crossing logic in `mcp/`; add what's
 missing to those modules without reshaping their output, which the Nets panel and canvas use.
 `get_nets` (`mcp/src/nets-report.ts`) names pins as agents write them, via `pinName()` in `nets.ts`
@@ -234,16 +283,16 @@ The editor shows them live in the right sidebar above the shortcuts (`src/featur
 recomputed from `getSaveJson()` shortly after a redraw that changed the board. Unconnected pins
 and wires connecting no pins are in folds above the nets (likely mistakes, kept in sight). Clicking a net, an unconnected pin or
 such wires lights it up on the board until clicked again: `NetHighlightState` holds its holes and
-wires, drawn by `redrawCanvas()` via `src/features/net-highlight.ts`, and the panel moves it to whichever net holds most of its pins
+wires, drawn by the renderer (`view.highlight`, `src/board-render/layers/net-highlight.ts`), and the panel moves it to whichever net holds most of its pins
 after each change (most of its wires, for wires connecting no pins).
 
 **Wire crossings** (`src/project-file/wire-crossings.ts`): wires are insulated jumpers, so where
 one runs across another wire, or over a hole holding a pin, a lead or another wire's end, it goes
 *over* it (of two crossing wires, the later one in the list), and where three or more things meet
-at a hole they're joined. `layoutWires()` works this out from wire ends and pin holes:
-`redrawCanvas()` feeds it the live board each redraw through `src/features/wire-crossing-marks.ts`
-(a dark edge either side of a wire where it goes over something, and a solder dot at each junction), and the 3D viewer feeds it the project
-file (`layoutProjectWires()`) and arches the upper wire over each crossing.
+at a hole they're joined. `layoutWires()` works this out from wire ends and pin holes, and
+`layoutProjectWires()` from a project file: the 2D renderer draws it (`src/board-render/layers/wires.ts`:
+a dark edge either side of a wire where it goes over something, and a solder dot at each junction), and the 3D viewer
+arches the upper wire over each crossing.
 
 **3D viewer** (`src/viewer-3d/`): a read-only three.js view of the board, kept separate from the
 editor on purpose. It only consumes project-file JSON, read by the shared `src/project-file/`

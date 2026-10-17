@@ -6,18 +6,17 @@ import type {PlacedAdvancedComponent} from "../features/advanced-components/plac
 
 // What every part placed on the board offers, whichever of the three placement systems it comes
 // from, so board-level code (hit-testing, drag, delete, undo, save) never branches on its kind.
+// Drawing isn't here: the board renderer (src/board-render/) draws every part from its serialize()
+// entry.
 export interface PlacedPart {
   readonly kind: "ic" | "standard-component" | "advanced-component";
-  // ICs are drawn before the holes, so the holes show through their bodies; components are drawn
-  // above the wires.
+  // ICs lie under the holes, components stand above the wires (as the board renderer draws
+  // them), so a click finds the part on top first.
   readonly layer: "under-board" | "over-wires";
   // Reference designator (R1, U2...), unique on the board. Empty until placePart, or loading a
   // project, gives it one (see project-file/part-refs.ts).
   ref: string;
   containsPoint(x: number, y: number): boolean;
-  draw(selected: boolean): void;
-  // Drawn after everything else on the board, on top of all parts and part labels.
-  drawOverlay?(selected: boolean): void;
   // Holes a lead or pin goes into.
   getPinPositions(): Point[];
   // Every hole the part covers. The grid is regular, so the outermost holes stand in for all.

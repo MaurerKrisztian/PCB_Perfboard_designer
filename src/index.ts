@@ -22,10 +22,8 @@ import "./features/color-picker";
 import "./features/view-controls";
 import "./features/open-3d-view";
 import "./features/header-menus";
-import {resetCanvas} from "./features/reset-canvas";
 import {createDotGrid, heightInput, widthInput} from "./features/project/resize-grid";
 import {redrawCanvas} from "./features/draw-canvas";
 
 createDotGrid(parseInt(widthInput.value || "10"), parseInt(heightInput.value || "10"));
-resetCanvas();
 redrawCanvas();

@@ -1,5 +1,5 @@
 import {ExtrudeGeometry, Group, Mesh, Shape, Vector3} from "three";
-import {AdvancedComponentDefinition} from "../../features/advanced-components/advanced-component-definitions";
+import {AdvancedComponentDefinition} from "../../parts/advanced-component-definitions";
 import {LEAD_TIP_Y, PITCH, SceneKit} from "../scene-kit";
 import {addTopLabel, bodyBounds} from "./part-geometry";
 

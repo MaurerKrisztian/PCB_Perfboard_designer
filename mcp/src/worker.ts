@@ -1,6 +1,7 @@
 import {DurableObject, DurableObjectNamespace} from "cloudflare:workers";
 import {WebStandardStreamableHTTPServerTransport} from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import {createServer} from "./create-server";
+import {handleImageRequest} from "./board-image";
 import {HeldProject, ProjectStore, setProjectStore} from "./project-handles";
 
 // The same MCP server as server.ts, hosted on Cloudflare Workers over Streamable HTTP at /mcp.
@@ -68,6 +69,8 @@ const ABOUT = `Perfboard Designer MCP server (https://perfboarddesigner.com).
 
 Add it to an MCP client as a Streamable HTTP server at <this address>/mcp, e.g.
   claude mcp add --transport http perfboard <this address>/mcp
+
+A picture of a board: <this address>/render.svg?<a share link's part after the #>
 `;
 
 export default {
@@ -75,6 +78,7 @@ export default {
     const {pathname, origin} = new URL(request.url);
     if (request.method === "OPTIONS") return new Response(null, {status: 204, headers: CORS_HEADERS});
     if (pathname === "/") return withCors(new Response(ABOUT.replaceAll("<this address>", origin), {headers: {"Content-Type": "text/plain; charset=utf-8"}}));
+    if (pathname === "/render.svg") return withCors(await handleImageRequest(request));
     if (pathname !== "/mcp") return withCors(new Response("Not found: the MCP server is at /mcp.\n", {status: 404}));
     // Stateless, so no stream for server-sent messages to open and no session to end.
     if (request.method !== "POST") {
@@ -82,7 +86,7 @@ export default {
     }
 
     setProjectStore(durableProjectStore(env));
-    const server = createServer({editorUrl: env.PERFBOARD_EDITOR_URL});
+    const server = createServer({editorUrl: env.PERFBOARD_EDITOR_URL, imageUrl: `${origin}/render.svg`});
     const transport = new WebStandardStreamableHTTPServerTransport({sessionIdGenerator: undefined, enableJsonResponse: true});
     await server.connect(transport);
     return withCors(await transport.handleRequest(request));

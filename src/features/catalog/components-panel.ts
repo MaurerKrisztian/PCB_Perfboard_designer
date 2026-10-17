@@ -1,7 +1,7 @@
 import {Utils} from "../../utils/utils";
 import {ShortcutRegistry} from "../shortcut-keys";
 import {buildCatalog, CatalogItem} from "./catalog";
-import {CatalogCategory, getCategoryPath, getChildCategories} from "./catalog-categories";
+import {CatalogCategory, getCategoryPath, getChildCategories} from "../../parts/catalog-categories";
 import {CatalogSearchResult, searchCatalog} from "./catalog-search";
 import {onArmedPartChanged, onCatalogChanged, onRecentChanged} from "./catalog-events";
 import {getRecentKeys} from "./recent-components";

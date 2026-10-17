@@ -3,8 +3,8 @@ import {Point} from "../../interfaces/point.interface";
 import {PlacedPart} from "../../interfaces/placed-part.interface";
 import {SavedStandardComponent} from "../../project-file/project-file";
 import {toGridPos} from "../../project-file/grid";
-import {ComponentDefinition, getComponentDefinition} from "./component-definitions";
-import {drawStandardComponentBody, getStandardComponentSpan} from "./standard-component-render";
+import {ComponentDefinition, getComponentDefinition} from "../../parts/component-definitions";
+import {standardPartSpan} from "../../board-render";
 
 // Perpendicular hit-test tolerance over the body vs. over a lead. The body is the only part
 // that renders wide, so it gets a chunkier tolerance for easy clicking; the leads render as a
@@ -32,12 +32,6 @@ export class PlacedStandardComponent implements PlacedPart {
 
   getDefinition(): ComponentDefinition | undefined {
     return getComponentDefinition(this.definitionId);
-  }
-
-  draw(selected: boolean) {
-    const def = this.getDefinition();
-    if (!def) return;
-    drawStandardComponentBody(this.startDot, this.endDot, def, {selected, value: this.value, color: this.color});
   }
 
   getPinPositions(): Point[] {
@@ -76,7 +70,7 @@ export class PlacedStandardComponent implements PlacedPart {
       return this.containsPointFallback(x, y);
     }
 
-    const {length, angle, bodyStart, bodyEnd, bodySize} = getStandardComponentSpan(this.startDot, this.endDot, def);
+    const {length, angle, bodyStart, bodyEnd, bodySize} = standardPartSpan(this.startDot, this.endDot, def);
     if (length === 0) return false;
 
     const cos = Math.cos(angle);

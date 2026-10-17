@@ -1,7 +1,6 @@
-import {Canvas} from "../../state/Canvas";
+import {drawPart} from "../../board-render";
+import {toGridPos} from "../../project-file/grid";
 import {ActiveTool, Rotation, ToolState} from "../../state/ToolState";
-import {drawDip} from "../ic-package/dip-shape";
-import {drawModule} from "../ic-package/module-shape";
 import {placePart} from "../placed-parts";
 import {icKey} from "../catalog/catalog-keys";
 import {recordRecentKey} from "../catalog/recent-components";
@@ -22,21 +21,19 @@ export const icTool: ToolBehavior<IcTool> = {
     return true;
   },
 
-  drawPreview(tool, hoverDot) {
+  drawPreview(tool, hoverDot, painter) {
     const template = tool.template;
     // The chip or board itself, translucent, where it will land.
-    Canvas.ctx.save();
-    Canvas.ctx.globalAlpha = 0.65;
-    (template.isModule ? drawModule : drawDip)(Canvas.ctx, {
-      x: hoverDot.x,
-      y: hoverDot.y,
+    drawPart(painter, {kind: "ic", entry: {
+      ref: "",
+      name: template.name,
       widthPin: template.widthPin,
       heightPin: template.heightPin,
       rotation: template.rotationAngle as Rotation,
-      selected: false,
-      title: template.name,
-    });
-    Canvas.ctx.restore();
+      pinDescription: template.pinDescription,
+      at: toGridPos(hoverDot),
+      category: template.category,
+    }}, {ghost: true});
   },
 
   statusText(tool) {

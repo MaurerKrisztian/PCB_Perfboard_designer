@@ -46,7 +46,7 @@ export function removePart(part: Part): boolean {
 }
 
 // Topmost placed part under a canvas point, optionally limited to the parts `accept` allows.
-// Searches in reverse draw order (see redrawCanvas: the under-board layer first, then the layer
+// Searches in reverse draw order (see drawBoard: the under-board layer first, then the layer
 // over the wires, each in list order), so a click lands on the part that's visibly on top.
 export function findPartAt(x: number, y: number, accept?: (part: Part) => boolean): Part | undefined {
   for (const layer of ["over-wires", "under-board"] as const) {

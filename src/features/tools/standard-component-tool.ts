@@ -1,6 +1,6 @@
 import {ActiveTool} from "../../state/ToolState";
-import {getComponentDefinition} from "../standard-components/component-definitions";
-import {drawStandardComponentBody} from "../standard-components/standard-component-render";
+import {getComponentDefinition} from "../../parts/component-definitions";
+import {drawPart} from "../../board-render";
 import {PlacedStandardComponent} from "../standard-components/placed-standard-component";
 import {placePart} from "../placed-parts";
 import {standardKey} from "../catalog/catalog-keys";
@@ -25,14 +25,15 @@ export const standardComponentTool: ToolBehavior<StandardComponentTool> = {
     return true;
   },
 
-  drawPreview(tool, hoverDot) {
+  drawPreview(tool, hoverDot, painter) {
     const def = getComponentDefinition(tool.definitionId);
     if (!def) return;
     if (!tool.start) {
-      drawStartMarker(hoverDot, `Start ${def.name}`);
+      drawStartMarker(painter, hoverDot, `Start ${def.name}`);
       return;
     }
-    drawStandardComponentBody(tool.start, hoverDot, def, {ghost: true});
+    const ghost = new PlacedStandardComponent(def.id, tool.start, hoverDot);
+    drawPart(painter, {kind: "standard-component", entry: ghost.serialize()}, {ghost: true});
   },
 
   statusText(tool) {

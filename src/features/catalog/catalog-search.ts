@@ -1,5 +1,5 @@
 import {CatalogItem} from "./catalog";
-import {CATALOG_CATEGORIES, CatalogCategory, getCategoryPath} from "./catalog-categories";
+import {CATALOG_CATEGORIES, CatalogCategory, getCategoryPath} from "../../parts/catalog-categories";
 
 export type CatalogSearchResult =
   | {type: "item"; item: CatalogItem; score: number}

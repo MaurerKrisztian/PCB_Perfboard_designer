@@ -8,6 +8,7 @@ import {expectedNets, expectNetsInput, projectIdInput, projectInput, projectSour
 import {validateProject} from "../validate";
 import {failure, reply} from "../reply";
 import {errorMessage} from "../text";
+import {boardImageUrl} from "../board-image";
 
 // Share links, in the editor's own format (src/project-file/share-link.ts): make_share_link hands
 // the user a board, read_share_link takes one they shared.
@@ -15,11 +16,12 @@ import {errorMessage} from "../text";
 export const PUBLIC_EDITOR_URL = "https://perfboarddesigner.com/app/";
 
 // DEFAULT_EDITOR_URL: the editor address links open in, PERFBOARD_EDITOR_URL from the server's
-// environment (the MCP client's config, or the Worker's vars) or the public site.
-export function registerShareLinkTools(server: McpServer, DEFAULT_EDITOR_URL: string) {
+// environment (the MCP client's config, or the Worker's vars) or the public site. imageUrl: where
+// a picture of the board is served (board-image.ts).
+export function registerShareLinkTools(server: McpServer, DEFAULT_EDITOR_URL: string, imageUrl: string) {
   server.registerTool("make_share_link", {
     title: "Make share link",
-    description: "Turns a project into a link that opens it in Perfboard Designer: the project travels inside the link, nothing is uploaded. Give the link to the user. The project is validated first (against expectNets too, given or remembered for its projectId); a project with errors gets the list of problems instead of a link, unless allowErrors is set.",
+    description: "Turns a project into a link that opens it in Perfboard Designer: the project travels inside the link, nothing is uploaded. Give the link to the user. Also returns `image`, the address of an SVG picture of the board (as the editor draws it), for showing it where images can go, e.g. in Markdown. The project is validated first (against expectNets too, given or remembered for its projectId); a project with errors gets the list of problems instead of a link, unless allowErrors is set.",
     inputSchema: {
       project: projectInput,
       projectId: projectIdInput,
@@ -40,8 +42,9 @@ export function registerShareLinkTools(server: McpServer, DEFAULT_EDITOR_URL: st
     if (!base) return failure(`editorUrl "${editorUrl ?? DEFAULT_EDITOR_URL}" isn't an http(s) address.`);
     if (from.held && name) from.held.name = name;
     if (from.held && (name || expectNets)) await saveHeldProject(from.held);
-    const link = `${base.href}#${await makeShareFragment(read, name ?? from.held?.name)}`;
-    return reply({link, characters: link.length, ...(problems.length ? {problems} : {})});
+    const fragment = await makeShareFragment(read, name ?? from.held?.name);
+    const link = `${base.href}#${fragment}`;
+    return reply({link, characters: link.length, image: boardImageUrl(imageUrl, fragment), ...(problems.length ? {problems} : {})});
   });
 
   server.registerTool("read_share_link", {

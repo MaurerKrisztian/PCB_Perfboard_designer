@@ -1,5 +1,5 @@
-import {COMPONENT_ICON_DIR, ComponentUnit} from "../standard-components/component-definitions";
-import {CategoryId} from "../catalog/catalog-categories";
+import {COMPONENT_ICON_DIR, ComponentUnit, getIconFile} from "./component-definitions";
+import {CategoryId} from "./catalog-categories";
 
 export interface PinOffset {
   dx: number;
@@ -19,7 +19,8 @@ export interface AdvancedComponentDefinition {
   keywords?: string[];
   // Letters of a placed part's reference designator: "Q" makes Q1, Q2...
   refPrefix: string;
-  iconPath?: string;
+  // The artwork's file in COMPONENT_ICON_DIR, when it isn't named after the id ("<id>.svg").
+  iconFile?: string;
   fallbackLabel: string;
   pinOffsets: PinOffset[];
   pinLabels?: string[];
@@ -68,7 +69,7 @@ export interface AdvancedComponentDefinition {
 export const PIN_TILE_HALF = 0.5;
 
 export function getAdvancedIconPath(def: AdvancedComponentDefinition): string {
-  return def.iconPath ?? `${COMPONENT_ICON_DIR}${def.id}.svg`;
+  return `${COMPONENT_ICON_DIR}${getIconFile(def)}`;
 }
 
 const INLINE_3_PINS: PinOffset[] = [{dx: 0, dy: 0}, {dx: 1, dy: 0}, {dx: 2, dy: 0}];
@@ -234,7 +235,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "regulator-7805", refPrefix: "U", category: "ics.power", name: "7805 Voltage Regulator (TO-220)", fallbackLabel: "7805",
     keywords: ["lm7805", "lm340", "5v", "linear", "power supply"],
-    iconPath: `${COMPONENT_ICON_DIR}mosfet.svg`,
+    iconFile: "mosfet.svg",
     pinOffsets: INLINE_3_PINS, pinLabels: ["IN", "GND", "OUT"],
     bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
@@ -242,7 +243,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "regulator-lm317", refPrefix: "U", category: "ics.power", name: "LM317 Adjustable Regulator (TO-220)", fallbackLabel: "LM317",
     keywords: ["voltage regulator", "linear", "power supply", "adjustable"],
-    iconPath: `${COMPONENT_ICON_DIR}mosfet.svg`,
+    iconFile: "mosfet.svg",
     pinOffsets: INLINE_3_PINS, pinLabels: ["ADJ", "OUT", "IN"],
     bodyOutline: MOSFET_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: MOSFET_PIN_LABEL_OFFSET, valueLabelOffset: MOSFET_VALUE_LABEL_OFFSET
@@ -288,14 +289,14 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "rgb-led-cathode", refPrefix: "D", category: "semiconductors.diodes", name: "RGB LED (Common Cathode, formed 2.54 mm)", fallbackLabel: "RGB−",
     keywords: ["light", "red green blue", "5mm", "indicator", "cc"],
-    iconPath: `${COMPONENT_ICON_DIR}rgb-led.svg`,
+    iconFile: "rgb-led.svg",
     pinOffsets: RGB_LED_PINS, pinLabels: ["R", "K", "G", "B"],
     bodyOutline: RGB_LED_OUTLINE, iconFillsBody: true, pinLabelOffset: {dx: 0, dy: -1.45}
   },
   {
     id: "rgb-led-anode", refPrefix: "D", category: "semiconductors.diodes", name: "RGB LED (Common Anode, formed 2.54 mm)", fallbackLabel: "RGB+",
     keywords: ["light", "red green blue", "5mm", "indicator", "ca"],
-    iconPath: `${COMPONENT_ICON_DIR}rgb-led.svg`,
+    iconFile: "rgb-led.svg",
     pinOffsets: RGB_LED_PINS, pinLabels: ["R", "A", "G", "B"],
     bodyOutline: RGB_LED_OUTLINE, iconFillsBody: true, pinLabelOffset: {dx: 0, dy: -1.45}
   },
@@ -346,7 +347,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "seven-segment-cc", refPrefix: "DS", category: "displays", name: "7-Segment Display (Common Cathode, 0.56\")", fallbackLabel: "8.",
     keywords: ["seven segment", "7seg", "led display", "digit", "numeric", "sc56-11", "5161as", "cc"],
-    iconPath: `${COMPONENT_ICON_DIR}seven-segment.svg`,
+    iconFile: "seven-segment.svg",
     pinOffsets: SEVEN_SEGMENT_PINS, pinLabels: sevenSegmentLabels("CC"),
     bodyOutline: SEVEN_SEGMENT_OUTLINE, iconFillsBody: true,
     pinLabelOffset: {dx: 0, dy: 0}
@@ -354,7 +355,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "seven-segment-ca", refPrefix: "DS", category: "displays", name: "7-Segment Display (Common Anode, 0.56\")", fallbackLabel: "8.",
     keywords: ["seven segment", "7seg", "led display", "digit", "numeric", "sa56-11", "5161bs", "ca"],
-    iconPath: `${COMPONENT_ICON_DIR}seven-segment.svg`,
+    iconFile: "seven-segment.svg",
     pinOffsets: SEVEN_SEGMENT_PINS, pinLabels: sevenSegmentLabels("CA"),
     bodyOutline: SEVEN_SEGMENT_OUTLINE, iconFillsBody: true,
     pinLabelOffset: {dx: 0, dy: 0}
@@ -438,7 +439,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "seven-segment-4-cc", refPrefix: "DS", category: "displays", name: "4-Digit 7-Segment Display (Common Cathode, 0.56\")", fallbackLabel: "8888",
     keywords: ["seven segment", "7seg", "led display", "clock", "4 digit", "5641as", "cc", "multiplexed"],
-    iconPath: `${COMPONENT_ICON_DIR}seven-segment-4.svg`,
+    iconFile: "seven-segment-4.svg",
     pinOffsets: FOUR_DIGIT_PINS, pinLabels: FOUR_DIGIT_LABELS,
     bodyOutline: rectangularOutline(-7.42, -6.75, 12.42, 0.75), iconFillsBody: true,
     pinLabelOffset: {dx: 0, dy: 0}
@@ -446,7 +447,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
   {
     id: "seven-segment-4-ca", refPrefix: "DS", category: "displays", name: "4-Digit 7-Segment Display (Common Anode, 0.56\")", fallbackLabel: "8888",
     keywords: ["seven segment", "7seg", "led display", "clock", "4 digit", "5641bs", "ca", "multiplexed"],
-    iconPath: `${COMPONENT_ICON_DIR}seven-segment-4.svg`,
+    iconFile: "seven-segment-4.svg",
     pinOffsets: FOUR_DIGIT_PINS, pinLabels: FOUR_DIGIT_LABELS,
     bodyOutline: rectangularOutline(-7.42, -6.75, 12.42, 0.75), iconFillsBody: true,
     pinLabelOffset: {dx: 0, dy: 0}
@@ -455,7 +456,7 @@ export const ADVANCED_COMPONENT_DEFINITIONS: AdvancedComponentDefinition[] = [
     // Maxim DS18B20 in TO-92, flat face toward the viewer.
     id: "ds18b20", refPrefix: "U", category: "sensors", name: "DS18B20 Temperature Sensor (TO-92)", fallbackLabel: "DS18",
     keywords: ["temperature", "1-wire", "onewire", "thermometer", "dallas", "maxim"],
-    iconPath: `${COMPONENT_ICON_DIR}transistor.svg`,
+    iconFile: "transistor.svg",
     pinOffsets: INLINE_3_PINS, pinLabels: ["GND", "DQ", "VDD"],
     bodyOutline: TRANSISTOR_BODY_OUTLINE, iconFillsBody: true,
     pinLabelOffset: TRANSISTOR_PIN_LABEL_OFFSET

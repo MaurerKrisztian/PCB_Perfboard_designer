@@ -7,7 +7,7 @@ import {deleteLine} from "./line";
 import {setSelectedComponentValue, setSelectedLedColor} from "./standard-components/standard-component-actions";
 import type {LedColor} from "./standard-components/standard-component-actions";
 import {SelectionState} from "../state/SelectionState";
-import {isLed} from "./standard-components/component-definitions";
+import {isLed} from "../parts/component-definitions";
 
 // Context Menu item handlers
 document.getElementById('ctxRotateBtn')?.addEventListener('click', () => {

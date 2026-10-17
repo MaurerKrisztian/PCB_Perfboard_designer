@@ -1,5 +1,5 @@
 import {Group} from "three";
-import {AdvancedComponentDefinition, PinOffset} from "../features/advanced-components/advanced-component-definitions";
+import {AdvancedComponentDefinition, PinOffset} from "../parts/advanced-component-definitions";
 import {ViewerAdvancedPart} from "./project-data";
 import {SceneKit} from "./scene-kit";
 import {buildAudioJack} from "./parts/audio-jack";

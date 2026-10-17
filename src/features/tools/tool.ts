@@ -1,6 +1,6 @@
 import {IDot} from "../../interfaces/dot.interface";
 import {ActiveTool} from "../../state/ToolState";
-import {Canvas} from "../../state/Canvas";
+import type {Painter} from "../../board-render";
 
 export interface BoardClick {
   // Drawing-space coordinates of the click.
@@ -17,7 +17,7 @@ export interface ToolBehavior<T extends ActiveTool> {
   // placement tool clicked away from any pad), which then falls back to plain selection.
   onPointerDown(tool: T, click: BoardClick): boolean;
   // Drawn last, above everything on the board, while the pointer is over a pad.
-  drawPreview?(tool: T, hoverDot: IDot): void;
+  drawPreview?(tool: T, hoverDot: IDot, painter: Painter): void;
   statusText(tool: T): string;
   // Escape steps back within the tool first (e.g. ends a wire run) and returns true. Returning
   // false, or not implementing this, lets Escape drop the tool and the selection.
@@ -25,19 +25,7 @@ export interface ToolBehavior<T extends ActiveTool> {
 }
 
 // Dashed ring and hint at the pad a two-click placement would start from.
-export function drawStartMarker(dot: IDot, label: string) {
-  Canvas.ctx.save();
-  Canvas.ctx.beginPath();
-  Canvas.ctx.setLineDash([4, 3]);
-  Canvas.ctx.strokeStyle = "#38bdf8";
-  Canvas.ctx.lineWidth = 2;
-  Canvas.ctx.arc(dot.x, dot.y, 10, 0, Math.PI * 2);
-  Canvas.ctx.stroke();
-
-  Canvas.ctx.setLineDash([]);
-  Canvas.ctx.fillStyle = "#ffffff";
-  Canvas.ctx.font = "bold 11px Inter, Arial";
-  Canvas.ctx.textAlign = "center";
-  Canvas.ctx.fillText(`➕ ${label}`, dot.x, dot.y - 16);
-  Canvas.ctx.restore();
+export function drawStartMarker(painter: Painter, dot: IDot, label: string) {
+  painter.circle(dot.x, dot.y, 10, {stroke: {paint: "#38bdf8", width: 2, dash: [4, 3]}});
+  painter.text(`➕ ${label}`, dot.x, dot.y - 16, {font: {family: "sans", size: 11, weight: 700}, color: "#ffffff", align: "center"});
 }

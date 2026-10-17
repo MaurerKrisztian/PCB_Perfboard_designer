@@ -1,13 +1,12 @@
-import {COMPONENT_DEFINITIONS, getIconPath} from "../standard-components/component-definitions";
-import {ADVANCED_COMPONENT_DEFINITIONS, getAdvancedIconPath} from "../advanced-components/advanced-component-definitions";
+import {COMPONENT_DEFINITIONS, getIconPath} from "../../parts/component-definitions";
+import {ADVANCED_COMPONENT_DEFINITIONS, getAdvancedIconPath} from "../../parts/advanced-component-definitions";
 import {deleteCustomIc, Ic, selectIc} from "../ic";
-import {getIcDefinition} from "../ic-definitions";
-import {dipIconSvg} from "../ic-package/dip-shape";
-import {moduleIconSvg} from "../ic-package/module-shape";
+import {getIcDefinition} from "../../parts/ic-definitions";
+import {dipIconSvg, moduleIconSvg} from "../../board-render";
 import {editCustomIc, openIcEditor} from "../ic-editor-modal";
 import {ToolState} from "../../state/ToolState";
 import {setActiveTool} from "../active-tool";
-import {CategoryId} from "./catalog-categories";
+import {CategoryId} from "../../parts/catalog-categories";
 import {advancedKey, icKey, standardKey} from "./catalog-keys";
 
 // One entry in the Components panel, whichever placement system backs it. The panel and search

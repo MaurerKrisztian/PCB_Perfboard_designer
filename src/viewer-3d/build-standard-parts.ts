@@ -4,8 +4,8 @@ import {
 } from "three";
 import {LEAD_TIP_Y, paintedTexture, SceneKit, textPlane} from "./scene-kit";
 import {ViewerStandardPart} from "./project-data";
-import {formatComponentValue, parseComponentValue} from "../features/standard-components/component-value";
-import {getCeramicCapacitorCode, getResistorBandColors} from "../features/standard-components/component-value-codes";
+import {formatComponentValue, parseComponentValue} from "../parts/component-value";
+import {getCeramicCapacitorCode, getResistorBandColors} from "../parts/component-value-codes";
 
 // Every two-lead part is modelled in a local frame where the start hole is the origin and the
 // end hole lies on +x, then the frame is swung onto the real hole positions. So "-x side"

@@ -1,9 +1,9 @@
 import {Group, Material, MeshStandardMaterial, Object3D, Vector3} from "three";
-import {fitFont, LABEL_FONT, LEAD_TIP_Y, PITCH, paintedTexture, PX_PER_PITCH, SceneKit} from "./scene-kit";
+import {fitFont, LABEL_FONT, LEAD_TIP_Y, PITCH, paintedTexture, SceneKit} from "./scene-kit";
 import {ViewerIc} from "./project-data";
-import {isModulePart} from "../project-file/ic-package";
-
-type Side = "left" | "right" | "top" | "bottom";
+import {isModulePart} from "../parts/ic-package";
+import {icPins, IcSide} from "../parts/part-geometry";
+import {gridToPx, toGridPos} from "../project-file/grid";
 
 interface IcPin {
   pin: number;
@@ -12,41 +12,22 @@ interface IcPin {
   py: number;
   x: number;
   z: number;
-  side: Side;
+  side: IcSide;
 }
 
-// Same pin numbering as Ic.getRealPinPositions in the editor, so a pin's label and solder
-// joint land on the hole the editor connects it to.
-function icPins(kit: SceneKit, ic: ViewerIc): IcPin[] {
+// Numbered by the shared icPins, so a pin's label and solder joint land on the hole the editor
+// and the nets connect it to.
+function chipPins(kit: SceneKit, ic: ViewerIc): IcPin[] {
   const {frame} = kit;
-  const pins: IcPin[] = [];
-  const left = ic.left, top = ic.top;
-  const right = left + PX_PER_PITCH * (ic.widthPin - 1);
-  const bottom = top + PX_PER_PITCH * (ic.heightPin - 1);
-  if (ic.rotationAngle === 0 || ic.rotationAngle === 180) {
-    const n = ic.heightPin;
-    for (let i = 0; i < n; i++) {
-      const py = top + i * PX_PER_PITCH;
-      const leftPin = ic.rotationAngle === 0 ? i + 1 : n * 2 - i;
-      const rightPin = ic.rotationAngle === 0 ? n * 2 - i : i + 1;
-      pins.push({pin: leftPin, px: left, py, x: frame.x(left), z: frame.z(py), side: "left"});
-      pins.push({pin: rightPin, px: right, py, x: frame.x(right), z: frame.z(py), side: "right"});
-    }
-  } else {
-    const n = ic.widthPin;
-    for (let i = 0; i < n; i++) {
-      const px = left + i * PX_PER_PITCH;
-      const topPin = ic.rotationAngle === 90 ? i + 1 : n * 2 - i;
-      const bottomPin = ic.rotationAngle === 90 ? n * 2 - i : i + 1;
-      pins.push({pin: topPin, px, py: top, x: frame.x(px), z: frame.z(top), side: "top"});
-      pins.push({pin: bottomPin, px, py: bottom, x: frame.x(px), z: frame.z(bottom), side: "bottom"});
-    }
-  }
-  return pins;
+  const at = toGridPos({x: ic.left, y: ic.top});
+  return icPins({at, widthPin: ic.widthPin, heightPin: ic.heightPin, rotation: ic.rotationAngle}).map(({pin, at: [col, row], side}) => {
+    const px = gridToPx(col), py = gridToPx(row);
+    return {pin, px, py, x: frame.x(px), z: frame.z(py), side};
+  });
 }
 
-// Where the editor draws the orientation notch and the pin-1 dot (Ic.drawBody), per rotation.
-const NOTCH_EDGE: Record<number, Side> = {0: "top", 90: "right", 180: "bottom", 270: "left"};
+// Where the editor draws the orientation notch and the pin-1 dot (src/board-render/artists/ic-package/dip-shape.ts), per rotation.
+const NOTCH_EDGE: Record<number, IcSide> = {0: "top", 90: "right", 180: "bottom", 270: "left"};
 const PIN1_CORNER: Record<number, [number, number]> = {0: [0, 0], 90: [1, 0], 180: [1, 1], 270: [0, 1]};
 
 interface Rect {
@@ -246,7 +227,7 @@ function buildModule(kit: SceneKit, ic: ViewerIc, pins: IcPin[]): Group {
 }
 
 export function buildIc(kit: SceneKit, ic: ViewerIc): Object3D | null {
-  const pins = icPins(kit, ic);
+  const pins = chipPins(kit, ic);
   if (pins.length === 0) return null;
   for (const pin of pins) kit.solder(pin.px, pin.py);
   return isModulePart(ic.category, ic.name) ? buildModule(kit, ic, pins) : buildDip(kit, ic, pins);

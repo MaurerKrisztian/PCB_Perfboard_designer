@@ -1,5 +1,5 @@
 import {Ic} from "./ic";
-import {CategoryId} from "./catalog/catalog-categories";
+import {CategoryId} from "../parts/catalog-categories";
 import {notifyCatalogChanged} from "./catalog/catalog-events";
 
 export type CustomIcType = "ic" | "module";

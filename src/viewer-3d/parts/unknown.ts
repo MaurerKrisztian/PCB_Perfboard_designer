@@ -1,5 +1,5 @@
 import {Group, Vector3} from "three";
-import {PinOffset} from "../../features/advanced-components/advanced-component-definitions";
+import {PinOffset} from "../../parts/advanced-component-definitions";
 import {LEAD_TIP_Y, PITCH, SceneKit} from "../scene-kit";
 
 export function buildUnknown(kit: SceneKit, offsets: PinOffset[]): Group {

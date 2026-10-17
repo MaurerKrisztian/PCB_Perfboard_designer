@@ -1,5 +1,5 @@
 import {Group, Vector3} from "three";
-import {PinOffset} from "../../features/advanced-components/advanced-component-definitions";
+import {PinOffset} from "../../parts/advanced-component-definitions";
 import {PITCH, SceneKit} from "../scene-kit";
 import {addLeads} from "./part-geometry";
 

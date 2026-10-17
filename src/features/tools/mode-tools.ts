@@ -2,7 +2,7 @@ import {HistoryState} from "../../state/HistoryState";
 import {LineState} from "../../state/LineState";
 import {SelectionState} from "../../state/SelectionState";
 import {ActiveTool} from "../../state/ToolState";
-import {DEFAULT_DOT_COLOR} from "../board-looks/board-look";
+import {DEFAULT_DOT_COLOR} from "../../board-render";
 import {selectAt, selectLine} from "../board-selection";
 import {addDescriptionToDot} from "../dot-notes";
 import {findPartAt, removePart} from "../placed-parts";

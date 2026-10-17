@@ -10,7 +10,7 @@ import {Canvas} from "../../state/Canvas";
 import {applyCanvasResolution} from "../canvas-sizing";
 import {getCurrentZoom, fitToScreen} from "../view-controls";
 import {GRID_PRESETS} from "./grid-presets";
-import {DEFAULT_DOT_COLOR} from "../board-looks/board-look";
+import {DEFAULT_DOT_COLOR} from "../../board-render";
 import {buildDotIndex, dotPositionKey} from "../dot-lookup";
 import {resetForNewBoard} from "../reset-interaction";
 

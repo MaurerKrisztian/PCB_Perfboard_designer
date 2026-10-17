@@ -25,7 +25,7 @@ Perfboard Designer (https://perfboarddesigner.com) is a browser editor for perfb
 3. edit_project with a list of ops: place parts (add_part with the part's id and "at", or "from" and "to" for a two-lead part) and route wires (add_wire with "from" and "to", or a "path" of holes for a wire with corners; any of these can be a pin by name, "U1.7" or "D1.K", for the hole it's in). If any op can't be done, none are. Each reply says where the new parts' pins landed and checks the board; once it has no errors, the reply lists its nets too.
 4. Check the circuit is the one you meant: the nets in edit_project's reply (pins named like "U1.8 VCC", "D1.K", "R1.1"), or get_nets for junctions and crossings too. Give expectNets (your netlist, e.g. [["U1.8", "U1.4", "R1.1", "J1.1"], ...]) once, to edit_project or validate_project, and every missing or extra connection is reported as an error from then on. render_board draws the board as text, one cell per hole: use it to see free space and where wires run before you place or route more.
 5. Fix every error. Warnings are likely mistakes, such as two pins of one part shorted by a strip or a resistor's two leads joined by wires, a wire passing over a pin without joining it, a lead or wires connected to nothing, or two supply rails shorted. validate_project lists notes too.
-6. make_share_link with the projectId: give the user the link it returns.
+6. make_share_link with the projectId: give the user the link it returns. It also returns "image", the address of an SVG picture of the board as the editor draws it: show it where images display, e.g. Markdown ![board](image).
 
 ## The board
 

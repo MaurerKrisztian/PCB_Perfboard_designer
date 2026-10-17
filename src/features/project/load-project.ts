@@ -12,8 +12,8 @@ import {buildDotIndex, dotPositionKey} from "../dot-lookup";
 import {GridPos, gridToPx} from "../../project-file/grid";
 import {readProjectFile} from "../../project-file/read-project-file";
 import {setBoardSetup} from "../board-type";
-import {isCategoryId} from "../catalog/catalog-categories";
-import {isModuleName} from "../../project-file/ic-package";
+import {isCategoryId} from "../../parts/catalog-categories";
+import {isModuleName} from "../../parts/ic-package";
 
 // Replaces the board with a project file's (any version). The file is read and checked in full
 // first, so a file that isn't a project throws ProjectFileError with the board untouched.

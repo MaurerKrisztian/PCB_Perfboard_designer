@@ -10,7 +10,7 @@ import {DragState} from "../state/DragState";
 import {updateDrag} from "./component-drag";
 import {ViewState} from "../state/ViewState";
 import {findPartAt} from "./placed-parts";
-import {DEFAULT_DOT_COLOR} from "./board-looks/board-look";
+import {DEFAULT_DOT_COLOR} from "../board-render";
 import {PartState} from "../state/PartState";
 import {SelectionState} from "../state/SelectionState";
 

@@ -2,7 +2,8 @@
   "mcpServers": {
     "perfboard": {
       "command": "node",
-      "args": ["mcp/dist/server.js"]
+      "args": ["mcp/dist/server.js"],
+      "env": {"PERFBOARD_EDITOR_URL": "http://localhost:3000/app/"}
     }
   }
 }

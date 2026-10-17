@@ -1,5 +1,5 @@
-import {getComponentDefinition} from "../features/standard-components/component-definitions";
-import {getAdvancedComponentDefinition} from "../features/advanced-components/advanced-component-definitions";
+import {getComponentDefinition} from "../parts/component-definitions";
+import {getAdvancedComponentDefinition} from "../parts/advanced-component-definitions";
 
 // Reference designators ("refs"): the R1 / C2 / U1 names parts go by on schematics and
 // silkscreens. Every placed part has one, unique on its board ignoring case, so a person or a

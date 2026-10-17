@@ -144,12 +144,12 @@ is read as version 3, and entries it can't read are skipped (and counted) instea
 whole project.
 
 The `definitionId`s, with each part's pins, are in
-[`component-definitions.ts`](../src/features/standard-components/component-definitions.ts)
+[`component-definitions.ts`](../src/parts/component-definitions.ts)
 (two-lead parts such as `resistor`, `ceramic-capacitor`, `electrolytic-capacitor`, `led` and
 `diode`) and
-[`advanced-component-definitions.ts`](../src/features/advanced-components/advanced-component-definitions.ts)
+[`advanced-component-definitions.ts`](../src/parts/advanced-component-definitions.ts)
 (fixed-footprint parts such as `transistor`, `potentiometer` and `header-pins`). Built-in chips are
-in [`ic-definitions.ts`](../src/features/ic-definitions.ts), and footprints are described in
+in [`ic-definitions.ts`](../src/parts/ic-definitions.ts), and footprints are described in
 [component-footprints.md](component-footprints.md). Check ids against these files: a part with an
 unknown `definitionId` isn't skipped, it stays on the board as an unrecognised part with an `X` ref.
 

@@ -1,8 +1,9 @@
 import {Group, Object3D} from "three";
-import {PX_PER_PITCH, SceneKit} from "./scene-kit";
+import {SceneKit} from "./scene-kit";
 import {ViewerAdvancedPart} from "./project-data";
-import {getAdvancedComponentDefinition} from "../features/advanced-components/advanced-component-definitions";
-import {rotateOffset} from "../features/advanced-components/rotate-offset";
+import {getAdvancedComponentDefinition} from "../parts/advanced-component-definitions";
+import {advancedPartShape, advancedPinOffsets} from "../parts/part-geometry";
+import {gridToPx, toGridPos} from "../project-file/grid";
 import {buildCatalogPart} from "./build-catalog-parts";
 import {buildHeaderPins} from "./parts/header-pins";
 import {buildPotentiometer} from "./parts/potentiometer";
@@ -16,13 +17,15 @@ import {buildUnknown} from "./parts/unknown";
 
 export function buildAdvancedPart(kit: SceneKit, part: ViewerAdvancedPart): Object3D | null {
   const def = getAdvancedComponentDefinition(part.definitionId);
-  const offsets = def?.gridSizable || part.definitionId === "header-pins"
-    ? Array.from({length: part.rows * part.cols}, (_, i) => ({dx: i % part.cols, dy: Math.floor(i / part.cols)}))
-    : def?.pinOffsets ?? [{dx: 0, dy: 0}];
+  // In the part's own frame, for modelling it; the board places the solder joints.
+  const offsets = def ? advancedPinOffsets(def, part.rows, part.cols) : [{dx: 0, dy: 0}];
 
-  for (const {dx, dy} of offsets) {
-    const rotated = rotateOffset(dx, dy, part.rotationAngle);
-    kit.solder(part.anchorX + rotated.x * PX_PER_PITCH, part.anchorY + rotated.y * PX_PER_PITCH);
+  if (def) {
+    const at = toGridPos({x: part.anchorX, y: part.anchorY});
+    const shape = advancedPartShape(def, {at, rotation: part.rotationAngle, rows: part.rows, cols: part.cols});
+    for (const pin of shape.pins) kit.solder(gridToPx(pin.x), gridToPx(pin.y));
+  } else {
+    kit.solder(part.anchorX, part.anchorY);
   }
 
   let group: Group;
@@ -37,8 +40,8 @@ export function buildAdvancedPart(kit: SceneKit, part: ViewerAdvancedPart): Obje
     default: group = buildCatalogPart(kit, part, def, offsets) ?? buildUnknown(kit, offsets);
   }
   group.position.copy(kit.frame.point(part.anchorX, part.anchorY));
-  // rotateOffset turns (1, 0) into (0, 1) at 90° - clockwise on the y-down canvas, which is a
-  // negative turn about the scene's y axis.
+  // A rotation turns (1, 0) into (0, 1) at 90° (see rotateOffset) - clockwise on the y-down
+  // canvas, which is a negative turn about the scene's y axis.
   group.rotation.y = -part.rotationAngle * Math.PI / 180;
   return group;
 }

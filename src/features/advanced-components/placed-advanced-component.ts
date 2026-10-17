@@ -3,9 +3,9 @@ import {PlacedPart} from "../../interfaces/placed-part.interface";
 import {SavedAdvancedComponent} from "../../project-file/project-file";
 import {toGridPos} from "../../project-file/grid";
 import {GridConfig} from "../../state/GridConfig";
-import {AdvancedComponentDefinition, getAdvancedComponentDefinition, PIN_TILE_HALF, PinOffset} from "./advanced-component-definitions";
-import {drawAdvancedComponentBody, getBoundingRect, PIN_PAD, Point} from "./advanced-component-render";
-import {rotateOffset} from "./rotate-offset";
+import {Point} from "../../interfaces/point.interface";
+import {AdvancedGeometry, advancedPartGeometry, Rect} from "../../board-render";
+import {AdvancedComponentDefinition, getAdvancedComponentDefinition} from "../../parts/advanced-component-definitions";
 
 export class PlacedAdvancedComponent implements PlacedPart {
   public ref = "";
@@ -39,64 +39,23 @@ export class PlacedAdvancedComponent implements PlacedPart {
     return getAdvancedComponentDefinition(this.definitionId);
   }
 
-  private toAbsolute(offsets: PinOffset[]): Point[] {
-    return offsets.map(({dx, dy}) => {
-      const rotated = rotateOffset(dx, dy, this.rotationAngle);
-      return {
-        x: this.anchorDot.x + rotated.x * GridConfig.dotSpace,
-        y: this.anchorDot.y + rotated.y * GridConfig.dotSpace
-      };
+  // Where its pins, covered holes and body are, worked out as the board renderer draws it.
+  private geometry(): AdvancedGeometry | undefined {
+    return advancedPartGeometry({
+      definitionId: this.definitionId,
+      at: toGridPos(this.anchorDot),
+      rotation: this.rotationAngle,
+      rows: this.rows,
+      cols: this.cols,
     });
   }
 
-  private getPinOffsets(): PinOffset[] {
-    const def = this.getDefinition();
-    if (!def) return [];
-    if (!def.gridSizable) return def.pinOffsets;
-    const offsets: PinOffset[] = [];
-    for (let row = 0; row < this.rows; row++) {
-      for (let col = 0; col < this.cols; col++) {
-        offsets.push({dx: col, dy: row});
-      }
-    }
-    return offsets;
-  }
-
   getPinPositions(): Point[] {
-    return this.toAbsolute(this.getPinOffsets());
+    return this.geometry()?.pins ?? [];
   }
 
   getShadedPositions(): Point[] {
-    const def = this.getDefinition();
-    if (!def?.shadedOffsets) return [];
-    return this.toAbsolute(def.shadedOffsets);
-  }
-
-  getBodyOutline(): Point[] {
-    const def = this.getDefinition();
-    if (def?.gridSizable) {
-      // The block's footprint is its pin lattice grown by half a tile on every side, so the
-      // outline traces the outer edge of the drawn tiles rather than their pin centers.
-      const left = -PIN_TILE_HALF;
-      const top = -PIN_TILE_HALF;
-      const right = this.cols - 1 + PIN_TILE_HALF;
-      const bottom = this.rows - 1 + PIN_TILE_HALF;
-      return this.toAbsolute([
-        {dx: left, dy: top},
-        {dx: right, dy: top},
-        {dx: right, dy: bottom},
-        {dx: left, dy: bottom},
-      ]);
-    }
-    if (!def?.bodyOutline) return [];
-    return this.toAbsolute(def.bodyOutline);
-  }
-
-  getIconAnchor(): Point {
-    const def = this.getDefinition();
-    if (def?.iconOffset) return this.toAbsolute([def.iconOffset])[0];
-    const rect = getBoundingRect(this.getPinPositions());
-    return {x: rect.x + rect.w / 2, y: rect.y + rect.h / 2};
+    return this.geometry()?.shaded ?? [];
   }
 
   rotate() {
@@ -110,15 +69,6 @@ export class PlacedAdvancedComponent implements PlacedPart {
       return;
     }
     this.rotationAngle = ((this.rotationAngle + 90) % 360) as 0 | 90 | 180 | 270;
-  }
-
-  draw(selected: boolean) {
-    const def = this.getDefinition();
-    if (!def) return;
-    drawAdvancedComponentBody(
-      this.getPinPositions(), this.getShadedPositions(), this.getBodyOutline(), this.getIconAnchor(),
-      def, this.rotationAngle, {selected}
-    );
   }
 
   // Pin and shaded-hole positions already account for rotation and rows/cols.
@@ -146,17 +96,15 @@ export class PlacedAdvancedComponent implements PlacedPart {
     };
   }
 
-  // Axis-aligned box around the visible body - the outline if the definition has one,
-  // otherwise the pins padded out the same way the renderer draws the default body box.
-  getBodyRect(): {x: number; y: number; w: number; h: number} {
-    const outline = this.getBodyOutline();
-    return outline.length >= 3
-      ? getBoundingRect(outline)
-      : getBoundingRect([...this.getPinPositions(), ...this.getShadedPositions()], PIN_PAD);
+  // Axis-aligned box around the visible body: the outline if the definition has one, otherwise
+  // the pins padded out the way the body box is drawn.
+  getBodyRect(): Rect | undefined {
+    return this.geometry()?.bodyRect;
   }
 
   containsPoint(x: number, y: number): boolean {
     const rect = this.getBodyRect();
+    if (!rect) return false;
     return x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h;
   }
 }

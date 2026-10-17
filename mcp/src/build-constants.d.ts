@@ -8,3 +8,5 @@ declare const PROJECT_FILE_SOURCE: string;
 declare const SERVER_VERSION: string;
 // Example projects from ../examples, by id: their JSON text.
 declare const EXAMPLE_PROJECTS: Record<string, string>;
+// The part icons from ../assets/icons/components, by file name: their SVG text.
+declare const COMPONENT_ICONS: Record<string, string>;

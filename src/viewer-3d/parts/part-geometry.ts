@@ -1,5 +1,5 @@
 import {CylinderGeometry, Group, Material, Mesh, Vector3} from "three";
-import {AdvancedComponentDefinition, PinOffset} from "../../features/advanced-components/advanced-component-definitions";
+import {AdvancedComponentDefinition, PinOffset} from "../../parts/advanced-component-definitions";
 import {LEAD_TIP_Y, PITCH, SceneKit, textPlane} from "../scene-kit";
 
 export function bodyBounds(definition: AdvancedComponentDefinition) {

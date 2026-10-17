@@ -1,6 +1,6 @@
 import {Group, Vector3} from "three";
-import {AdvancedComponentDefinition} from "../../features/advanced-components/advanced-component-definitions";
-import {formatComponentValue, parseComponentValue} from "../../features/standard-components/component-value";
+import {AdvancedComponentDefinition} from "../../parts/advanced-component-definitions";
+import {formatComponentValue, parseComponentValue} from "../../parts/component-value";
 import {SceneKit, textPlane} from "../scene-kit";
 import {addLeads, bodyBounds, cylinder} from "./part-geometry";
 

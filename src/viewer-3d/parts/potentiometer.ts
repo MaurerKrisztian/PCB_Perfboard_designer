@@ -1,5 +1,5 @@
 import {CylinderGeometry, Group, Mesh, Vector3} from "three";
-import {formatComponentValue, parseComponentValue} from "../../features/standard-components/component-value";
+import {formatComponentValue, parseComponentValue} from "../../parts/component-value";
 import {PITCH, SceneKit, textPlane} from "../scene-kit";
 import {addLeads} from "./part-geometry";
 

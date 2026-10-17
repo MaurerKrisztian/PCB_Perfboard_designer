@@ -1,6 +1,6 @@
 import {redrawCanvas} from "../draw-canvas";
-import {ComponentUnit, isLed} from "./component-definitions";
-import {formatComponentValue, parseComponentValue} from "./component-value";
+import {ComponentUnit, isLed} from "../../parts/component-definitions";
+import {formatComponentValue, parseComponentValue} from "../../parts/component-value";
 import {SelectionState} from "../../state/SelectionState";
 
 const VALUE_EXAMPLES: Record<ComponentUnit, string> = {

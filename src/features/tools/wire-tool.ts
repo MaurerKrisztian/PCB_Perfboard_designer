@@ -1,4 +1,3 @@
-import {Canvas} from "../../state/Canvas";
 import {HistoryState} from "../../state/HistoryState";
 import {LineState} from "../../state/LineState";
 import {SelectionState} from "../../state/SelectionState";
@@ -42,23 +41,16 @@ export const wireTool: ToolBehavior<WireTool> = {
     return true;
   },
 
-  drawPreview(tool, hoverDot) {
-    if (!tool.start) {
-      drawStartMarker(hoverDot, "Start Wire");
+  drawPreview(tool, hoverDot, painter) {
+    const start = tool.start;
+    if (!start) {
+      drawStartMarker(painter, hoverDot, "Start Wire");
       return;
     }
-    if (tool.start === hoverDot) return;
-    Canvas.ctx.save();
-    Canvas.ctx.beginPath();
-    Canvas.ctx.setLineDash([6, 4]);
-    Canvas.ctx.moveTo(tool.start.x, tool.start.y);
-    Canvas.ctx.lineTo(hoverDot.x, hoverDot.y);
-    Canvas.ctx.strokeStyle = ToolState.activeWireColor || "#3b82f6";
-    Canvas.ctx.lineWidth = ToolState.selectedWireWidth || 4;
-    Canvas.ctx.lineCap = "round";
-    Canvas.ctx.globalAlpha = 0.55;
-    Canvas.ctx.stroke();
-    Canvas.ctx.restore();
+    if (start === hoverDot) return;
+    painter.group({opacity: 0.55}, () => painter.line([start, hoverDot], {
+      paint: ToolState.activeWireColor || "#3b82f6", width: ToolState.selectedWireWidth || 4, cap: "round", dash: [6, 4],
+    }));
   },
 
   statusText(tool) {

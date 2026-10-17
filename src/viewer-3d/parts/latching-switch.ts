@@ -1,5 +1,5 @@
 import {Group, Vector3} from "three";
-import {AdvancedComponentDefinition} from "../../features/advanced-components/advanced-component-definitions";
+import {AdvancedComponentDefinition} from "../../parts/advanced-component-definitions";
 import {SceneKit} from "../scene-kit";
 import {addLeads, bodyBounds} from "./part-geometry";
 
