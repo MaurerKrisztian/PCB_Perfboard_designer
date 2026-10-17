@@ -53,7 +53,7 @@
       "codeRepository": "https://github.com/MaurerKrisztian/perfboard-designer"
     }
     </script>
-  <link rel="stylesheet" href="./assets/landing.380979ae.css">
+  <link rel="stylesheet" href="./assets/landing.2bac2ffd.css">
 </head>
 
 <body>
@@ -72,12 +72,13 @@
     </a>
     <nav class="site-nav" aria-label="Main">
       <a href="#features">Features</a>
-      <a href="#stripboard">Stripboard</a>
-      <a href="#3d-view">3D view</a>
+      <a class="nav-extra" href="#stripboard">Stripboard</a>
+      <a class="nav-extra" href="#3d-view">3D view</a>
       <a href="#how-it-works">How it works</a>
       <a href="#faq">FAQ</a>
+      <a href="guide/">Guide</a>
       <a href="mcp-server/">AI agents</a>
-      <a href="contributors/">Contributors</a>
+      <a class="nav-extra" href="contributors/">Contributors</a>
       <a href="https://github.com/MaurerKrisztian/perfboard-designer" target="_blank" rel="noopener">GitHub</a>
     </nav>
     <a class="button button-small" href="app/">Open the designer</a>
@@ -141,7 +142,7 @@
         <article class="feature">
           <span class="feature-icon" aria-hidden="true">💾</span>
           <h3>Save, share and export</h3>
-          <p>Keep as many projects as you like in the browser, saved automatically as you go. Download a design as a project file to share or reopen later, or export the board as a PNG image.</p>
+          <p>Keep as many projects as you like in the browser, saved automatically as you go. Send a board to anyone as a share link, download it as a project file, or export it as a PNG or SVG image.</p>
         </article>
         <article class="feature">
           <span class="feature-icon" aria-hidden="true">⌨️</span>
@@ -229,8 +230,9 @@
           <p>Save the project file, export an image to keep next to your soldering iron, and build with confidence.</p>
         </li>
       </ol>
-      <div class="center">
+      <div class="center-actions">
         <a class="button" href="app/">Start a layout →</a>
+        <a class="button button-ghost" href="guide/">Read the guide</a>
       </div>
     </section>
 
@@ -247,7 +249,7 @@
         </details>
         <details>
           <summary>Where are my designs saved?</summary>
-          <p>On your own device. Your projects are saved in this browser automatically as you edit: open, rename, duplicate or delete them from File → Open Project. "Save Project to File" downloads a project file you can import again or share. Nothing is uploaded to a server.</p>
+          <p>On your own device. Your projects are saved in this browser automatically as you edit: open, rename, duplicate or delete them from File → Open Project. "Save Project to File" downloads a project file you can import again or share. Nothing is uploaded to a server, unless you make a short share link: that stores a copy of the board so the link can be short.</p>
         </details>
         <details>
           <summary>Does it work for stripboard (Veroboard)?</summary>
@@ -283,6 +285,7 @@
     </p>
     <nav aria-label="Footer">
       <a href="app/">Designer</a>
+      <a href="guide/">Guide</a>
       <a href="mcp-server/">MCP server</a>
       <a href="contributors/">Contributors</a>
       <a href="https://github.com/MaurerKrisztian/perfboard-designer" target="_blank" rel="noopener">GitHub</a>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Perfboard Designer Guide: How to Lay Out Perfboard &amp; Stripboard Circuits</title>
+    <meta name="description" content="A step-by-step guide to Perfboard Designer, the free online perfboard and stripboard layout tool: set up a board, place parts, route wires, cut strips, check nets, view in 3D, and share or export your design." />
+    <link rel="canonical" href="https://perfboarddesigner.com/guide/" />
+    <meta name="theme-color" content="#0b1220" />
+    <link rel="icon" type="image/png" href="../favicon.png" />
+
+    <!-- Link previews (Facebook, LinkedIn, Discord, Slack, X...) -->
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Perfboard Designer" />
+    <meta property="og:title" content="How to use Perfboard Designer: the complete guide" />
+    <meta property="og:description" content="Lay out a perfboard or stripboard circuit step by step: board setup, parts, wires, strip cuts, nets, 3D view, share links and export." />
+    <meta property="og:url" content="https://perfboarddesigner.com/guide/" />
+    <meta property="og:image" content="https://perfboarddesigner.com/images/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A perfboard layout with an NE555 timer, LEDs, resistors and an Arduino Nano in Perfboard Designer" />
+    <meta property="article:published_time" content="2026-10-18" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" />
+    
+    
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "TechArticle",
+          "headline": "How to use Perfboard Designer: lay out perfboard and stripboard circuits",
+          "description": "A step-by-step guide to Perfboard Designer, the free online perfboard and stripboard layout tool: board setup, placing parts, routing wires, cutting strips, checking nets, the 3D view, sharing and exporting.",
+          "url": "https://perfboarddesigner.com/guide/",
+          "mainEntityOfPage": "https://perfboarddesigner.com/guide/",
+          "image": "https://perfboarddesigner.com/images/og-image.jpg",
+          "datePublished": "2026-10-18",
+          "dateModified": "2026-10-18",
+          "inLanguage": "en",
+          "proficiencyLevel": "Beginner",
+          "keywords": "perfboard layout, stripboard layout, Veroboard layout, protoboard, perfboard designer guide, how to design perfboard, stripboard cuts",
+          "author": {"@type": "Person", "name": "Krisztian Maurer", "url": "https://github.com/MaurerKrisztian"},
+          "about": {"@type": "WebApplication", "name": "Perfboard Designer", "url": "https://perfboarddesigner.com/app/", "applicationCategory": "DesignApplication", "operatingSystem": "Any (web browser)"}
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://perfboarddesigner.com/"},
+            {"@type": "ListItem", "position": 2, "name": "Guide", "item": "https://perfboarddesigner.com/guide/"}
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {"@type": "Question", "name": "How do I cut a strip on a stripboard?", "acceptedAnswer": {"@type": "Answer", "text": "Switch the board to Stripboard, pick the Cut tool in the Tools panel and click the hole where the strip should break. Click a cut hole again to mend it."}},
+            {"@type": "Question", "name": "How do I rotate a component?", "acceptedAnswer": {"@type": "Answer", "text": "Press R. It turns the part you are about to place, or the selected part on the board. You can also right-click a part and choose Rotate Component."}},
+            {"@type": "Question", "name": "Why are two wires that cross not connected?", "acceptedAnswer": {"@type": "Answer", "text": "Wires are insulated jumpers: a wire only connects the holes at its two ends. Where it runs over another wire or a hole it goes over it without joining. To connect, end the wires in the same hole."}},
+            {"@type": "Question", "name": "Where are my projects saved?", "acceptedAnswer": {"@type": "Answer", "text": "In your own browser, automatically as you edit. Use File, Save Project to File to keep a copy on disk, or Share Link to send the board to someone."}},
+            {"@type": "Question", "name": "Can I share a board without an account?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. File, Share Link makes a link that carries the whole board. Whoever opens it gets their own copy as a new project. No account is needed."}}
+          ]
+        }
+      ]
+    }
+    </script>
+  <link rel="stylesheet" href="../assets/index.5e33b6b7.css">
+  <link rel="stylesheet" href="../assets/landing.2bac2ffd.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="Perfboard Designer home">
+      <span class="brand-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+          <path d="M8 6h8M6 8v8M18 8v8M8 18h8" />
+        </svg>
+      </span>
+      <span class="brand-title">Perfboard Designer</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#quick-start">Quick start</a>
+      <a class="nav-extra" href="#components">Parts</a>
+      <a class="nav-extra" href="#wires">Wires</a>
+      <a href="#stripboard">Stripboard</a>
+      <a href="#shortcuts">Shortcuts</a>
+      <a href="../mcp-server/">AI agents</a>
+      <a href="https://github.com/MaurerKrisztian/perfboard-designer" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <a class="button button-small" href="../app/">Open the designer</a>
+  </header>
+
+  <main>
+    <div class="guide-hero">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="../">Home</a></li>
+          <li aria-current="page">Guide</li>
+        </ol>
+      </nav>
+      <p class="eyebrow">User guide · Beginner friendly</p>
+      <h1>How to use Perfboard Designer</h1>
+      <p class="lead">
+        Everything you need to plan a perfboard (protoboard) or stripboard (Veroboard) circuit in
+        Perfboard Designer: setting up the board, placing parts, routing jumper wires, cutting
+        strips, checking what's connected, previewing the board in 3D, and sharing or exporting the
+        finished layout.
+      </p>
+      <p class="guide-meta">About 10 minutes to read · Works in any modern desktop browser · Free, no sign-up</p>
+    </div>
+
+    <div class="guide-layout">
+      <nav class="guide-toc" aria-labelledby="toc-title">
+        <h2 id="toc-title">On this page</h2>
+        <ol>
+          <li><a href="#quick-start">Quick start</a></li>
+          <li><a href="#editor">The editor at a glance</a></li>
+          <li><a href="#board">Set up the board</a></li>
+          <li><a href="#components">Place components</a></li>
+          <li><a href="#values">Values, colors and labels</a></li>
+          <li><a href="#custom-ics">Custom ICs and modules</a></li>
+          <li><a href="#wires">Route wires</a></li>
+          <li><a href="#editing">Select, move and delete</a></li>
+          <li><a href="#navigation">Zoom and pan</a></li>
+          <li><a href="#stripboard">Stripboard and strip cuts</a></li>
+          <li><a href="#nets">Check connections</a></li>
+          <li><a href="#3d-view">The 3D view</a></li>
+          <li><a href="#saving">Save, share and export</a></li>
+          <li><a href="#ai">Design with AI</a></li>
+          <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+          <li><a href="#tips">Layout tips</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ol>
+      </nav>
+
+      <article class="guide-article">
+        <section id="quick-start">
+          <h2>Quick start: your first board in five steps</h2>
+          <p>
+            Open the <a href="../app/">designer</a>. A small perfboard is ready to use, and your work
+            is saved in the browser as you go, so there's nothing to set up first.
+          </p>
+          <ol class="steps">
+            <li>
+              <h3>Pick the board</h3>
+              <p>In <strong>Board</strong>, choose <strong>Perfboard</strong> or <strong>Stripboard</strong>, then a preset size or the number of holes across (W) and down (H), and click <strong>Resize</strong>.</p>
+            </li>
+            <li>
+              <h3>Place the parts</h3>
+              <p>Search the <strong>Components</strong> list (press <kbd>/</kbd>), click a part, then click the board where it goes. A resistor or LED takes two clicks: one hole for each lead.</p>
+            </li>
+            <li>
+              <h3>Wire it up</h3>
+              <p>Press <kbd>W</kbd> for the wire tool, click the pin where a wire starts, then each hole it runs to. Press <kbd>Esc</kbd> to finish.</p>
+            </li>
+            <li>
+              <h3>Check the nets</h3>
+              <p>The <strong>Nets</strong> panel on the right lists which pins are connected. Click a net to light it up on the board, and look out for pins left unconnected.</p>
+            </li>
+            <li>
+              <h3>Share or save it</h3>
+              <p>Click <strong>Share</strong> to copy a link to the board, or use the <strong>File</strong> menu to save a project file or download a PNG or SVG picture.</p>
+            </li>
+          </ol>
+        </section>
+
+        <section id="editor">
+          <h2>The editor at a glance</h2>
+          <p>The editor has four areas:</p>
+          <ul>
+            <li><strong>Header:</strong> the <strong>File</strong> menu (new, open, import, save, share, download), the <strong>View</strong> menu (fullscreen, 3D view, show or hide the side panels), the name of the open project (click it to see all your projects), and the <strong>Share</strong> and <strong>3D View</strong> buttons.</li>
+            <li><strong>Left sidebar:</strong> <strong>Tools</strong> (Select, Eraser, Note, and Cut on a stripboard), Undo and Redo, <strong>Board</strong> type and size, the <strong>Wire</strong> tool with its colors and thicknesses, and the <strong>Components</strong> library.</li>
+            <li><strong>Board:</strong> the hole grid you design on, with zoom, <strong>Fit</strong>, <strong>Labels</strong> and <strong>Fullscreen</strong> above it. The badge at the top left tells you what the next click will do, and the bar underneath shows the note or value of whatever you point at.</li>
+            <li><strong>Right sidebar:</strong> the live <strong>Nets</strong> panel and the list of keyboard shortcuts.</li>
+          </ul>
+          <div class="tip">
+            <p><strong>Tip:</strong> the badge above the board always says what the current tool expects, such as "Click start pad" or "Click end pad". If you're unsure what a click will do, read it, and press <kbd>Esc</kbd> to back out.</p>
+          </div>
+        </section>
+
+        <section id="board">
+          <h2>Set up the board: perfboard or stripboard, any size</h2>
+          <p>
+            A <strong>perfboard</strong> has a separate copper pad around every hole, so nothing is
+            connected until you wire it. A <strong>stripboard</strong> (often sold as Veroboard) has
+            copper strips running along every row or column, so every hole on a strip is already
+            connected. Pick the type in the <strong>Board</strong> panel; you can switch at any time
+            and your parts and wires stay where they are.
+          </p>
+          <h3>Board size</h3>
+          <p>
+            Holes are 2.54 mm (0.1 inch) apart, the standard pitch for through-hole parts. Type the
+            number of holes across (<strong>W</strong>) and down (<strong>H</strong>) to match the
+            board on your bench and click <strong>Resize</strong>, or click a preset such as
+            <strong>5x7</strong> or <strong>7x9</strong> (in centimetres, the sizes boards are sold in).
+          </p>
+          <p>
+            Resizing keeps every part and wire that still fits. If making the board smaller would cut
+            something off, the editor asks first, and a resize can't be undone.
+          </p>
+        </section>
+
+        <section id="components">
+          <h2>Place components</h2>
+          <p>
+            The <strong>Components</strong> list holds the whole part library in categories:
+            passives (resistors, potentiometers, capacitors, crystals, fuses, inductors),
+            semiconductors (LEDs, diodes, transistors, MOSFETs), ICs (timers, logic, microcontrollers,
+            op amps, regulators, drivers, optocouplers), modules and dev boards (Arduino Nano, ESP32,
+            Raspberry Pi Pico, Wemos D1 Mini), connectors, switches, displays, sensors, batteries,
+            relays and buzzers.
+          </p>
+          <p>
+            Press <kbd>/</kbd> to jump to the search box and type a name, a value or a part number,
+            such as "555", "header" or "electrolytic". Parts you've placed recently are listed under
+            <strong>Recently used…</strong> at the top, so you can grab them again quickly.
+          </p>
+          <p>Click a part to pick it up. How you put it on the board depends on the part:</p>
+          <div class="place-grid">
+            <div class="place-card">
+              <h3>Two-lead parts</h3>
+              <p>Resistors, capacitors, LEDs, diodes and inductors bend to fit. Click the hole for the first lead, then the hole for the second; the body is drawn between them.</p>
+            </div>
+            <div class="place-card">
+              <h3>Fixed-footprint parts</h3>
+              <p>Transistors, pots, switches, connectors and displays have fixed pins. Press <kbd>R</kbd> to turn the part, then click the hole to drop it. Header pins and female headers take two clicks: two opposite corners of the block.</p>
+            </div>
+            <div class="place-card">
+              <h3>ICs and dev boards</h3>
+              <p>DIP chips and dual-row modules are placed with one click, with pin 1 at the notch. Press <kbd>R</kbd> before placing, or later with the chip selected, to rotate it.</p>
+            </div>
+          </div>
+          <p>
+            A part stays picked up so you can place several in a row. Press <kbd>Esc</kbd> or click
+            <strong>Select</strong> to put it down. Every part gets a reference designator
+            automatically: R1, R2 for resistors, C1 for capacitors, D1 for diodes and LEDs, U1 for
+            chips, J1 for connectors, and so on.
+          </p>
+          <figure class="hero-shot">
+            <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span><span class="shot-label">Layout</span></div>
+            <img src="../images/hero-board.webp" width="1440" height="960" loading="lazy" decoding="async"
+                 alt="A perfboard layout in Perfboard Designer with an Arduino Nano, an NE555 timer, logic chips, a MOSFET, a potentiometer, LEDs, resistors and colored jumper wires on the hole grid" />
+            <figcaption>Chips, dev boards and two-lead parts on a perfboard, with part labels turned on.</figcaption>
+          </figure>
+        </section>
+
+        <section id="values">
+          <h2>Values, colors and labels</h2>
+          <p>
+            Right-click a part for its menu. <strong>Set Value</strong> gives a resistor its
+            resistance, a capacitor its capacitance, and so on. Values understand the usual prefixes:
+            <code>4k7</code>, <code>4.7k</code>, <code>100n</code>, <code>10u</code>. The drawing
+            follows the value: a resistor gets the right color bands, and a ceramic capacitor the
+            three-digit code printed on it (such as 104 for 100 nF).
+          </p>
+          <p>
+            For an LED, <strong>Change Color</strong> picks red, green, blue, yellow or RGB. Click
+            <strong>Labels</strong> above the board to show every part's name and value right on the
+            board (for example "R1 10k"), handy when you print the layout to solder from.
+          </p>
+        </section>
+
+        <section id="custom-ics">
+          <h2>Custom ICs and modules</h2>
+          <p>
+            If a chip or breakout board isn't in the library, make it. Click <strong>Custom…</strong>
+            at the top of the Components list to open the editor, then set:
+          </p>
+          <ul>
+            <li><strong>Name</strong>, such as "ESP8266-01" or "LM2596 module".</li>
+            <li><strong>Type</strong>: an IC, listed under ICs › Custom, or a module, listed under Modules › Custom.</li>
+            <li><strong>Body width</strong> in holes, including both pin rows, and the number of <strong>pins per side</strong>.</li>
+            <li>A <strong>label for every pin</strong>, numbered from pin 1 at the notch, like a datasheet.</li>
+          </ul>
+          <p>
+            Custom parts are kept in your browser and travel with every project and share link that
+            uses them, so a board opens with its chips intact on any computer.
+          </p>
+        </section>
+
+        <section id="wires">
+          <h2>Route wires</h2>
+          <p>
+            Click <strong>Wire Tool</strong> or press <kbd>W</kbd>. Click the hole where the wire
+            starts, then click each hole it should run to: every click ends one straight segment and
+            starts the next, so you can route around parts with corners. Click the same hole twice
+            or press <kbd>Esc</kbd> to end the run.
+          </p>
+          <ul>
+            <li>Pick a <strong>color</strong> before you draw (red for power and black for ground keeps a board readable), or add your own with the <strong>+</strong> button.</li>
+            <li>Choose <strong>Thin</strong>, <strong>Normal</strong> or <strong>Thick</strong> wire.</li>
+            <li>Straight runs of the same color that meet end to end are merged into one wire.</li>
+            <li>To recolor a wire, select it and click a color.</li>
+          </ul>
+          <h3>How wires connect</h3>
+          <p>
+            Wires are insulated jumpers, like the ones you solder on the back of a board.
+            <strong>A wire only connects the holes at its ends.</strong> Where it runs across another
+            wire, or over a hole that holds a pin, it passes over without touching: the editor draws
+            a dark edge along it there. Where three or more things meet in one hole, a solder dot
+            marks the joint. To connect two wires, end them in the same hole.
+          </p>
+        </section>
+
+        <section id="editing">
+          <h2>Select, move and delete</h2>
+          <ul>
+            <li><strong>Select</strong> (the default tool): click a part, wire or hole to select it. Drag a part to move it to new holes.</li>
+            <li><strong>Right-click</strong> anything for its menu: Rotate Component, Change Color, Add/Edit Note, Set Value and Delete Item.</li>
+            <li><kbd>Delete</kbd> removes the selected part or wire.</li>
+            <li><strong>Eraser</strong>: click a part or wire to remove it, or a hole to clear its color and note.</li>
+            <li><strong>Note</strong>: click a hole to write a note on it, such as "to 9V battery" or "solder last". Notes show in the bar below the board when you point at the hole. With a hole selected, <kbd>D</kbd> adds a note and <kbd>Shift</kbd>+<kbd>D</kbd> removes it.</li>
+            <li><strong>Undo</strong> and <strong>Redo</strong> with <kbd>Ctrl</kbd>+<kbd>Z</kbd> and <kbd>Ctrl</kbd>+<kbd>Y</kbd>, or the buttons under the tools.</li>
+          </ul>
+        </section>
+
+        <section id="navigation">
+          <h2>Zoom and pan</h2>
+          <ul>
+            <li>Scroll the mouse wheel over the board to zoom in and out around the pointer, or use the <strong>+</strong> and <strong>−</strong> buttons.</li>
+            <li>Click <strong>Fit</strong> to fit the whole board on screen again.</li>
+            <li>Drag on an empty part of the board to pan. Hold <kbd>Space</kbd> and drag, or drag with the middle mouse button, to pan with any tool.</li>
+            <li><strong>Fullscreen</strong> gives the board the whole screen, and the View menu hides either sidebar.</li>
+          </ul>
+        </section>
+
+        <section id="stripboard">
+          <h2>Stripboard (Veroboard) layouts and strip cuts</h2>
+          <p>
+            Switch the board to <strong>Stripboard</strong> and choose <strong>Horizontal</strong> or
+            <strong>Vertical</strong> strips. Every hole along a strip is connected, so parts on the
+            same strip are joined without a wire, and the Nets panel counts the strips as
+            connections.
+          </p>
+          <p>
+            To separate two parts on one strip, cut it: pick the <strong>Cut</strong> tool (it
+            appears in Tools on a stripboard) and click the hole where the strip should break. A cut
+            hole connects to nothing. Click it again to mend the strip. The classic case is a DIP
+            chip across horizontal strips: cut the strips under the chip's body so pin 1 isn't joined
+            to pin 8, and so on.
+          </p>
+          <figure class="hero-shot">
+            <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span><span class="shot-label">Stripboard layout</span></div>
+            <img src="../images/stripboard-layout.webp" width="1440" height="864" loading="lazy" decoding="async"
+                 alt="An NE555 LED blinker on a stripboard in Perfboard Designer, with the strips cut under the chip so its two pin rows don't short" />
+            <figcaption>A 555 blinker on stripboard: the strips are cut under the chip so its two rows of pins stay apart.</figcaption>
+          </figure>
+          <p>
+            Cuts are saved with the project and drawn on the copper side of the 3D view. If you
+            switch back to perfboard, the cuts are kept, hidden, and come back when you switch to
+            stripboard again.
+          </p>
+        </section>
+
+        <section id="nets">
+          <h2>Check connections with the Nets panel</h2>
+          <p>
+            A <strong>net</strong> is a set of pins that are electrically connected. The
+            <strong>Nets</strong> panel on the right works them out live from your wires, shared
+            holes and, on a stripboard, the strips and cuts. Each net is named from its pins where it
+            can be, for example GND, VCC or OUT, and lists its pins as "U1.8 VCC", "R1.1" or
+            "D1.K" (the LED's cathode).
+          </p>
+          <ul>
+            <li><strong>Click a net</strong> to highlight its holes and wires on the board; click it again to turn the highlight off.</li>
+            <li><strong>Not connected</strong> lists pins wired to nothing, the most common slip on a real board.</li>
+            <li><strong>Connecting no pins</strong> lists wires that don't reach any part.</li>
+          </ul>
+          <div class="tip">
+            <p><strong>Before you solder:</strong> go through your schematic net by net and check each one in the panel. A net named like "GND/VCC" means two supply rails are shorted, often by an uncut strip.</p>
+          </div>
+          <p>
+            Perfboard Designer checks how the board is wired, not how the circuit behaves: it doesn't
+            simulate your circuit.
+          </p>
+        </section>
+
+        <section id="3d-view">
+          <h2>Preview the board in 3D</h2>
+          <p>
+            Click <strong>3D View</strong> to see your layout as a 3D model of the finished board:
+            resistors with their color bands, chips with labeled pins, LEDs, capacitors, connectors and
+            every jumper wire, arched over the wires it crosses.
+          </p>
+          <ul>
+            <li>Drag to orbit and scroll to zoom.</li>
+            <li><strong>Angled</strong>, <strong>Top</strong> and <strong>Bottom</strong> jump to a preset view; Bottom shows the copper side with its strips, cuts and solder joints.</li>
+            <li><strong>Screenshot</strong> saves a picture of the render.</li>
+          </ul>
+          <figure class="hero-shot">
+            <div class="window-bar" aria-hidden="true"><span></span><span></span><span></span><span class="shot-label">3D view</span></div>
+            <img src="../images/board-3d-detail.webp" width="1000" height="660" loading="lazy" decoding="async"
+                 alt="Close-up of Perfboard Designer's 3D view: a potentiometer, a 74HC595 with labeled pins, an Arduino Nano, a 74HC14, a transistor, LEDs and jumper wires" />
+            <figcaption>The 3D view shows how tall parts and wires sit on the finished board.</figcaption>
+          </figure>
+          <p>The 3D view needs WebGL. If it doesn't open, turn on hardware acceleration in your browser's settings or try another browser.</p>
+        </section>
+
+        <section id="saving">
+          <h2>Save, share and export</h2>
+          <h3>Projects in your browser</h3>
+          <p>
+            Every board is a project, saved automatically in your browser as you edit. Click the
+            project name in the header, or <strong>File › Open Project…</strong>, to see them all
+            with thumbnails, and open, rename, duplicate or delete them. <strong>File › New
+            Project…</strong> starts a fresh board.
+          </p>
+          <div class="tip">
+            <p><strong>Keep a backup:</strong> browser storage is cleared if you clear your site data. Use <strong>File › Save Project to File…</strong> to download a project file, and <strong>Import Project from File…</strong> to open it again on any computer.</p>
+          </div>
+          <h3>Share links</h3>
+          <p>
+            <strong>Share</strong> (or <strong>File › Share Link…</strong>) makes a link that carries
+            the whole board inside it. Whoever opens it gets their own copy as a new project; your
+            board isn't changed, and nothing is uploaded. The link is a snapshot: after more edits,
+            share a new one.
+          </p>
+          <p>
+            For a link short enough for a forum post or a chat, click <strong>Make Short
+            Link</strong> and give it a name, such as <code>led-blinker</code>. That stores a copy
+            of the board on Perfboard Designer's server under that name. Anyone with the link can open
+            it, the stored copy never changes, and it's deleted after a year unopened.
+          </p>
+          <h3>Images for printing and documentation</h3>
+          <p>
+            <strong>File › Download Image</strong> (or <kbd>P</kbd>) saves the board as a PNG, and
+            <strong>Download SVG</strong> as a sharp vector image you can scale or print at any size.
+            Turn on <strong>Labels</strong> first to include part names and values.
+          </p>
+        </section>
+
+        <section id="ai">
+          <h2>Design boards with an AI assistant</h2>
+          <p>
+            Perfboard Designer has a free MCP server, so Claude, ChatGPT, Cursor and other AI
+            assistants can lay out boards for you. Describe the circuit, such as "a 555 LED blinker on
+            a small perfboard", and the assistant picks the parts, places them, routes the wires,
+            checks every connection and gives you a link that opens the board here, ready to change.
+            It can also read a board you share with it and edit it.
+          </p>
+          <p><a class="button button-ghost" href="../mcp-server/">Set up the MCP server →</a></p>
+        </section>
+
+        <section id="shortcuts">
+          <h2>Keyboard shortcuts</h2>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th scope="col">Keys</th><th scope="col">What it does</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><kbd>/</kbd></td><td>Search components</td></tr>
+                <tr><td><kbd>W</kbd></td><td>Turn the wire tool on or off</td></tr>
+                <tr><td><kbd>R</kbd></td><td>Rotate the part you're placing, or the selected part</td></tr>
+                <tr><td><kbd>Esc</kbd></td><td>End a wire run, put down the part you're placing, or clear the selection</td></tr>
+                <tr><td><kbd>Delete</kbd></td><td>Delete the selected part or wire</td></tr>
+                <tr><td><kbd>C</kbd></td><td>Change the color of the selected hole</td></tr>
+                <tr><td><kbd>D</kbd></td><td>Add a note to the selected hole</td></tr>
+                <tr><td><kbd>Shift</kbd>+<kbd>D</kbd></td><td>Remove the selected hole's note</td></tr>
+                <tr><td><kbd>M</kbd></td><td>Move the selected hole's color and note to the hole under the pointer</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Undo</td></tr>
+                <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd></td><td>Redo</td></tr>
+                <tr><td><kbd>P</kbd></td><td>Download the board as a PNG image</td></tr>
+                <tr><td><kbd>Space</kbd> + drag</td><td>Pan the board with any tool</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>The same list is always in the editor's right sidebar.</p>
+        </section>
+
+        <section id="tips">
+          <h2>Tips for a clean perfboard layout</h2>
+          <ul>
+            <li><strong>Start with the big parts.</strong> Place chips, dev boards and connectors first, leaving room around them, then fit the small parts in between.</li>
+            <li><strong>Plan the power rails.</strong> Run power and ground along the board's edges or along two strips, so every part can reach them with a short wire.</li>
+            <li><strong>Put connectors at the edge,</strong> where cables can reach them without crossing the board.</li>
+            <li><strong>Leave a spare row or column</strong> around the edge for mounting holes and last-minute changes.</li>
+            <li><strong>Use a color code</strong> for wires: red for power, black for ground, and one color per signal you'll want to trace later.</li>
+            <li><strong>Keep wires short and straight,</strong> and avoid running wires under parts, where you can't reach them with the iron.</li>
+            <li><strong>On stripboard, cut under every DIP chip</strong> and check the Nets panel for shorts before you solder.</li>
+            <li><strong>Mind polarity:</strong> the Nets panel names an LED's or diode's leads A and K and a capacitor's + and −, so check them against your schematic.</li>
+            <li><strong>Print it.</strong> Download the image with labels on and keep it next to the board while you solder.</li>
+          </ul>
+        </section>
+
+        <section id="faq">
+          <h2>Frequently asked questions</h2>
+          <div class="faq">
+            <details>
+              <summary>How do I cut a strip on a stripboard?</summary>
+              <p>Switch the board to Stripboard, pick the Cut tool in the Tools panel and click the hole where the strip should break. Click a cut hole again to mend it.</p>
+            </details>
+            <details>
+              <summary>How do I rotate a component?</summary>
+              <p>Press R. It turns the part you are about to place, or the selected part on the board. You can also right-click a part and choose Rotate Component.</p>
+            </details>
+            <details>
+              <summary>Why are two wires that cross not connected?</summary>
+              <p>Wires are insulated jumpers: a wire only connects the holes at its two ends. Where it runs over another wire or a hole it goes over it without joining. To connect, end the wires in the same hole.</p>
+            </details>
+            <details>
+              <summary>Where are my projects saved?</summary>
+              <p>In your own browser, automatically as you edit. Use File › Save Project to File to keep a copy on disk, or Share Link to send the board to someone.</p>
+            </details>
+            <details>
+              <summary>Can I share a board without an account?</summary>
+              <p>Yes. File › Share Link makes a link that carries the whole board. Whoever opens it gets their own copy as a new project. No account is needed.</p>
+            </details>
+          </div>
+        </section>
+      </article>
+    </div>
+
+    <section class="cta">
+      <h2>Ready to lay out your board?</h2>
+      <p>Open the designer and put this guide to work. It's free and needs no sign-up.</p>
+      <a class="button" href="../app/">Open the designer →</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Perfboard Designer is open source, made by
+      <a href="https://github.com/MaurerKrisztian" target="_blank" rel="noopener">@MaurerKrisztian</a>
+      and <a href="../contributors/">contributors</a>.
+    </p>
+    <nav aria-label="Footer">
+      <a href="../">Home</a>
+      <a href="../app/">Designer</a>
+      <a href="../mcp-server/">MCP server</a>
+      <a href="../contributors/">Contributors</a>
+      <a href="https://github.com/MaurerKrisztian/perfboard-designer" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/MaurerKrisztian/perfboard-designer/issues" target="_blank" rel="noopener">Report a bug</a>
+    </nav>
+  </footer>
+</body>
+</html>
