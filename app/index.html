@@ -69,6 +69,16 @@
           <button id="toggleShortcutsBtn" role="menuitemcheckbox" aria-checked="true">Nets &amp; Shortcuts<span class="menu-check">✓</span></button>
         </div>
       </div>
+
+      <div class="menu">
+        <button class="menu-trigger" aria-haspopup="true" aria-expanded="false">Help</button>
+        <div class="menu-panel" role="menu" hidden>
+          <a href="../guide/" target="_blank" rel="noopener" role="menuitem">User Guide</a>
+          <a href="../mcp-server/" target="_blank" rel="noopener" role="menuitem">Design with AI (MCP)</a>
+          <div class="menu-divider"></div>
+          <a href="https://github.com/MaurerKrisztian/perfboard-designer/issues" target="_blank" rel="noopener" role="menuitem">Report a Bug</a>
+        </div>
+      </div>
       <input type="file" id="loadProjectBtn" style="display:none">
       <!-- The open project's name, filled in by projects-modal.ts. -->
       <button id="currentProjectBtn" class="project-name-btn"></button>

@@ -46,6 +46,9 @@ Keep all in-site URLs relative — never `/...` — so it also works under the g
 - `index.html` — static, JS-free SEO landing page (styles in `src/landing/`).
 - `app/index.html` — the editor itself (everything below). Static assets in `assets/` (the Vite
   publicDir) are served from the site root, so from the editor they're `../icons/...` etc.
+- `guide/index.html` — static, JS-free SEO user guide: how to use the editor, feature by feature
+  (styles in `src/guide/`, on top of the landing's). Linked from the editor's Help menu. When a
+  change alters how a feature is used (a tool, shortcut, menu or panel), update the guide too.
 - `contributors/index.html` — standalone page (`src/contributors/`) listing contributors live from
   the GitHub API; imports nothing from the editor.
 - `mcp-server/index.html` — how to connect AI agents (Claude Code, claude.ai, ChatGPT, Cursor…) to

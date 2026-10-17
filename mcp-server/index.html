@@ -240,7 +240,7 @@ npm run build</code></pre></div>
         <article class="feature">
           <span class="feature-icon" aria-hidden="true">🔗</span>
           <h3>Hands you a link</h3>
-          <p>The finished board comes back as a share link. Click it and the board opens in the designer as a new project, ready to change, save or view in 3D.</p>
+          <p>The finished board comes back as a share link, with a picture of it, and a short link too if you ask. Click it and the board opens in the designer as a new project, ready to change, save or view in 3D.</p>
         </article>
         <article class="feature">
           <span class="feature-icon" aria-hidden="true">✏️</span>
@@ -265,6 +265,7 @@ npm run build</code></pre></div>
         <details>
           <summary>What happens to my boards?</summary>
           <p>While the assistant works on a board, the server keeps a copy under a random project id, deleted after 30 days unused. The board you get back travels inside the share link itself, and opening it saves it in your own browser, like any other project.</p>
+          <p>If you ask for a short link, the board is also stored at <code>projects.perfboarddesigner.com</code> under a readable id, such as <code>led-blinker</code>. Anyone with that link can open it. A stored board never changes (after an edit, the assistant stores a new one) and is deleted after a year unopened. The full link always comes too, and works without the server.</p>
         </details>
         <details>
           <summary>Does it simulate my circuit?</summary>
@@ -297,6 +298,7 @@ npm run build</code></pre></div>
     <nav aria-label="Footer">
       <a href="../">Home</a>
       <a href="../app/">Designer</a>
+      <a href="../guide/">Guide</a>
       <a href="../contributors/">Contributors</a>
       <a href="https://github.com/MaurerKrisztian/perfboard-designer" target="_blank" rel="noopener">GitHub</a>
       <a href="https://github.com/MaurerKrisztian/perfboard-designer/issues" target="_blank" rel="noopener">Report a bug</a>

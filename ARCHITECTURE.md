@@ -33,6 +33,7 @@ at https://perfboarddesigner.com.
 | --- | --- | --- |
 | `/` | `index.html`, `src/landing/` | Static, JS-free landing page (SEO). |
 | `/app/` | `app/index.html`, `src/index.ts` | The editor: everything below. |
+| `/guide/` | `guide/index.html`, `src/guide/` | Static, JS-free user guide (SEO): how to use the editor, feature by feature. Reuses the landing's styles. Keep it in step with the editor when a feature changes how it's used. Linked from the editor's Help menu. |
 | `/contributors/` | `contributors/index.html`, `src/contributors/` | Contributors, live from the GitHub API. Imports nothing from the editor. |
 | `/mcp-server/` | `mcp-server/index.html`, `src/mcp-page/` | How to connect AI agents to the hosted MCP server. Keep its steps in step with `mcp/README.md`. |
 | 404 | `assets/404.html` | GitHub Pages' not-found page, fully self-contained. |

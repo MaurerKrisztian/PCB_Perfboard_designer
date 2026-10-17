@@ -154,7 +154,8 @@ button.menu-trigger[aria-expanded="true"] {
   display: none;
 }
 
-.menu-panel button {
+.menu-panel button,
+.menu-panel a {
   background: none;
   border: none;
   border-radius: 6px;
@@ -165,10 +166,13 @@ button.menu-trigger[aria-expanded="true"] {
   text-align: left;
   padding: 0.5rem 0.65rem;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .menu-panel button:hover,
-.menu-panel button:focus-visible {
+.menu-panel button:focus-visible,
+.menu-panel a:hover,
+.menu-panel a:focus-visible {
   background-color: var(--bg-hover);
 }
 

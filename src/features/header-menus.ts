@@ -1,6 +1,6 @@
 export {};
 
-// Header dropdown menus (File, View): a `.menu` holds a `.menu-trigger` button and a `.menu-panel`.
+// Header dropdown menus (File, View, Help): a `.menu` holds a `.menu-trigger` button and a `.menu-panel`.
 // One menu is open at a time; it closes on outside click, Escape, or choosing an item (checkbox items excepted).
 const menus = Array.from(document.querySelectorAll<HTMLElement>('.app-header .menu'));
 
