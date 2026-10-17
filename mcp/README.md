@@ -62,6 +62,17 @@ local dev server, say), set `PERFBOARD_EDITOR_URL` in the server's environment:
 Once the package is published to npm, `npx -y perfboard-designer-mcp` replaces
 `node /path/.../server.js` in both.
 
+The server works on its own, without the [hosted Worker](#hosting-it-on-cloudflare-workers). It
+only points at it for two extras, each set in the server's environment like `PERFBOARD_EDITOR_URL`,
+public unless set, and `off` to do without (agents are then not offered it):
+
+| Setting | Extra | Default |
+| --- | --- | --- |
+| `PERFBOARD_IMAGE_URL` | `make_share_link`'s `image`, a picture of the board (`render_board`'s PNGs are drawn here and need nothing) | `https://mcp.perfboarddesigner.com/render.svg` |
+| `PERFBOARD_PROJECTS_URL` | `make_share_link`'s `store`: a short link to a [stored project](#stored-projects). Nothing is sent unless an agent asks | `https://projects.perfboarddesigner.com` |
+
+Point them at a local Worker with `http://localhost:8787/render.svg` and `http://localhost:8787`.
+
 ## Tools
 
 | Tool | What it does |
@@ -75,8 +86,8 @@ Once the package is published to npm, `npx -y perfboard-designer-mcp` replaces
 | `render_board` | Draws the board as text, one cell per hole with column and row numbers: pins by part key and number (`a1`), holes under a body, wire ends, holes a wire runs over without joining them, strip cuts and marked holes, then which part each key is and every wire with its net. `area` draws only part of the board (needed above 6000 holes). `format: "png"` draws a picture instead, as the editor draws it (holes 50 px apart, scaled down to fit 1000 px; `area` crops it), for an agent to look at. |
 | `get_nets` | Which pins the board connects: each net with its name (e.g. `GND`), its pins (`U1.8 VCC` for a chip pin, `D1.K` or `C1.+` for a polarized lead, `R1.1` otherwise) and its wires, plus pins connected to nothing, junctions (holes where three or more things join) and crossings (where a wire goes over another wire or a hole without joining it). |
 | `validate_project` | Lists every problem, with where it is: unreadable entries, unknown parts, pins off the board, two parts' pins or leads in one hole, overlapping parts, wires that connect nothing (a loose end, or no pins on their net), a wire passing over a pin without ending there, IC pins and two-lead parts' leads connected to nothing, supply rails shorted together, and on a stripboard, pins shorted by a strip or in a cut hole. Wires crossing are listed as notes, not problems. Pass `expectNets` (the netlist you meant, e.g. `[["U1.8", "U1.4", "R1.1", "J1.1"], ["U1.2", "U1.6", "C1.+"]]`) and every missing or extra connection is an error; for a kept project it's remembered, so `edit_project` and `make_share_link` check against it too (`[]` forgets it). A whole project sent here is kept, and the reply gives its `projectId`. |
-| `make_share_link` | Validates the project (with `expectNets`, given or remembered) and returns the link that opens it, and `image`: the address of an SVG picture of the board, drawn as the editor draws it (served by the hosted Worker, below). It refuses a project with errors unless `allowErrors` is set. `editorUrl` points it at another copy of the editor, e.g. `http://localhost:3000/app/`; it defaults to `PERFBOARD_EDITOR_URL`. |
-| `read_share_link` | Reads the project out of a link you share with the agent (`z=`, `json=` or `src=`) and keeps it under a `projectId`, so the agent can change an existing board. |
+| `make_share_link` | Validates the project (with `expectNets`, given or remembered) and returns the link that opens it, and `image`: the address of an SVG picture of the board, drawn as the editor draws it (served by the hosted Worker, below). It refuses a project with errors unless `allowErrors` is set. `editorUrl` points it at another copy of the editor, e.g. `http://localhost:3000/app/`; it defaults to `PERFBOARD_EDITOR_URL`. With `store: true` (or `storeAs: "led-blinker"`, the id it'd like), it also stores the project (below) and returns `stored`: its id, a short link and its file and pictures. The self-contained link is made either way, and if storing fails, `storeError` says why. |
+| `read_share_link` | Reads the project out of a link you share with the agent (`z=`, `json=` or `src=`, a stored project's short link too) and keeps it under a `projectId`, so the agent can change an existing board. |
 
 Every tool that reads a project takes either `projectId` or the whole file as `project`. Kept
 projects last as long as the server process (the 200 most recently used); on Cloudflare, 30 days
@@ -118,6 +129,50 @@ MPL-2.0), so they come out the same from the Worker and from stdio (`src/board-p
 Drawing one takes around a tenth of a second of CPU for a small board, far more than the Workers
 Free plan's 10 ms a request, so the hosted server needs a paid plan to draw them.
 
+So pictures aren't drawn again for every request, each Cloudflare data center keeps a copy of
+every picture and stored project file it serves (the Workers [Cache
+API](https://developers.cloudflare.com/workers/runtime-apis/cache/)), for as long as its
+`Cache-Control` says: a year for `/render.*`, a day for stored projects. Repeat requests there
+are answered from it (`CF-Cache-Status: HIT`) without drawing again or waking the stored project's
+Durable Object (`edgeCached()` in `src/worker.ts`). Only answers that
+worked are kept, so an unknown id is looked up again next time. After a change to how boards are
+drawn, old pictures stay until they expire or the zone's cache is purged in the Cloudflare
+dashboard. The cache does nothing on the `workers.dev` address, only on the custom domains.
+
+### Stored projects
+
+A share link carries the whole project, so it works without any server, but it gets long. The
+Worker can also store a project under a short id and serve it, at
+`https://projects.perfboarddesigner.com` (the same Worker, at its own address so the storage could
+move to a Worker of its own without breaking links). It's the project storage behind short links,
+for agents (`make_share_link` with `store`) and for people (the editor's Share dialog), documented
+for both in [`docs/share-links.md`](../docs/share-links.md):
+
+| Request | Answer |
+| --- | --- |
+| `POST /projects` with `{"project": {…}, "id": "led-blinker", "name": "LED blinker"}` (`id` and `name` optional) | `{id, link, file, image, png}`: the id it got, a short editor link, the file and its pictures |
+| `GET /<id>.json` | the project file |
+| `GET /<id>.png`, `GET /<id>.svg` | pictures of it |
+
+- **Ids** are lowercase letters, digits and dashes, made from the wanted id or else the name
+  (`"Mágneses kapcsoló!"` → `magneses-kapcsolo`), at most 40 characters, ignoring case. If another
+  board has that id, a few characters of the board's SHA-256 are added (`led-blinker-08196a`);
+  storing the same board again under the same id gives the same id back. With neither, the id is
+  the hash. Ids shorter than 3 characters or naming the server's own addresses (`mcp`, `render`,
+  `projects`…) always get the hash added.
+- **A stored project never changes**: storing again makes a new id. It's deleted after a year
+  unopened (every request for its file or pictures pushes that back).
+- Only valid project files are stored, as the editor reads them, up to 1 MB.
+- The short link is a `p=` share link (`…/app/#name=LED%20blinker&p=led-blinker`), which the
+  editor opens from this storage without asking. Stored anywhere else (`PERFBOARD_PROJECTS_URL`),
+  it's a `src=` link to the file instead, which any editor opens. Anyone with a link can read the
+  board.
+- Each stored project is a Durable Object (`StoredProjectHolder`) named by its id, so two boards
+  stored at once can't both get an id (`src/stored-projects.ts`, `src/project-requests.ts`). The
+  stdio server stores through `POST /projects`.
+
+There's no sign-in or rate limit yet: anyone can store projects.
+
 Try it locally (at http://localhost:8787/mcp):
 
 ```bash
@@ -130,8 +185,10 @@ Publish it to your Cloudflare account (`npx wrangler login` once first):
 npm run worker:deploy
 ```
 
-Both build first. `wrangler.toml` is the Worker's config: its name, the Durable Object binding
-and, in `[vars]`, `PERFBOARD_EDITOR_URL` for where links open. Then add it to a client by its
+Both build first; `worker:dev` serves stored projects at http://localhost:8787 too. `wrangler.toml`
+is the Worker's config: its name, its domains, the Durable Object bindings and, in `[vars]`,
+`PERFBOARD_EDITOR_URL` for where links open and `PERFBOARD_PROJECTS_URL` for where stored projects
+are served. Then add it to a client by its
 address:
 
 ```bash

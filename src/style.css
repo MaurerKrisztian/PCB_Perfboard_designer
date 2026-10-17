@@ -1327,6 +1327,34 @@ input.share-link-input {
   font-size: 0.8rem;
 }
 
+/* The short link: below the full one, set apart */
+.share-short {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid #374151;
+}
+
+.share-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.share-short[hidden],
+.share-row[hidden] {
+  display: none;
+}
+
+.share-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.share-row button {
+  flex-shrink: 0;
+}
+
 /* The open project's name in the header; opens the Projects dialog */
 button.project-name-btn {
   display: inline-block;

@@ -8,13 +8,24 @@ import {ProjectFileError} from "./read-project-file";
 //   z=<project file as JSON, deflate-raw compressed, base64url>   what the editor makes
 //   json=<project file as percent-encoded JSON>                   easy to write without tools
 //   src=<http(s) address of a project file>                       a file hosted elsewhere
+//   p=<id>                                                        a short link: a stored project
 // Any version of the project file is accepted: the decoded value still goes through
 // readProjectFile. Pure, like the rest of this folder: browsers and Node 18+ both have the
 // compression streams, TextEncoder and atob/btoa it uses.
 
 export type ShareLink =
   | {kind: "embedded"; name?: string; format: "z" | "json"; payload: string}
-  | {kind: "hosted"; name?: string; url: string};
+  | {kind: "hosted"; name?: string; url: string}
+  // `id` isn't checked here: an id that doesn't match STORED_ID is a damaged link.
+  | {kind: "stored"; name?: string; id: string};
+
+// Perfboard Designer's project storage, where p= links' projects are kept (docs/share-links.md,
+// "Stored projects"): POST /projects stores one, <id>.json serves it. The editor and the MCP server
+// can each be pointed at another copy (PERFBOARD_PROJECTS_URL).
+export const STORED_PROJECTS_URL = "https://projects.perfboarddesigner.com";
+
+// A stored project's id: lowercase letters and digits, with single dashes inside.
+export const STORED_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 // Far beyond any real project (a big, busy board is well under 100 kB), so a hostile link can't
 // make the tab unpack gigabytes.
@@ -40,6 +51,8 @@ export function readShareFragment(hash: string): ShareLink | undefined {
   if (z) return {kind: "embedded", name, format: "z", payload: z};
   const src = params.get("src")?.trim();
   if (src) return {kind: "hosted", name, url: src};
+  const id = params.get("p")?.trim().toLowerCase();
+  if (id) return {kind: "stored", name, id};
   return undefined;
 }
 
@@ -47,6 +60,18 @@ export function readShareFragment(hash: string): ShareLink | undefined {
 export async function makeShareFragment(project: ProjectFile, name?: string): Promise<string> {
   const compressed = await pipe(new TextEncoder().encode(JSON.stringify(project)), new CompressionStream("deflate-raw"));
   return `${name?.trim() ? `name=${encodeURIComponent(name.trim())}&` : ""}z=${bytesToBase64Url(compressed)}`;
+}
+
+// The fragment (without the "#") of a link that opens the project file at `url`, an http(s)
+// address, as a project called `name`.
+export function makeHostedShareFragment(url: string, name?: string): string {
+  return `${name?.trim() ? `name=${encodeURIComponent(name.trim())}&` : ""}src=${encodeURIComponent(url)}`;
+}
+
+// The fragment (without the "#") of a short link that opens the stored project `id` as a project
+// called `name`.
+export function makeStoredShareFragment(id: string, name?: string): string {
+  return `${name?.trim() ? `name=${encodeURIComponent(name.trim())}&` : ""}p=${id}`;
 }
 
 // The project file an embedded link carries, parsed but not yet checked: pass it to

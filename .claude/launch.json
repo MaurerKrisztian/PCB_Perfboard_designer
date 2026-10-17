@@ -3,6 +3,8 @@
   "configurations": [
     { "name": "dev", "runtimeExecutable": "npm", "runtimeArgs": ["run", "start"], "port": 3000 },
     { "name": "dev-3001", "runtimeExecutable": "npx", "runtimeArgs": ["vite", "--port", "3001", "--strictPort"], "port": 3001, "autoPort": false },
+    { "name": "dev-local-projects", "runtimeExecutable": "env", "runtimeArgs": ["PERFBOARD_PROJECTS_URL=http://localhost:8787", "npx", "vite", "--port", "3005", "--strictPort"], "port": 3005, "autoPort": false },
+    { "name": "dev-no-short-links", "runtimeExecutable": "env", "runtimeArgs": ["PERFBOARD_PROJECTS_URL=off", "npx", "vite", "--port", "3006", "--strictPort"], "port": 3006, "autoPort": false },
     { "name": "mcp-worker", "runtimeExecutable": "npm", "runtimeArgs": ["--prefix", "mcp", "run", "worker:dev", "--", "--port", "8787"], "port": 8787, "autoPort": false }
   ]
 }

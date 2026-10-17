@@ -2,15 +2,17 @@ import {Utils} from "../../utils/utils";
 import {ProjectState} from "../../state/ProjectState";
 import {ProjectFileError} from "../../project-file/read-project-file";
 import {
-  decodeEmbeddedProject, makeShareFragment, MAX_SHARED_PROJECT_BYTES, readShareFragment, ShareLink,
+  decodeEmbeddedProject, makeShareFragment, makeStoredShareFragment, MAX_SHARED_PROJECT_BYTES, readShareFragment, ShareLink,
 } from "../../project-file/share-link";
 import {getSaveJson} from "./save-project";
 import {afterStartup, importSharedProject} from "./current-project";
+import {fetchStoredProject, SHORT_LINKS, storeProject} from "./project-storage";
 import {fitToScreen} from "../view-controls";
 
-// Share links in the editor: the Share dialog, which makes a link carrying the board as it is now,
-// and opening a link, which adds its project to the receiver's projects as a new one. The link
-// format is src/project-file/share-link.ts.
+// Share links in the editor: the Share dialog, which makes a link carrying the board as it is now
+// and, when asked, a short link to a copy stored on the project storage (project-storage.ts); and
+// opening a link, which adds its project to the receiver's projects as a new one. The link format
+// is src/project-file/share-link.ts.
 
 // Some chat apps and mail clients cut links off past a few thousand characters.
 const LONG_LINK = 8000;
@@ -19,6 +21,15 @@ const modal = Utils.getSafeHtmlElement('shareModal');
 const linkInput = Utils.getSafeHtmlElement<HTMLInputElement>('shareLinkInput');
 const info = Utils.getSafeHtmlElement('shareLinkInfo');
 const copyBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('copyShareLinkBtn');
+const shortNameInput = Utils.getSafeHtmlElement<HTMLInputElement>('shortLinkName');
+const makeShortBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('makeShortLinkBtn');
+const shortRow = Utils.getSafeHtmlElement('shortLinkRow');
+const shortLinkInput = Utils.getSafeHtmlElement<HTMLInputElement>('shortLinkInput');
+const copyShortBtn = Utils.getSafeHtmlElement<HTMLButtonElement>('copyShortLinkBtn');
+const shortInfo = Utils.getSafeHtmlElement('shortLinkInfo');
+
+// An editor built without short links (project-storage.ts) doesn't offer them.
+Utils.getSafeHtmlElement('shareShortSection').hidden = !SHORT_LINKS;
 
 // Making a link is async: a dialog closed (and maybe reopened) meanwhile mustn't get a stale one.
 let request = 0;
@@ -31,6 +42,7 @@ async function openShareDialog() {
   info.classList.remove('is-warning');
   copyBtn.disabled = true;
   copyBtn.textContent = 'Copy Link';
+  resetShortLink();
   let link: string;
   try {
     // Without the old fragment: the editor may have been opened from a link itself.
@@ -56,27 +68,71 @@ async function openShareDialog() {
   linkInput.scrollLeft = 0;
 }
 
+function resetShortLink() {
+  shortNameInput.value = ProjectState.current?.name ?? '';
+  makeShortBtn.disabled = false;
+  shortRow.hidden = true;
+  shortLinkInput.value = '';
+  shortInfo.textContent = '';
+  shortInfo.classList.remove('is-warning');
+}
+
+// Stores a copy of the board for a short link, under the name typed (or the project's). The full
+// link stays offered: it works without the server.
+async function makeShortLink() {
+  const thisRequest = request;
+  const name = ProjectState.current?.name;
+  const wanted = shortNameInput.value.trim();
+  makeShortBtn.disabled = true;
+  shortInfo.classList.remove('is-warning');
+  shortInfo.textContent = 'Storing a copy of the board...';
+  try {
+    const id = await storeProject(getSaveJson(), {...(wanted ? {id: wanted} : {}), ...(name ? {name} : {})});
+    if (thisRequest !== request) return;
+    shortLinkInput.value = `${location.origin}${location.pathname}#${makeStoredShareFragment(id, name)}`;
+    shortRow.hidden = false;
+    copyShortBtn.textContent = 'Copy';
+    shortInfo.textContent = `Stored as "${id}". The stored copy never changes: after changing the board, make a new link.`;
+    shortLinkInput.focus();
+    shortLinkInput.select();
+    shortLinkInput.scrollLeft = 0;
+  } catch (err) {
+    console.error(err);
+    if (thisRequest !== request) return;
+    shortInfo.textContent = `Couldn't make a short link: ${err instanceof Error ? err.message : String(err)} The full link above works without it.`;
+    shortInfo.classList.add('is-warning');
+  } finally {
+    if (thisRequest === request) makeShortBtn.disabled = false;
+  }
+}
+
 function closeShareDialog() {
   request++;
   modal.style.display = 'none';
 }
 
-async function copyLink() {
-  linkInput.select();
+// Copies the link in `input`, saying so on `button`, or in `note` when the browser won't.
+async function copyLink(input: HTMLInputElement, button: HTMLButtonElement, note: HTMLElement) {
+  input.select();
   try {
-    await navigator.clipboard.writeText(linkInput.value);
+    await navigator.clipboard.writeText(input.value);
   } catch {
     // The clipboard API needs a secure context: fall back to copying the selected text.
     if (!document.execCommand('copy')) {
-      info.textContent = 'Copying was blocked. Select the link and copy it yourself.';
+      note.textContent = 'Copying was blocked. Select the link and copy it yourself.';
       return;
     }
   }
-  copyBtn.textContent = 'Copied ✓';
+  button.textContent = 'Copied ✓';
 }
 
 document.querySelectorAll('[data-share-link]').forEach(el => el.addEventListener('click', openShareDialog));
-copyBtn.addEventListener('click', copyLink);
+copyBtn.addEventListener('click', () => copyLink(linkInput, copyBtn, info));
+copyShortBtn.addEventListener('click', () => copyLink(shortLinkInput, copyShortBtn, shortInfo));
+makeShortBtn.addEventListener('click', makeShortLink);
+shortNameInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !makeShortBtn.disabled) makeShortLink();
+});
 Utils.getSafeHtmlElement('closeShareModalBtn').addEventListener('click', closeShareDialog);
 Utils.getSafeHtmlElement('doneShareModalBtn').addEventListener('click', closeShareDialog);
 modal.addEventListener('click', e => {
@@ -124,6 +180,22 @@ function hostedFileName(url: string): string | undefined {
   }
 }
 
+// What a link's project is called: its `name`, else a hosted file's name or a stored project's id.
+function linkedProjectName(link: ShareLink): string | undefined {
+  if (link.name) return link.name;
+  if (link.kind === 'hosted') return hostedFileName(link.url);
+  return link.kind === 'stored' ? link.id : undefined;
+}
+
+// The project a link carries or points at, parsed but not yet checked; undefined when the user
+// declines downloading a hosted one. A stored project comes from Perfboard Designer's own storage,
+// so it's fetched without asking.
+function linkedProject(link: ShareLink): Promise<unknown> {
+  if (link.kind === 'hosted') return fetchHostedProject(link);
+  if (link.kind === 'stored') return fetchStoredProject(link.id);
+  return decodeEmbeddedProject(link);
+}
+
 // Opens the project in the address bar's fragment, if it holds a share link.
 async function openLinkedProject() {
   const link = readShareFragment(location.hash);
@@ -132,14 +204,14 @@ async function openLinkedProject() {
   history.replaceState(null, '', location.pathname + location.search);
   let raw: unknown;
   try {
-    raw = link.kind === 'hosted' ? await fetchHostedProject(link) : await decodeEmbeddedProject(link);
+    raw = await linkedProject(link);
   } catch (err) {
     console.error(err);
     alert(`Couldn't open the shared project. ${err instanceof ProjectFileError ? err.message : "The link is damaged."}`);
     return;
   }
   if (raw === undefined) return;
-  importSharedProject(raw, link.name ?? (link.kind === 'hosted' ? hostedFileName(link.url) : undefined));
+  importSharedProject(raw, linkedProjectName(link));
   // Someone else's board may not fit the view at the zoom it was left at: show all of it.
   fitToScreen(true);
 }

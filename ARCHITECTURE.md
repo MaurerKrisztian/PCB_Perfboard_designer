@@ -306,12 +306,27 @@ MCP server.
   (`project-thumbnail.ts`, section 10).
 
 **Share links** carry a whole project in the editor URL's fragment: `#name=…&z=…`, or
-`json=`/`src=` for links written by people and programs.
+`json=`/`src=` for links written by people and programs. A **short link**, `#name=…&p=<id>`,
+names a copy stored on Perfboard Designer's project storage instead.
 
 - The format is `src/project-file/share-link.ts`, documented for outside writers in
   `docs/share-links.md`. Keep the two in step.
-- `share-project.ts` is the Share dialog. It also opens an incoming link as a new stored project,
-  then clears the fragment.
+- `share-project.ts` is the Share dialog. It always makes the full link, and on request a short
+  one. It also opens an incoming link as a new stored project, then clears the fragment.
+- `project-storage.ts` talks to the project storage (`STORED_PROJECTS_URL`,
+  `https://projects.perfboarddesigner.com`): `storeProject()` for the dialog, `fetchStoredProject()`
+  for `p=` links, fetched without asking since it's the site's own. The storage is the MCP server's
+  Worker (section 12), but the editor knows only its HTTP API, documented in `docs/share-links.md`,
+  and imports nothing from `mcp/`. `PERFBOARD_PROJECTS_URL`, set when the editor is built or run,
+  points it at another copy (`vite.config.ts` passes it in as `__PERFBOARD_PROJECTS_URL__`), e.g.
+  a local Worker: `PERFBOARD_PROJECTS_URL=http://localhost:8787 npm run start`. `off` builds an
+  editor without short links: the dialog hides them, and a `p=` link says to ask for the full one.
+
+> **Rule: the project works without short links and without the Worker.** They're extras: the
+> editor contacts the storage only when a user makes or opens a short link, and the full link is
+> always offered beside a short one. The MCP server's stdio copy likewise only points at the
+> Worker for `image` and `store`, each of which can be turned off (section 12). Don't build a
+> feature that needs them.
 
 > **Extend: change the format.** Bump `PROJECT_FILE_VERSION`, document the new fields in
 > `project-file.ts`, and add an upgrade path in the reader. **Old files must keep opening.**
@@ -541,7 +556,14 @@ boards. It runs two ways:
 - `src/server.ts`: stdio, local;
 - `src/worker.ts`: a Cloudflare Worker with stateless Streamable HTTP at `/mcp`
   (`wrangler.toml`; `npm run worker:dev` / `worker:deploy`), plus `GET /render.svg` and
-  `/render.png`.
+  `/render.png`, and stored projects: `POST /projects`, `GET /<id>.json`, `.png` and `.svg`,
+  served at `projects.perfboarddesigner.com`. Each data center keeps a copy of every picture and
+  stored file it serves (the Workers Cache API, `edgeCached()`), so repeats aren't drawn again.
+
+The stdio server works without the Worker. It points at it only for two extras, set in its
+environment: `PERFBOARD_IMAGE_URL` (`make_share_link`'s `image`) and `PERFBOARD_PROJECTS_URL`
+(`store`), each the public one unless set, `off` for none. `createServer()` takes both as optional,
+and `make_share_link` offers agents only the ones there are.
 
 Tool code must not use Node APIs, because it also runs on the Worker. **It depends on the editor,
 never the other way round**, and only `mcp/src/editor.ts` imports the editor's source, so that
@@ -553,11 +575,13 @@ dependency is listed in one place.
 | `tools/catalog-tools.ts` | `list_parts`, `get_part` |
 | `tools/project-tools.ts` | `new_project`, `edit_project`, `get_project` |
 | `tools/board-tools.ts` | `validate_project`, `get_nets`, `get_pin_positions`, `render_board` (text or PNG) |
-| `tools/share-link-tools.ts` | `make_share_link` (link + `image` URL), `read_share_link` |
+| `tools/share-link-tools.ts` | `make_share_link` (link + `image` URL, optionally stored too), `read_share_link` |
 | `board-image.ts` | SVG pictures via the board renderer |
 | `board-png.ts` | PNG pictures: that SVG rasterized by resvg-wasm, which each entry point hands over (`setResvgWasm`) |
 | `image-requests.ts` | the Worker's `GET /render.svg` and `/render.png`, a board from a share link's parameters |
 | `project-handles.ts` | projects kept under a `projectId` (memory on stdio, a Durable Object each on the Worker) |
+| `stored-projects.ts` | stored projects: a frozen copy under a short id from a name, a hash added when it's taken; `ProjectStorage` is a Durable Object each on the Worker (`StoredProjectHolder`, deleted after a year unopened), the hosted server's HTTP API on stdio |
+| `project-requests.ts` | the Worker's `POST /projects` and `GET /<id>.json`, `.png`, `.svg` |
 | `edit-ops.ts`, `edit-project.ts` | `edit_project`'s ops: all or none, one function per op |
 | `validate.ts`, `expected-nets.ts` | checks, one function per check; `expectNets` |
 | `render-board.ts`, `nets-report.ts` | text drawing of a board; nets as agents name pins |

@@ -213,14 +213,25 @@ fragment (`#name=…&z=…`, or `json=`/`src=` for links written by people and p
 agents): the format is the pure `src/project-file/share-link.ts`, documented for outside writers in
 `docs/share-links.md` (keep the two in step). `share-project.ts` is the Share dialog and opens an
 incoming link as a new stored project (after startup's reopen, via `afterStartup()`, and on
-`hashchange`), then clears the fragment. A format change means a new version number plus an upgrade path in the reader —
+`hashchange`), then clears the fragment. **Short links** (`#name=…&p=<id>`) name a copy kept on
+Perfboard Designer's project storage (`STORED_PROJECTS_URL` in `share-link.ts`,
+`https://projects.perfboarddesigner.com`): the Share dialog makes one on request, beside the full
+link it always makes, and a `p=` link is fetched without asking, both through
+`src/features/project/project-storage.ts`. The editor knows only that storage's HTTP API
+(documented in `docs/share-links.md`), never the MCP server behind it. `PERFBOARD_PROJECTS_URL` when
+building or running the editor (`vite.config.ts`'s `define`, `__PERFBOARD_PROJECTS_URL__`) points it
+at another copy, e.g. a local Worker, or `off` builds it without short links. **The project must
+work without short links and without the Worker**: they're optional extras, contacted only when a
+user makes or opens a short link, and the full link is always offered beside them. No feature may
+need them. A format change means a new version number plus an upgrade path in the reader —
 old files must keep opening. `examples/*.json` are mostly v1 files and double as compatibility
 fixtures; the two `*-555-blinker.json` are v3 and are the MCP server's examples.
 
 **MCP server** (`mcp/`): a separate npm package (`perfboard-designer-mcp`, own `package.json`, Node
 22+, stdio) that lets AI agents design boards. **It depends on the editor, never the other way
 round**: the editor must not import anything from `mcp/` (an ESLint `no-restricted-imports` rule
-enforces it) nor know the server exists, and inside `mcp/` only `mcp/src/editor.ts` imports the
+enforces it) nor know the server exists (only the project storage's documented HTTP API, which the
+Worker serves), and inside `mcp/` only `mcp/src/editor.ts` imports the
 editor's source — every other server file takes editor code from it, so the whole dependency is
 listed in one place. Layout: `create-server.ts` only wires things up, for two entry points:
 `server.ts` (stdio) and `worker.ts` (Cloudflare Workers, stateless Streamable HTTP at `/mcp`,
@@ -236,7 +247,10 @@ get pin positions, draw it as text (`render_board`, `mcp/src/render-board.ts`), 
 nets (`get_nets`), validate it, make and read share links. `make_share_link` also returns `image`:
 the Worker's `GET /render.svg?<a share link's fragment>` (`mcp/src/image-requests.ts`, `z=`/`json=`
 only, never fetching `src=`), an SVG picture drawn by the editor's own board renderer with the part
-icons `build.mjs` bakes in (`mcp/src/board-image.ts`); `GET /render.png?…` serves it as a PNG. `render_board` with `format: "png"` returns that PNG for the
+icons `build.mjs` bakes in (`mcp/src/board-image.ts`); `GET /render.png?…` serves it as a PNG.
+The Worker keeps a copy of every picture and stored project file it serves in each data center's
+Cache API (`edgeCached()` in `worker.ts`, only answers that worked, for as long as their
+`Cache-Control` says), so a repeat request isn't drawn again. `render_board` with `format: "png"` returns that PNG for the
 agent itself to look at (`mcp/src/board-png.ts`): rasterized by resvg-wasm with the Noto fonts in
 `mcp/fonts/` baked in; `build.mjs` copies the wasm to `dist/resvg.wasm`, which `server.ts` reads and
 the Worker is uploaded with (`wrangler.toml`'s rules), each handing it over via `setResvgWasm`.
@@ -249,7 +263,18 @@ Durable Object per project on the Worker, so a tool that changes a kept entry ca
 a change the reader would drop (e.g. a part pushed off a shrunk board); its reply, like
 `new_project`'s, checks the board as `validate_project` does and lists the nets once there are no
 errors. `expectNets` given for a projectId is remembered for later checks. Link base URL defaults
-to `PERFBOARD_EDITOR_URL` (set in the client's MCP config), else the public site. The server's
+to `PERFBOARD_EDITOR_URL` (set in the client's MCP config), else the public site. **Stored
+projects** (`mcp/src/stored-projects.ts`) are optional and extra: `make_share_link` with `store`/
+`storeAs` also freezes the project under a short id made from a name (a few characters of its
+SHA-256 added when the id holds another board), served by the Worker at `projects.perfboarddesigner.com`
+(`POST /projects`, `GET /<id>.json|.png|.svg`, `mcp/src/project-requests.ts`), one Durable Object
+each (`StoredProjectHolder`, deleted after a year unopened); the stdio server stores through that
+HTTP API (`PERFBOARD_PROJECTS_URL`). The stdio server works without the hosted Worker too: its
+extras are settings, each the public one unless set, `off` for none (`PERFBOARD_PROJECTS_URL` for
+storing, `PERFBOARD_IMAGE_URL` for `make_share_link`'s `image`), and agents are offered only the
+ones it has. The self-contained `z=` link is always made too; the short
+link is a `p=` share link (a `src=` link to the file when stored anywhere but the public storage).
+This is the same project storage the editor's short links use. The server's
 `INSTRUCTIONS` must stay under about 2 KB, since clients cut off the rest: keep them to the
 workflow and the rules, and put detail in the guide (both in `mcp/src/guide.ts`; the guide is
 served as `perfboard://docs/guide`), keeping the two in step. Example projects

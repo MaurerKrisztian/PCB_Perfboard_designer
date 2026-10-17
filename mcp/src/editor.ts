@@ -18,7 +18,8 @@ export {
 } from "../../src/project-file/nets";
 export {holesAlong, layoutProjectWires, type WireLayout} from "../../src/project-file/wire-crossings";
 export {
-  decodeEmbeddedProject, makeShareFragment, MAX_SHARED_PROJECT_BYTES, readShareFragment,
+  decodeEmbeddedProject, makeHostedShareFragment, makeShareFragment, makeStoredShareFragment, MAX_SHARED_PROJECT_BYTES,
+  readShareFragment, STORED_ID, STORED_PROJECTS_URL,
 } from "../../src/project-file/share-link";
 
 // The board renderer, for pictures of a board.

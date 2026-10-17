@@ -384,6 +384,19 @@
         <p class="share-note">Anyone who opens this link gets their own copy of the board as it is now. Changes you make later aren't in it: share a new link for those.</p>
         <input type="text" id="shareLinkInput" class="share-link-input" readonly aria-label="Share link">
         <p id="shareLinkInfo" class="share-note" aria-live="polite"></p>
+
+        <div id="shareShortSection" class="share-short">
+          <p class="share-note"><strong>Short link:</strong> stores a copy of the board on Perfboard Designer's server, so the link can be short. Anyone with the link can open it; it's deleted after a year unopened.</p>
+          <div class="share-row">
+            <input type="text" id="shortLinkName" maxlength="40" placeholder="Name for the link, e.g. led-blinker" aria-label="Name for the short link">
+            <button id="makeShortLinkBtn" class="btn">Make Short Link</button>
+          </div>
+          <div id="shortLinkRow" class="share-row" hidden>
+            <input type="text" id="shortLinkInput" class="share-link-input" readonly aria-label="Short link">
+            <button id="copyShortLinkBtn" class="btn">Copy</button>
+          </div>
+          <p id="shortLinkInfo" class="share-note" aria-live="polite"></p>
+        </div>
       </div>
 
       <div class="modal-footer">

@@ -19,7 +19,7 @@
     "typecheck": "tsc --noEmit",
     "start": "node dist/server.js",
     "inspect": "npx @modelcontextprotocol/inspector node dist/server.js",
-    "worker:dev": "wrangler dev",
+    "worker:dev": "wrangler dev --var PERFBOARD_PROJECTS_URL:http://localhost:8787",
     "worker:deploy": "wrangler deploy"
   },
   "devDependencies": {

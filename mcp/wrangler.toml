@@ -9,9 +9,14 @@ no_bundle = true
 # module, not the stdio server that's also in dist/.
 find_additional_modules = true
 rules = [{ type = "CompiledWasm", globs = ["**/*.wasm"], fallthrough = false }]
-# Served at its own domain and its workers.dev address. The domain must be on the deploying
-# Cloudflare account: remove `routes` to deploy a copy to your own account.
-routes = [{ pattern = "mcp.perfboarddesigner.com", custom_domain = true }]
+# Served at its own domains and its workers.dev address: projects.perfboarddesigner.com is the
+# address stored projects' links use, so their storage could move to a Worker of its own without
+# breaking them. The domains must be on the deploying Cloudflare account: remove `routes` to deploy
+# a copy to your own account.
+routes = [
+  { pattern = "mcp.perfboarddesigner.com", custom_domain = true },
+  { pattern = "projects.perfboarddesigner.com", custom_domain = true },
+]
 workers_dev = true
 
 [build]
@@ -23,10 +28,22 @@ watch_dir = ["src", "fonts","../src/parts", "../src/project-file", "../src/board
 name = "PROJECTS"
 class_name = "ProjectHolder"
 
+# One Durable Object per stored project, named by its id.
+[[durable_objects.bindings]]
+name = "STORED_PROJECTS"
+class_name = "StoredProjectHolder"
+
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["ProjectHolder"]
 
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["StoredProjectHolder"]
+
 [vars]
 # Where share links open. Leave unset for the public editor, https://perfboarddesigner.com/app/.
 # PERFBOARD_EDITOR_URL = "http://localhost:3000/app/"
+# Where stored projects are served, which their links name. Leave unset for
+# https://projects.perfboarddesigner.com; `npm run worker:dev` sets it to http://localhost:8787.
+# PERFBOARD_PROJECTS_URL = "http://localhost:8787"

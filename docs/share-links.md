@@ -2,7 +2,8 @@
 
 A share link opens a board in Perfboard Designer for whoever clicks it. The whole project travels
 inside the link itself, so there's no account, no upload and no server. In the editor, use
-**🔗 Share** (or **File → Share Link...**) to make one.
+**🔗 Share** (or **File → Share Link...**) to make one. The same dialog can also make a **short
+link** to a copy of the board stored on Perfboard Designer's server (`p`, below).
 
 This page is the link format, written so that people and programs can make links too, including
 AI agents that design a board and hand the user a link to open it. The code is
@@ -36,8 +37,10 @@ fragment holds `key=value` parameters joined with `&`, like a query string:
 | `z` | The project file, compressed (see below). This is what the editor makes. |
 | `json` | The project file as plain JSON, percent-encoded. Must be the **last** parameter. |
 | `src` | The `https://` address of a project file hosted somewhere else, percent-encoded. |
+| `p` | The id of a project stored on Perfboard Designer's server: a short link. |
 
-Use exactly one of `z`, `json` and `src`. If several are present, `json` wins, then `z`, then `src`.
+Use exactly one of `z`, `json`, `src` and `p`. If several are present, `json` wins, then `z`, then
+`src`, then `p`.
 
 ### `z`: compressed (shortest)
 
@@ -104,6 +107,37 @@ https://perfboarddesigner.com/app/#src=https%3A%2F%2Fexample.com%2Fmy-board.json
 - Without a `name`, the project is named after the file (`my-board.json` → "my-board").
 - There's no size limit to worry about here, so this suits large boards and programs that can
   publish files.
+
+### `p`: a stored project (short link)
+
+```
+https://perfboarddesigner.com/app/#name=LED%20blinker&p=led-blinker
+```
+
+- The project is stored on Perfboard Designer's own server, `https://projects.perfboarddesigner.com`
+  (below), and the link names it by its id. It's fetched without asking, since it's the site's own.
+- Without a `name`, the project is named after its id.
+- A stored project never changes, and it's deleted after a year unopened. Anyone with the link
+  can open it. Unlike the other forms, it needs the server: the Share dialog offers the full link
+  beside it, which works without one.
+
+### Stored projects
+
+`https://projects.perfboarddesigner.com` keeps projects for short links. Anyone can store one:
+
+| Request | Answer |
+| --- | --- |
+| `POST /projects` with `{"project": {…}, "id": "led-blinker", "name": "LED blinker"}` (`id` and `name` optional) | `{id, link, file, image, png}`: the id it got, a short link, the file's address and its pictures' |
+| `GET /<id>.json` | the project file |
+| `GET /<id>.png`, `GET /<id>.svg` | pictures of the board |
+
+- **Ids** are lowercase letters, digits and dashes, at most 40 characters, made from the wanted
+  `id` or else the `name` (`"Mágneses kapcsoló!"` → `magneses-kapcsolo`). If another board has
+  that id, a few characters of the board's SHA-256 are added (`led-blinker-08196a`); storing the
+  same board under the same id again gives the same id back. With neither, the id is the hash.
+- Only valid project files are stored, as the editor reads them, up to 1 MB.
+- Every site may call it (CORS). There's no sign-in.
+- It's the [MCP server's](../mcp/README.md) Cloudflare Worker, which agents store through too.
 
 ### Limits
 

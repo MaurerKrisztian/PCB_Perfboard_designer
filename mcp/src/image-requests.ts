@@ -14,7 +14,7 @@ export type ImageFormat = "svg" | "png";
 
 const CACHE_FOR_GOOD = "public, max-age=31536000, immutable";
 
-function text(status: number, message: string): Response {
+export function text(status: number, message: string): Response {
   return new Response(`${message}\n`, {status, headers: {"Content-Type": "text/plain; charset=utf-8"}});
 }
 
@@ -35,11 +35,12 @@ export async function handleImageRequest(request: Request, format: ImageFormat):
   }
 }
 
-function svgResponse(project: ProjectFile): Response {
+// Also serves stored projects' pictures (project-requests.ts), cached for less.
+export function svgResponse(project: ProjectFile, cache = CACHE_FOR_GOOD): Response {
   return new Response(boardSvg(project), {
     headers: {
       "Content-Type": "image/svg+xml; charset=utf-8",
-      "Cache-Control": CACHE_FOR_GOOD,
+      "Cache-Control": cache,
       // Opened on its own, it's still only a picture: nothing in it may run or load.
       "Content-Security-Policy": "default-src 'none'; img-src data:; style-src 'unsafe-inline'",
       "X-Content-Type-Options": "nosniff",
@@ -47,14 +48,14 @@ function svgResponse(project: ProjectFile): Response {
   });
 }
 
-async function pngResponse(project: ProjectFile): Promise<Response> {
+export async function pngResponse(project: ProjectFile, cache = CACHE_FOR_GOOD): Promise<Response> {
   const {cols, rows} = project.board;
   if (cols * rows > MAX_PNG_HOLES) {
-    return text(413, `A ${cols}×${rows} board is too big to draw as a PNG (up to ${MAX_PNG_HOLES} holes): use /render.svg.`);
+    return text(413, `A ${cols}×${rows} board is too big to draw as a PNG (up to ${MAX_PNG_HOLES} holes): ask for its SVG instead.`);
   }
   try {
     const {png} = await boardPng(project);
-    return new Response(png, {headers: {"Content-Type": "image/png", "Cache-Control": CACHE_FOR_GOOD, "X-Content-Type-Options": "nosniff"}});
+    return new Response(png, {headers: {"Content-Type": "image/png", "Cache-Control": cache, "X-Content-Type-Options": "nosniff"}});
   } catch (err) {
     return text(500, `The picture couldn't be drawn: ${errorMessage(err)}`);
   }
