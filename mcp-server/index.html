@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MCP Server: Design Perfboards with AI Agents | Perfboard Designer</title>
+    <meta name="description" content="Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to the free Perfboard Designer MCP server, and let your AI assistant lay out perfboard and stripboard circuits for you." />
+    <link rel="canonical" href="https://perfboarddesigner.com/mcp-server/" />
+    <meta name="theme-color" content="#0b1220" />
+    <link rel="icon" type="image/png" href="../favicon.png" />
+
+    <!-- Link previews (Facebook, LinkedIn, Discord, Slack, X...) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Perfboard Designer" />
+    <meta property="og:title" content="Perfboard Designer MCP server: design boards with AI agents" />
+    <meta property="og:description" content="Ask Claude, ChatGPT or any MCP client for a perfboard layout and get a link that opens it in Perfboard Designer. Free, no sign-up." />
+    <meta property="og:url" content="https://perfboarddesigner.com/mcp-server/" />
+    <meta property="og:image" content="https://perfboarddesigner.com/images/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="A perfboard layout with an NE555 timer, LEDs, resistors and an Arduino Nano in Perfboard Designer" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" />
+    
+    
+  <script type="module" crossorigin src="../assets/mcpServer.becab93c.js"></script>
+  <link rel="modulepreload" crossorigin href="../assets/modulepreload-polyfill.c7c6310f.js">
+  <link rel="stylesheet" href="../assets/index.172cf6e3.css">
+  <link rel="stylesheet" href="../assets/landing.380979ae.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <a class="brand" href="../" aria-label="Perfboard Designer home">
+      <span class="brand-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+          <path d="M8 6h8M6 8v8M18 8v8M8 18h8" />
+        </svg>
+      </span>
+      <span class="brand-title">Perfboard Designer</span>
+    </a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="#setup">Setup</a>
+      <a href="#what-it-does">What it does</a>
+      <a href="#good-to-know">Good to know</a>
+      <a href="../contributors/">Contributors</a>
+      <a href="https://github.com/MaurerKrisztian/perfboard-designer/tree/main/mcp" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+    <a class="button button-small" href="../app/">Open the designer</a>
+  </header>
+
+  <main>
+    <section class="mcp-hero">
+      <p class="eyebrow">MCP server · Free · No sign-up</p>
+      <h1>Design perfboards with your AI assistant</h1>
+      <p class="lead">
+        Connect Claude, ChatGPT, Cursor or any other <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP</a>
+        client to Perfboard Designer and describe the circuit you want. The assistant looks up the
+        parts, places them on a perfboard or stripboard, routes the wires, checks every connection,
+        and gives you a link that opens the finished board in the designer.
+      </p>
+      <div class="server-url">
+        <span class="server-url-label">Server address</span>
+        <div class="code-line">
+          <code>https://mcp.perfboarddesigner.com/mcp</code>
+        </div>
+        <p class="server-url-note">Streamable HTTP · no account or API key needed</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>What you can ask</h2>
+      <p class="section-lead">Once it's connected, just ask in your own words.</p>
+      <div class="prompt-grid">
+        <blockquote class="prompt">"Lay out a 555 LED blinker on a small perfboard and send me the link."</blockquote>
+        <blockquote class="prompt">"Put this circuit on a 30 × 20 stripboard and cut the strips under the chip."</blockquote>
+        <blockquote class="prompt">"Here's my board link. Add a power LED with a resistor and check nothing is left unconnected."</blockquote>
+      </div>
+    </section>
+
+    <section id="setup" class="section">
+      <h2>Set it up</h2>
+      <p class="section-lead">Pick your assistant. Every one uses the same address.</p>
+      <nav class="client-chips" aria-label="Clients">
+        <a href="#claude-code">Claude Code</a>
+        <a href="#claude-ai">Claude.ai &amp; Claude Desktop</a>
+        <a href="#chatgpt">ChatGPT</a>
+        <a href="#cursor">Cursor</a>
+        <a href="#vscode">VS Code</a>
+        <a href="#windsurf">Windsurf</a>
+        <a href="#gemini-cli">Gemini CLI</a>
+        <a href="#codex">Codex CLI</a>
+        <a href="#other">Other clients</a>
+        <a href="#local">Run it yourself</a>
+      </nav>
+
+      <div class="setup-list">
+        <article id="claude-code" class="setup">
+          <h3>Claude Code</h3>
+          <p>Run this in a terminal:</p>
+          <div class="code-block"><pre><code>claude mcp add --transport http perfboard https://mcp.perfboarddesigner.com/mcp</code></pre></div>
+          <p>Add <code>--scope user</code> to have it in every project, not just the current folder. Check it with <code>/mcp</code> inside Claude Code.</p>
+        </article>
+
+        <article id="claude-ai" class="setup">
+          <h3>Claude.ai &amp; Claude Desktop</h3>
+          <ol>
+            <li>Open <strong>Connectors</strong> in Claude's settings and choose <strong>Add custom connector</strong>.</li>
+            <li>Name it <strong>Perfboard Designer</strong> and paste the address:
+              <div class="code-line"><code>https://mcp.perfboarddesigner.com/mcp</code></div>
+            </li>
+            <li>Click <strong>Add</strong>. There's no sign-in, so leave the advanced (OAuth) settings empty.</li>
+            <li>In a chat, open the <strong>+</strong> menu, then <strong>Connectors</strong>, and turn Perfboard Designer on.</li>
+          </ol>
+          <p>A connector added once works on claude.ai, in Claude Desktop and in the mobile apps. On Team and Enterprise plans an owner adds it for the organization first. Custom connectors depend on your Claude plan.</p>
+        </article>
+
+        <article id="chatgpt" class="setup">
+          <h3>ChatGPT</h3>
+          <ol>
+            <li>In <strong>Settings → Apps &amp; Connectors → Advanced settings</strong>, turn on <strong>Developer mode</strong>.</li>
+            <li>Back in <strong>Apps &amp; Connectors</strong>, choose <strong>Create</strong>, name it <strong>Perfboard Designer</strong> and paste the address:
+              <div class="code-line"><code>https://mcp.perfboarddesigner.com/mcp</code></div>
+            </li>
+            <li>Set authentication to <strong>No authentication</strong> and create it.</li>
+            <li>In a chat, pick it from the <strong>+</strong> menu under Developer mode.</li>
+          </ol>
+          <p>Developer mode is on paid ChatGPT plans, and OpenAI moves these menus from time to time.</p>
+        </article>
+
+        <article id="cursor" class="setup">
+          <h3>Cursor</h3>
+          <p>Add it to <code>~/.cursor/mcp.json</code> (every project) or <code>.cursor/mcp.json</code> (one project):</p>
+          <div class="code-block"><pre><code>{
+  "mcpServers": {
+    "perfboard": {
+      "url": "https://mcp.perfboarddesigner.com/mcp"
+    }
+  }
+}</code></pre></div>
+        </article>
+
+        <article id="vscode" class="setup">
+          <h3>VS Code (GitHub Copilot)</h3>
+          <p>Add it to <code>.vscode/mcp.json</code> in your project, or run <strong>MCP: Add Server</strong> from the Command Palette:</p>
+          <div class="code-block"><pre><code>{
+  "servers": {
+    "perfboard": {
+      "type": "http",
+      "url": "https://mcp.perfboarddesigner.com/mcp"
+    }
+  }
+}</code></pre></div>
+          <p>Then use it from Copilot Chat in agent mode.</p>
+        </article>
+
+        <article id="windsurf" class="setup">
+          <h3>Windsurf</h3>
+          <p>Add it to <code>~/.codeium/windsurf/mcp_config.json</code>:</p>
+          <div class="code-block"><pre><code>{
+  "mcpServers": {
+    "perfboard": {
+      "serverUrl": "https://mcp.perfboarddesigner.com/mcp"
+    }
+  }
+}</code></pre></div>
+        </article>
+
+        <article id="gemini-cli" class="setup">
+          <h3>Gemini CLI</h3>
+          <div class="code-block"><pre><code>gemini mcp add --transport http perfboard https://mcp.perfboarddesigner.com/mcp</code></pre></div>
+          <p>Or add it to <code>~/.gemini/settings.json</code> by hand. Note the key is <code>httpUrl</code>, not <code>url</code>:</p>
+          <div class="code-block"><pre><code>{
+  "mcpServers": {
+    "perfboard": {
+      "httpUrl": "https://mcp.perfboarddesigner.com/mcp"
+    }
+  }
+}</code></pre></div>
+        </article>
+
+        <article id="codex" class="setup">
+          <h3>Codex CLI</h3>
+          <div class="code-block"><pre><code>codex mcp add perfboard --url https://mcp.perfboarddesigner.com/mcp</code></pre></div>
+          <p>Or add it to <code>~/.codex/config.toml</code>:</p>
+          <div class="code-block"><pre><code>[mcp_servers.perfboard]
+url = "https://mcp.perfboarddesigner.com/mcp"</code></pre></div>
+        </article>
+
+        <article id="other" class="setup">
+          <h3>Other clients</h3>
+          <p>Any client that supports remote MCP servers over <strong>Streamable HTTP</strong> works: give it the address <code>https://mcp.perfboarddesigner.com/mcp</code>, with no authentication.</p>
+          <p>For a client that can only start local (stdio) servers, bridge to it with <a href="https://www.npmjs.com/package/mcp-remote" target="_blank" rel="noopener">mcp-remote</a>, which needs Node.js:</p>
+          <div class="code-block"><pre><code>{
+  "mcpServers": {
+    "perfboard": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.perfboarddesigner.com/mcp"]
+    }
+  }
+}</code></pre></div>
+        </article>
+
+        <article id="local" class="setup">
+          <h3>Run it yourself</h3>
+          <p>The server is open source, so you can also run it on your own computer over stdio, with nothing sent anywhere. You need Node.js 22 or newer:</p>
+          <div class="code-block"><pre><code>git clone https://github.com/MaurerKrisztian/perfboard-designer.git
+cd perfboard-designer/mcp
+npm install
+npm run build</code></pre></div>
+          <p>Then add it to your client as a command. In Claude Code:</p>
+          <div class="code-block"><pre><code>claude mcp add perfboard -- node /path/to/perfboard-designer/mcp/dist/server.js</code></pre></div>
+          <p>Other clients take the same command and argument (<code>"command": "node"</code>, <code>"args": ["/path/to/…/dist/server.js"]</code>). The <a href="https://github.com/MaurerKrisztian/perfboard-designer/tree/main/mcp" target="_blank" rel="noopener">server's README</a> also covers hosting your own copy on Cloudflare Workers.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="what-it-does" class="section">
+      <h2>What it does</h2>
+      <p class="section-lead">The assistant works with the same parts, rules and checks as the designer, so what it builds opens exactly as it planned.</p>
+      <div class="feature-grid">
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">🔎</span>
+          <h3>Looks up parts</h3>
+          <p>Every part in the designer's library, with its pins, pin labels and polarity: resistors, capacitors, LEDs, transistors, chips, dev boards and more.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">🧩</span>
+          <h3>Builds the board</h3>
+          <p>Starts a perfboard or stripboard of any size, places parts, routes wires pin to pin and cuts strips, in small edits that each go in whole or not at all.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">✅</span>
+          <h3>Checks the wiring</h3>
+          <p>Lists the board's nets and catches pins left unconnected, parts sharing a hole, shorted supply rails and strips that short a chip's pins. Given the netlist you meant, it reports every missing or extra connection.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">🔗</span>
+          <h3>Hands you a link</h3>
+          <p>The finished board comes back as a share link. Click it and the board opens in the designer as a new project, ready to change, save or view in 3D.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">✏️</span>
+          <h3>Edits your boards</h3>
+          <p>Share a board link with the assistant and it can read the board, change it and give you a new link.</p>
+        </article>
+        <article class="feature">
+          <span class="feature-icon" aria-hidden="true">🗺️</span>
+          <h3>Shows its work</h3>
+          <p>It can draw the board as text and list where every pin lands, so it sees free space and plans the routing before it places anything.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="good-to-know" class="section">
+      <h2>Good to know</h2>
+      <div class="faq">
+        <details>
+          <summary>Does it cost anything or need an account?</summary>
+          <p>No. The hosted server is free and has no sign-in. You only need an AI assistant that supports MCP.</p>
+        </details>
+        <details>
+          <summary>What happens to my boards?</summary>
+          <p>While the assistant works on a board, the server keeps a copy under a random project id, deleted after 30 days unused. The board you get back travels inside the share link itself, and opening it saves it in your own browser, like any other project.</p>
+        </details>
+        <details>
+          <summary>Does it simulate my circuit?</summary>
+          <p>No. It checks how the board is wired (which pins are connected), not how the circuit behaves. Check the design itself before you build it.</p>
+        </details>
+        <details>
+          <summary>My assistant doesn't use it.</summary>
+          <p>Make sure the server is turned on for the chat (in claude.ai and ChatGPT, from the <strong>+</strong> menu), then mention it: "use Perfboard Designer to lay this out".</p>
+        </details>
+        <details>
+          <summary>Where's the source code?</summary>
+          <p>In the <a href="https://github.com/MaurerKrisztian/perfboard-designer/tree/main/mcp" target="_blank" rel="noopener"><code>mcp</code> folder on GitHub</a>, next to the designer it's built on. Bug reports and ideas are welcome.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="cta">
+      <h2>Prefer to lay it out yourself?</h2>
+      <p>The designer is right here, and anything the assistant makes opens in it.</p>
+      <a class="button" href="../app/">Open the designer →</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>
+      Perfboard Designer is open source, made by
+      <a href="https://github.com/MaurerKrisztian" target="_blank" rel="noopener">@MaurerKrisztian</a>
+      and <a href="../contributors/">contributors</a>.
+    </p>
+    <nav aria-label="Footer">
+      <a href="../">Home</a>
+      <a href="../app/">Designer</a>
+      <a href="../contributors/">Contributors</a>
+      <a href="https://github.com/MaurerKrisztian/perfboard-designer" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/MaurerKrisztian/perfboard-designer/issues" target="_blank" rel="noopener">Report a bug</a>
+    </nav>
+  </footer>
+
+  
+</body>
+</html>
