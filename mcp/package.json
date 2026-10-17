@@ -8,7 +8,8 @@
     "perfboard-designer-mcp": "dist/server.js"
   },
   "files": [
-    "dist"
+    "dist/server.js",
+    "dist/resvg.wasm"
   ],
   "engines": {
     "node": ">=22"
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@types/node": "^26.6.5",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",

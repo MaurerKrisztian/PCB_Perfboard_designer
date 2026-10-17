@@ -1,5 +1,7 @@
+import {readFile} from "node:fs/promises";
 import {StdioServerTransport} from "@modelcontextprotocol/sdk/server/stdio.js";
 import {createServer} from "./create-server";
+import {setResvgWasm} from "./board-png";
 
 // The Perfboard Designer MCP server: lets an AI agent design a perfboard or stripboard layout as a
 // project file and hand the user a share link that opens it in the editor. Projects being worked on
@@ -8,5 +10,8 @@ import {createServer} from "./create-server";
 // worker.ts is the same server hosted on Cloudflare.
 //
 // Built on the editor's own code, reached only through editor.ts; the editor never imports this.
+
+// build.mjs puts resvg's WebAssembly next to this file.
+setResvgWasm(() => readFile(new URL("./resvg.wasm", import.meta.url)));
 
 await createServer({editorUrl: process.env.PERFBOARD_EDITOR_URL}).connect(new StdioServerTransport());

@@ -1,3 +1,10 @@
+// A .wasm file the Worker is uploaded with (build.mjs copies resvg's next to it), imported as a
+// compiled module: Workers can't compile WebAssembly at run time.
+declare module "*.wasm" {
+  const module: WebAssembly.Module;
+  export default module;
+}
+
 // The little of the Workers runtime worker.ts uses. Declared here rather than taken from
 // @cloudflare/workers-types, whose globals clash with the DOM and Node types the rest of the
 // server is checked against.

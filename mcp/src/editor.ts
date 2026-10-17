@@ -5,7 +5,7 @@
 // place: the editor never imports the server. Only pure modules (no DOM, no editor state) belong
 // here; esbuild bundles them into dist/server.js.
 
-export type {GridPos} from "../../src/project-file/grid";
+export {GRID_PITCH_PX, type GridPos} from "../../src/project-file/grid";
 export {
   PROJECT_FILE_VERSION, type ProjectFile, type Rotation, type SavedIc, type SavedWire,
 } from "../../src/project-file/project-file";

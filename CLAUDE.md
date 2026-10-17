@@ -234,9 +234,13 @@ It can: list parts, start a project (`new_project`, blank or
 from an example), change it with small ops (`edit_project`, whose wire ends can be pins by name),
 get pin positions, draw it as text (`render_board`, `mcp/src/render-board.ts`), list the board's
 nets (`get_nets`), validate it, make and read share links. `make_share_link` also returns `image`:
-the Worker's `GET /render.svg?<a share link's fragment>` (`mcp/src/board-image.ts`, `z=`/`json=`
+the Worker's `GET /render.svg?<a share link's fragment>` (`mcp/src/image-requests.ts`, `z=`/`json=`
 only, never fetching `src=`), an SVG picture drawn by the editor's own board renderer with the part
-icons `build.mjs` bakes in. Projects being worked on are kept under a
+icons `build.mjs` bakes in (`mcp/src/board-image.ts`); `GET /render.png?…` serves it as a PNG. `render_board` with `format: "png"` returns that PNG for the
+agent itself to look at (`mcp/src/board-png.ts`): rasterized by resvg-wasm with the Noto fonts in
+`mcp/fonts/` baked in; `build.mjs` copies the wasm to `dist/resvg.wasm`, which `server.ts` reads and
+the Worker is uploaded with (`wrangler.toml`'s rules), each handing it over via `setResvgWasm`.
+Projects being worked on are kept under a
 `projectId` (`mcp/src/project-handles.ts`, behind an async `ProjectStore`: in memory for stdio, a
 Durable Object per project on the Worker, so a tool that changes a kept entry calls
 `saveHeldProject`), only a cache of the project file:

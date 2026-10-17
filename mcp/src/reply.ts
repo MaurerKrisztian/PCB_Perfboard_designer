@@ -1,4 +1,4 @@
-// What tools send back: JSON text, or an error the agent can act on.
+// What tools send back: JSON text, a picture, or an error the agent can act on.
 
 // JSON for replies: indented, but anything short enough (a hole, a wire, a part entry) on one
 // line, so a project file reads one entry per line and costs far fewer tokens.
@@ -14,6 +14,19 @@ export function json(value: unknown, indent = ""): string {
 export const textReply = (text: string) => ({content: [{type: "text" as const, text}]});
 
 export const reply = (value: unknown) => textReply(json(value));
+
+// A PNG with a line saying what it shows.
+export const pngReply = (png: Uint8Array, caption: string) => ({
+  content: [{type: "text" as const, text: caption}, {type: "image" as const, data: base64(png), mimeType: "image/png"}],
+});
+
+// Without Node's Buffer, which the Worker doesn't have; in chunks, as spreading a whole picture
+// into one call would overflow the stack.
+function base64(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary);
+}
 
 export const failure = (message: string, details?: unknown) =>
   ({...textReply(details === undefined ? message : `${message}\n${json(details)}`), isError: true});

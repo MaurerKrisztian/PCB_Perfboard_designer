@@ -5,6 +5,10 @@ main = "dist/worker.js"
 compatibility_date = "2026-09-01"
 # build.mjs has already bundled it, with the docs and examples baked in.
 no_bundle = true
+# Uploaded beside it: only resvg's WebAssembly (dist/resvg.wasm, for PNG pictures), as a compiled
+# module, not the stdio server that's also in dist/.
+find_additional_modules = true
+rules = [{ type = "CompiledWasm", globs = ["**/*.wasm"], fallthrough = false }]
 # Served at its own domain and its workers.dev address. The domain must be on the deploying
 # Cloudflare account: remove `routes` to deploy a copy to your own account.
 routes = [{ pattern = "mcp.perfboarddesigner.com", custom_domain = true }]
@@ -12,7 +16,7 @@ workers_dev = true
 
 [build]
 command = "node build.mjs"
-watch_dir = ["src", "../src/parts", "../src/project-file", "../src/board-render", "../assets/icons/components", "../docs", "../examples"]
+watch_dir = ["src", "fonts","../src/parts", "../src/project-file", "../src/board-render", "../assets/icons/components", "../docs", "../examples"]
 
 # One Durable Object per kept project, named by its projectId.
 [[durable_objects.bindings]]

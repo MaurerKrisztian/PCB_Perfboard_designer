@@ -1,8 +1,11 @@
 import {DurableObject, DurableObjectNamespace} from "cloudflare:workers";
 import {WebStandardStreamableHTTPServerTransport} from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import {createServer} from "./create-server";
-import {handleImageRequest} from "./board-image";
+import {handleImageRequest} from "./image-requests";
+import {setResvgWasm} from "./board-png";
 import {HeldProject, ProjectStore, setProjectStore} from "./project-handles";
+// Uploaded with the Worker: build.mjs copies it next to worker.js.
+import resvgWasm from "./resvg.wasm";
 
 // The same MCP server as server.ts, hosted on Cloudflare Workers over Streamable HTTP at /mcp.
 // Stateless: every request gets a fresh server, so the projects agents work on can't live in
@@ -16,6 +19,8 @@ interface Env {
 }
 
 const KEEP_FOR_MS = 30 * 24 * 60 * 60 * 1000;
+
+setResvgWasm(async () => resvgWasm);
 
 // The ids project-handles.ts makes: anything else is no project, without waking an object.
 const PROJECT_ID = /^p-[0-9a-z]{10}$/;
@@ -71,6 +76,7 @@ Add it to an MCP client as a Streamable HTTP server at <this address>/mcp, e.g.
   claude mcp add --transport http perfboard <this address>/mcp
 
 A picture of a board: <this address>/render.svg?<a share link's part after the #>
+(or /render.png?… for a PNG)
 `;
 
 export default {
@@ -78,7 +84,8 @@ export default {
     const {pathname, origin} = new URL(request.url);
     if (request.method === "OPTIONS") return new Response(null, {status: 204, headers: CORS_HEADERS});
     if (pathname === "/") return withCors(new Response(ABOUT.replaceAll("<this address>", origin), {headers: {"Content-Type": "text/plain; charset=utf-8"}}));
-    if (pathname === "/render.svg") return withCors(await handleImageRequest(request));
+    if (pathname === "/render.svg") return withCors(await handleImageRequest(request, "svg"));
+    if (pathname === "/render.png") return withCors(await handleImageRequest(request, "png"));
     if (pathname !== "/mcp") return withCors(new Response("Not found: the MCP server is at /mcp.\n", {status: 404}));
     // Stateless, so no stream for server-sent messages to open and no session to end.
     if (request.method !== "POST") {

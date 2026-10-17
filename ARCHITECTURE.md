@@ -466,6 +466,7 @@ definition's `iconFile`, else `<id>.svg`). Painters ask for icons by file name:
 | Thumbnails | `src/features/project/project-thumbnail.ts` | `CanvasPainter`, scaled to fit | `PLAIN_VIEW` |
 | Catalog chip icons | `dipIconSvg()` / `moduleIconSvg()` in `artists/ic-package/` | `SvgPainter` | n/a |
 | MCP pictures | `mcp/src/board-image.ts`, Worker `GET /render.svg` | `renderBoardSvg`, icons baked in | labels on |
+| MCP PNGs | `mcp/src/board-png.ts`, `render_board` with `format: "png"` and Worker `GET /render.png` | that SVG, rasterized by resvg (WebAssembly) with fonts baked in | labels on |
 
 ### Rules
 
@@ -539,7 +540,8 @@ boards. It runs two ways:
 
 - `src/server.ts`: stdio, local;
 - `src/worker.ts`: a Cloudflare Worker with stateless Streamable HTTP at `/mcp`
-  (`wrangler.toml`; `npm run worker:dev` / `worker:deploy`), plus `GET /render.svg`.
+  (`wrangler.toml`; `npm run worker:dev` / `worker:deploy`), plus `GET /render.svg` and
+  `/render.png`.
 
 Tool code must not use Node APIs, because it also runs on the Worker. **It depends on the editor,
 never the other way round**, and only `mcp/src/editor.ts` imports the editor's source, so that
@@ -550,9 +552,11 @@ dependency is listed in one place.
 | `create-server.ts` | wires tools and resources together for either entry point |
 | `tools/catalog-tools.ts` | `list_parts`, `get_part` |
 | `tools/project-tools.ts` | `new_project`, `edit_project`, `get_project` |
-| `tools/board-tools.ts` | `validate_project`, `get_nets`, `get_pin_positions`, `render_board` (text) |
+| `tools/board-tools.ts` | `validate_project`, `get_nets`, `get_pin_positions`, `render_board` (text or PNG) |
 | `tools/share-link-tools.ts` | `make_share_link` (link + `image` URL), `read_share_link` |
-| `board-image.ts` | SVG pictures via the board renderer; the Worker's `/render.svg` |
+| `board-image.ts` | SVG pictures via the board renderer |
+| `board-png.ts` | PNG pictures: that SVG rasterized by resvg-wasm, which each entry point hands over (`setResvgWasm`) |
+| `image-requests.ts` | the Worker's `GET /render.svg` and `/render.png`, a board from a share link's parameters |
 | `project-handles.ts` | projects kept under a `projectId` (memory on stdio, a Durable Object each on the Worker) |
 | `edit-ops.ts`, `edit-project.ts` | `edit_project`'s ops: all or none, one function per op |
 | `validate.ts`, `expected-nets.ts` | checks, one function per check; `expectNets` |
@@ -562,7 +566,10 @@ dependency is listed in one place.
 
 `build.mjs` bundles the server, the editor's pure code and the SDK into `dist/server.js` and
 `dist/worker.js`. It also bakes in the docs, the example projects and the part icons, the icons
-with their `<metadata>` stripped.
+with their `<metadata>` stripped, and the fonts in `mcp/fonts/` that PNG pictures draw text with
+(Noto, cut down to the characters boards use). It copies resvg's WebAssembly to
+`dist/resvg.wasm`: the stdio server reads it the first time it draws a PNG, and the Worker is
+uploaded with it as a compiled module (Workers can't compile WebAssembly at run time).
 
 > **Extend: add a tool.** Register it in the right `tools/*.ts` group with a zod input schema and
 > a description written for agents. Take `projectId`/`project` through `project-source.ts`, and
